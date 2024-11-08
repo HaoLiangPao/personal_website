@@ -10,9 +10,9 @@ tags:
 
 ## 简介
 
-| 作者              | 出版时间            | 原著语言    |
-| --------------- | --------------- | ------- |
-| Robert de Board | January 1, 1983 | English |
+| 作者               | 出版时间            | 原著语言    |
+| ---------------- | --------------- | ------- |
+| [[Bob De Board]] | January 1, 1983 | English |
 
 > The book serves as an accessible resource for those new to counseling, whether as students, clients, or professionals seeking material to recommend to others. It provides insights into the counseling process and encourages readers to reflect on their own emotional development. ([Routledge](https://www.routledge.com/Counselling-for-Toads-A-Psychological-Adventure/Board/p/book/9780415174299))
 
