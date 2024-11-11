@@ -5,8 +5,7 @@ tags:
   - Book
 Draft: "true"
 ---
-
-《TITLE》
+《被讨厌的勇气》-- The Courage to Be Disliked
 
 # What you have studied
 
