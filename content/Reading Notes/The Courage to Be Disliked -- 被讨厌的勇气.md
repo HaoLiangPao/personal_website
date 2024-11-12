@@ -3,7 +3,7 @@ title: 被讨厌的勇气
 tags:
   - Reading
   - Book
-Draft: "true"
+Status:
 ---
 《被讨厌的勇气》-- The Courage to Be Disliked
 

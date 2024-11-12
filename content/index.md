@@ -19,8 +19,20 @@ Always keep learning and coding!! 🤘
 
 **🚀 Jump Starting...**
 
+## Navigation
+**Sections:**
+
+| Category                | Example Writing                                       |
+| ----------------------- | ----------------------------------------------------- |
+| Technology Blog         | [[How to separate a subproject within a Github Repo]] |
+| Reading Notes (Chinese) | [[Counselling for Toads -- 蛤蟆先生去看心理医生]]               |
+| Reading Notes (English) | [[Reading Notes (English)]]                           |
+| Interesting Souls       | [[Bob De Board]]                                      |
+
+**Tags:**
+#Tech #Reading #People 
 ## Contact Info
-- WeChat
-- Instagram
-- Github
-- LinkedIn
+- WeChat: *LeoLiang19970411*
+- Instagram: 
+- [Github](https://github.com/HaoLiangPao)
+- [LinkedIn](https://www.linkedin.com/in/hao-liang-cn/)

@@ -3,6 +3,7 @@ title: Soul
 tags:
   - People
   - Author
+Status:
 ---
 ## Background Info
 
