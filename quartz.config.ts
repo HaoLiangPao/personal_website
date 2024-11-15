@@ -73,6 +73,8 @@ const config: QuartzConfig = {
       Plugin.CrawlLinks({ markdownLinkResolution: "shortest" }),
       Plugin.Description(),
       Plugin.Latex({ renderEngine: "katex" }),
+      Plugin.RemoveDrafts(), // hide the pages that are not ready to publish yet
+      
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [
