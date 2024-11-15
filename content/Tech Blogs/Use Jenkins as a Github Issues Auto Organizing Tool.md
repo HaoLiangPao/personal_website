@@ -6,7 +6,7 @@ tags:
   - Git
   - Jenkins
   - Automation
-Status: false
+draft: "true"
 ---
 ## Pain Point
 If you are using a self-hosted, enterprise version of Github, you might not have the privilege to automatically modify the issues at your most convenience. For example, our life will be easier if:

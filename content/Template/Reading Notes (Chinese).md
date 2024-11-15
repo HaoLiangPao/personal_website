@@ -3,7 +3,7 @@ title:
 tags:
   - Reading
   - Book
-Status:
+draft: "true"
 ---
 
 

@@ -4,7 +4,7 @@ tags:
   - People
   - Author
   - UK
-Status: true
+draft: "false"
 ---
 ## Background Info
 BOB DE BOARD, who died on February 4, aged 87, after a short illness, was a well-known and prominent member of the Henley community, an academic lecturer, successful author and published poet.

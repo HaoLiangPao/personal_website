@@ -4,7 +4,7 @@ tags:
   - Tech
   - Blog
   - OS
-Draft: "true"
+draft: "true"
 ---
 ## Pain Point
 RHEL does not provide an official plan to migrate from main version 7 to main version 9. It is crucial that we have a complete coverage of system migration. Also, we would like to have a snapshot of the previous system so we can easily been backed up from there.

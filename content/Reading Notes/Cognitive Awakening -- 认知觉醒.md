@@ -1,9 +1,11 @@
 ---
+title: "- Cognitive Awakening -- 认知觉醒"
 tags:
   - Reading
   - Book
   - Psycho
   - Self_development
+draft: "false"
 ---
 《认知觉醒：开启自我改变的原动力》/ 《# Cognitive Awakening (Unlock the Motivity for Self Change)》
 # What you have studied

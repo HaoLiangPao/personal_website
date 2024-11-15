@@ -5,7 +5,7 @@ tags:
   - Blog
   - Script
   - Git
-Status: true
+draft: "false"
 ---
 ## Pain Point
 You may have times that many projects are developed under the same repository and all the project source code got piled up in one giant repo. Some of the projects are archive already and replaced by their own repository for isolation. However, the archived source code are still left in the giant repo and constantly firing security vulnerabilities which requires dev's maintenance effort on it.
