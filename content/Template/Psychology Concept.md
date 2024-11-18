@@ -1,6 +1,12 @@
 ---
 title: Concept
 tags:
-  - CS
+  - psychology
 draft: "true"
 ---
+
+## 定义
+
+
+
+## 感受
