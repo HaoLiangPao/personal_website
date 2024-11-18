@@ -36,9 +36,9 @@ There are a list of items we need to migrate
 	- [ ]  Cron jobs and scheduled tasks **(In Progress)**  
 - [ ] Central storage mounting
 	- [x] GSA
-	- [ ] compgpfs **(blocked)**
+	- [x] compgpfs
 		- [x] Ask Steven to add Hao into the export list (encountered a mounting error as included in the comments)
-	- [ ] nfsmnts
+	- [ ] nfsmnts (*It is for zOS machines, not needed for now*)
 - [ ] Static files
 	- [ ] /etc
 	- [x] /var
