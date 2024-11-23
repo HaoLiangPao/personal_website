@@ -38,3 +38,4 @@ draft: "true"
 	```
 2. Unzip the file and replace the existing `node` and `npm` locations (e.g. `/usr/bin/node` and `/usr/bin/npm` which can be found with [[Bash#which]])
 	1. It can be done by moving the files over or leave a symlink
+
