@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Symlink
 tags:
   - CS
 draft: "true"

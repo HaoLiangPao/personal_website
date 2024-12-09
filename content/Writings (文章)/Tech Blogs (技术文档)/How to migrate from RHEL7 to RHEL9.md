@@ -34,7 +34,7 @@ There are a list of items we need to migrate
 		- [ ] Service specifc config files (for example: `/etc/nginx`)
 	    - [ ]  Service Softwares (which should be installed by the **installed packages** step
 	- [ ]  Cron jobs and scheduled tasks **(In Progress)**  
-- [ ] Central storage mounting
+- [x] Central storage mounting
 	- [x] GSA
 	- [x] compgpfs
 		- [x] Ask Steven to add Hao into the export list (encountered a mounting error as included in the comments)
@@ -61,11 +61,28 @@ In general, all steps can be divided into two steps:
 
 
 #### Package
-1. Capture `DNF`, `PIP` and `CURL` installation configurations (on **source machine**)
+1. Capture [[Package Manager#dnf]], [[Package Manager#pip]] and [[Bash#curl]] installation configurations (on **source machine**)
 2. Save a few files indicating the list of libraries been installed (on **control machine**)
 3. Install the corresponding libraries on the **target machine** through `DNF`, `PIP` and `CURL`
 
 #### User
+**Source Content:**
+1. User and group configuration (with UIDs greater than 1000 -> usually the non-system users)
+	1. `/etc/passwd`
+	2. `/etc/shadow`
+	3. `/etc/group`
+2. Configuration files
+	1. `.ssh` files (check the permissions: usually `700` for directory and `600` for file)
+	2. Shell configuration files
+		1. `.profile`
+		2. `.bashrc`
+		3. `.bash_profile`
+		4. `.kshrc`
+3. Home directories
+4. Service-Specific Configuration Files
+5. Cron Jobs and Scheduled Tasks
+
+**Steps:**
 1. Run an execution script to collect these files (on *source machine*), and them move them to `users/user_files.tar.gz` (on *control machine*)
 	2. `.profile`
 	3. `.kshrc` 
@@ -77,7 +94,11 @@ In general, all steps can be divided into two steps:
 #### Mounting (GSA)
 SKIP for now
 
-#### Mounting (Compgpfs) #done
+#### Mounting (Others) #done
+**Source Content (things to be migrated):**
+1. Current mounting points (remove storage spaces) e.g. `compgpfs`
+
+**Steps:**
 1. Run an execution script to collect current mounts (on *source machine*), create two snapshot files (`mounts.txt` and `current_mounts.txt`) (on *control machine*)
 	```
 	# Gather all mount points from /etc/fstab
@@ -87,12 +108,17 @@ SKIP for now
 	```
 2. Based on the two files generated on *control machine*, mount the storage points accordingly (on *target machine*)
 
-#### Logs
-1. Archive log files under `/var/log` (on *source machine*), create a zip file (on *control machine*)
-2. Unzip the logs (on *target machine*)
+#### Logs #done 
+**Source Content (things to be migrated):**
+1.  All log files under `/var/log`
+
+**Steps:**
+1. Archive log files under `/var/log`, create a zip file (on *source machine*)
+2. Transfer the zip file (*source machine* -> *control machine* -> *target machine*)
+3. Unzip the logs (on *target machine*)
 
 #### Service Jobs #done 
-**Content:**
+**Source Content (things to be migrated):**
 1. record enabled_services: `systemctl list-unit-files --type=service --state=enabled --no-pager | awk '/enabled/{print $1}'`
 2. copy **custom service unit files** in: `/etc/systemd/system`
 3. archive **service configuration directories**: `service_configs.tar.gz`
@@ -113,7 +139,6 @@ SKIP for now
 
 #### Process been running
 1. 
-
 
 ```ansible
 ---

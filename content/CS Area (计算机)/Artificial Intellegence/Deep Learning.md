@@ -2,6 +2,7 @@
 title: Concept
 tags:
   - CS
-draft: "false"
+draft: "true"
 ---
 ## Definition 
+

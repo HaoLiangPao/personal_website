@@ -3,7 +3,7 @@ title: Soul
 tags:
   - People
   - Author
-draft: "true"
+draft: "false"
 ---
 ## Background Info
 

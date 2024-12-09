@@ -2,11 +2,11 @@
 title: Concept
 tags:
   - psychology
-draft: "true"
+draft: "false"
 ---
 
-## 定义
+## Definition
 
 
 
-## 感受
+## Feeling

@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: The psychological state of the adults (成人心理状态)
 tags:
   - psychology
 draft: "false"

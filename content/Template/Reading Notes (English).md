@@ -12,9 +12,9 @@ draft: "true"
 
 ## Intro
 
-| 作者  | 出版时间 | 原著语言 |
-| --- | ---- | ---- |
-|     |      |      |
+| Author | Published | Language |
+| ------ | --------- | -------- |
+|        |           |          |
 
 
 ## Quotes
