@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Machine Learning For Trading
 tags:
   - CS
 draft: "false"

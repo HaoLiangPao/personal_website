@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Management Information Base (MIB)
 tags:
   - CS
 draft: "false"

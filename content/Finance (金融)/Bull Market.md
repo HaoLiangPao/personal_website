@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Bull Market
 tags:
   - Finance
 draft: "false"

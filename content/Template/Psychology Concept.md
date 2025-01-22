@@ -1,8 +1,8 @@
 ---
-title: Concept
+title: 
 tags:
   - psychology
-draft: "false"
+draft: "true"
 ---
 
 ## Definition

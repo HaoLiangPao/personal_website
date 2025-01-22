@@ -2,7 +2,7 @@
 title: Bollinger Bands (BB)
 tags:
   - Finance
-draft: "true"
+draft: "false"
 ---
 ## Definition
 

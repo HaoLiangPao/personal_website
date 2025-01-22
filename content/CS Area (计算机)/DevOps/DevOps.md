@@ -2,7 +2,7 @@
 title: DevOps
 tags:
   - CS
-draft: "true"
+draft: "false"
 ---
 ## Definition 
 

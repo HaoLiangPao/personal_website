@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Reinforcement Learning
 tags:
   - CS
 draft: "true"

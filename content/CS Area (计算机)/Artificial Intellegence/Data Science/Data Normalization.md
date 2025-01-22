@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Data Normalization
 tags:
   - CS
 draft: "false"

@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Discretization
 tags:
   - Math
 draft: "false"

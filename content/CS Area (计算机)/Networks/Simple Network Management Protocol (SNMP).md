@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Simple Network Management Protocol (SNMP)
 tags:
   - CS
 draft: "false"

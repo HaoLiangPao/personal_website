@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Deep Learning
 tags:
   - CS
 draft: "true"

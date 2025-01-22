@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Machine Learning
 tags:
   - CS
 draft: "true"

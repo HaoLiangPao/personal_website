@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Dyna-Q
 tags:
   - CS
 draft: "false"

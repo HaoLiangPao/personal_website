@@ -1,5 +1,5 @@
 ---
-title: Technology Blog
+title: 
 tags:
   - Tech
   - Blog

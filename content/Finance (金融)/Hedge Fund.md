@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Hedge Fund
 tags:
   - Finance
 draft: "false"

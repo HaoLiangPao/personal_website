@@ -1,8 +1,8 @@
 ---
-title: Concept
+title: Coin Flipping Casino
 tags:
   - CS
-draft: "true"
+draft: "false"
 ---
 ## Definition 
 

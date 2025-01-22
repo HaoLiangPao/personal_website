@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Q-Learning
 tags:
   - CS
 draft: "false"

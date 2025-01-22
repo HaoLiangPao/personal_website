@@ -2,7 +2,7 @@
 title: Encoding
 tags:
   - CS
-draft: "true"
+draft: "false"
 ---
 ## Definition 
 

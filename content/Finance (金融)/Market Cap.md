@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Market Cap
 tags:
   - Finance
 draft: "false"

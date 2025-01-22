@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Markov Decision Problem (MDP)
 tags:
   - CS
 draft: "false"

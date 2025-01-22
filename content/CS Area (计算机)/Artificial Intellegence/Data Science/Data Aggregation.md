@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Data Aggregation
 tags:
   - CS
 draft: "false"

@@ -2,7 +2,7 @@
 title: Simple Moving Average (SMA)
 tags:
   - Finance
-draft: "true"
+draft: "false"
 ---
 ## Definition
 

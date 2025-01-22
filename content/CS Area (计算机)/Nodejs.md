@@ -3,7 +3,7 @@ title: Nodejs
 tags:
   - CS
   - Nodejs
-draft: "true"
+draft: "false"
 ---
 **How to download NodeJS**
 1. NodeJS binary files are available at https://nodejs.org/dist/ (it contains all history versions and support many os versions)

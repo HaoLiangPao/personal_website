@@ -1,5 +1,5 @@
 ---
-title: Concept
+title: Order Book
 tags:
   - Finance
 draft: "false"
@@ -314,8 +314,8 @@ Our losses are theoretical and only actualized if we take the step forward and s
 $$ loss = current − purchase + premium $$
 
 > [!NOTE] Summary
-The covered call has the downside of not realizing maximal gains if the stock rises significantly, however it does prevent losses from hitting you as hard by offsetting it with the premium.
-    
+> The covered call has the downside of not realizing maximal gains if the stock rises significantly, however it does prevent losses from hitting you as hard by offsetting it with the premium. 
+
 We can take a similar position except with a write-put option called a **married put**
 
 ##### Butterfly
