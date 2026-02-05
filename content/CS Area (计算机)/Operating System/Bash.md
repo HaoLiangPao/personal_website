@@ -164,6 +164,15 @@ In the table format:
 | Processor Type        | arm64                                                                                                 | x86_64                                              |                         |
 | Hardware Platform     | arm64                                                                                                 | x86_64                                              |                         |
 | Operating System      | Darwin                                                                                                | GNU/Linux                                           |                         |
+#### lsb_release
+Get the OS version number of the current
+
+```bash
+Var=$(lsb_release -r)
+echo "$Var"
+```
+
+https://askubuntu.com/questions/1162491/how-can-you-tell-the-version-of-ubuntu-on-a-system-in-a-sh-bash-script
 
 ### iconv
 It is usually used as a tool to convert the encodings. 
@@ -172,6 +181,15 @@ It is usually used as a tool to convert the encodings.
 
 ```
 
+
+### ifconfig
+Get the ip information of the current server:
+- tun0
+
+```bash
+ifconfig
+
+```
 
 ### curl
 It is a command that can interact with the URLs. Usually used as a tool to download a file from certain API or retrieve information.

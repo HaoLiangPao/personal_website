@@ -27,6 +27,43 @@ The steps, notes I kept below are something I would like to redo whenever I got 
 - [ ] [[Terminal#ohmyzsh]] - [[Terminal#Shell Enhancement]]
 
 
+## Terminals
+### Tmux
+1. You need to install the tmux
+2. You need to setup the customization on the tmux
+
+```bash
+# remap prefix from 'C-b' to 'C-a'
+unbind C-b
+set-option -g prefix C-a
+bind-key C-a send-prefix
+
+# Plugins
+# tmux-sensible: Common tmux options
+set -g @plugin 'tmux-plugins/tmux-sensible'
+# tmux-power: Powerline theme
+set -g @plugin 'wfxr/tmux-power'
+# tmux-resurrect: Save and restore tmux sessions
+set -g @plugin 'tmux-plugins/tmux-resurrect'
+# tmux-continuum: Continuously save and restore tmux sessions
+set -g @plugin 'tmux-plugins/tmux-continuum'
+set -g @continuum-restore 'on'
+set -g @continuum-boot 'on'
+# tmux-copycat: Enables regex searches
+set -g @plugin 'tmux-plugins/tmux-copycat'
+# tmux-yank: Copy to system clipboard
+set -g @plugin 'tmux-plugins/tmux-yank'
+# tmux-open: Open highlighted text
+set -g @plugin 'tmux-plugins/tmux-open'
+
+set -g mouse on
+setw -g mode-keys vi
+
+# keep this line at the very bottom of tmux.conf
+run '~/.tmux/plugins/tpm/tpm'
+```
+
+
 
 ##  Code Editor
 ### VSCode
