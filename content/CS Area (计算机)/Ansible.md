@@ -2,7 +2,7 @@
 title: Ansible
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 Ansible is a *GOOD ENOUGH* tool to automate a series of simple OS operations that can be executed across the platforms.

@@ -3,7 +3,7 @@ title: PostgresSQL
 tags:
   - CS
   - Database
-draft: "false"
+draft: false
 ---
 ## Definition 
 

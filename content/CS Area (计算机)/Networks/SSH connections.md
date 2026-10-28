@@ -2,7 +2,7 @@
 title: SSH connections
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 
 ## Usage

@@ -2,7 +2,7 @@
 title: Software Engineering
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

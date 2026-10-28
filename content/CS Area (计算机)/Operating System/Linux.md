@@ -1,3 +1,8 @@
+---
+draft: false
+tags:
+  - CS
+---
 *Got from link: https://medium.com/itversity/basic-system-commands-to-get-cpu-memory-and-storage-details-in-linux-9ee7f2778749*
 
 

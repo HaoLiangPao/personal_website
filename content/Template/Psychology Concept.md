@@ -1,8 +1,8 @@
 ---
-title: 
+title:
 tags:
   - psychology
-draft: "true"
+draft: true
 ---
 
 ## Definition

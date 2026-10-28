@@ -1,8 +1,8 @@
 ---
-title: Deep Learning
+title: Convolutional Neural Network (CNN)
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

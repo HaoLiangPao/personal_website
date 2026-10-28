@@ -2,7 +2,7 @@
 title: Package Manager
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition
 

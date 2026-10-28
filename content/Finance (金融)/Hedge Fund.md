@@ -2,7 +2,7 @@
 title: Hedge Fund
 tags:
   - Finance
-draft: "false"
+draft: false
 ---
 ## Definition 
 

@@ -2,7 +2,7 @@
 title: Database
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 # Theory
 

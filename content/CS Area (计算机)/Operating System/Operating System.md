@@ -2,7 +2,7 @@
 title: Operating System
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 # Theory
 

@@ -1,7 +1,7 @@
 ---
-title: Bash
+title: BaSmoov & Curly's Bogus Journeysh
 tags:
   - CS
-draft: "false"
+draft: true
 ---
 ## Defination

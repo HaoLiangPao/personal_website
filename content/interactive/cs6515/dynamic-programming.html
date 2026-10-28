@@ -1,0 +1,672 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Dynamic Programming Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar · left algorithm index · main workspace (graph + controls | step & state panels) · takeaways.
+   Deliberately single dark theme, continuing the look of the March per-algorithm pages. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0d12; --surface:#12151c; --surface2:#181c25; --line:#232836; --line2:#2e3446;
+  --text:#e3e7f0; --muted:#8189a0; --faint:#4a5268;
+  --blue:#4f8ef7; --green:#34c98a; --red:#f05252; --amber:#f5a623; --teal:#2ec4b6; --purple:#9d7ef7;
+  --ac:var(--blue);
+  --f-body:'DM Sans','PingFang SC','Noto Sans SC','Microsoft YaHei',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --f-disp:'Instrument Serif','Songti SC','Noto Serif SC',Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:var(--f-body);font-size:14px;line-height:1.6;font-weight:400}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(11,13,18,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar h1{margin:0;font-family:var(--f-disp);font-weight:400;font-size:22px;letter-spacing:.01em}
+.topbar .sub{color:var(--muted);font-size:12px}
+.topbar .keys{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.lang{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;font-weight:600;padding:4px 12px;border-radius:5px;border:1px solid var(--line2);color:var(--text);background:var(--surface2)}
+.lang:hover{border-color:var(--muted)}
+.lang:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+kbd{font-family:var(--f-mono);font-size:10px;border:1px solid var(--line2);border-radius:3px;padding:0 4px;color:var(--muted)}
+
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;
+  padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1440px;margin:0 auto}
+nav.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);align-self:start;display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:2px}
+.grp-l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 8px 3px}
+.nb{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:5px 8px;border-radius:5px;color:var(--muted)}
+.nb .ab{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--text);min-width:64px}
+.nb .hn{font-size:11.5px}
+.nb:hover{background:var(--surface)}
+.nb:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.nb.on{background:var(--surface2)}
+.nb.on .ab{color:var(--c)}
+
+main{min-width:0;display:flex;flex-direction:column;gap:14px}
+.ahead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.ahead .abbr{font-family:var(--f-mono);font-size:26px;font-weight:600;color:var(--ac)}
+.ahead .nm{color:var(--muted);font-size:14px}
+.rt{margin-left:auto;font-family:var(--f-mono);font-size:12.5px;color:var(--amber);border:1px solid rgba(245,166,35,.3);background:rgba(245,166,35,.08);padding:2px 10px;border-radius:4px}
+.spec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.spec>div{background:var(--surface);padding:9px 12px;min-width:0}
+.spec .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:2px}
+.spec .v{font-size:12.5px}
+.spec code,.tk code,.desc code,.ovt code,.rule code{font-family:var(--f-mono);font-size:.92em;color:#c9d3ea}
+.warn{color:var(--amber)}
+
+.work{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.gcard .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.badge{font-family:var(--f-mono);font-size:11px;color:var(--ac);border:1px solid var(--line2);border-radius:4px;padding:1px 8px;white-space:nowrap}
+svg#g{display:block;width:100%;height:auto}
+.controls{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;padding:5px 12px;border:1px solid var(--line2);border-radius:5px;color:var(--text)}
+.btn:hover:not([disabled]){border-color:var(--muted)}
+.btn:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.btn[disabled]{opacity:.35;cursor:default}
+.btn.play{background:var(--ac);border-color:var(--ac);color:#0b0d12;font-weight:600}
+.prog{flex:1;min-width:80px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .25s}
+.ctr{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 14px 12px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend b{display:inline-block;width:16px;height:3px;border-radius:2px}
+
+.right{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stepbox{padding:12px 14px}
+.slbl{font-family:var(--f-mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em}
+.stitle{font-family:var(--f-disp);font-style:italic;font-size:20px;line-height:1.3;margin:2px 0 8px;text-wrap:balance}
+.desc{white-space:pre-line;font-size:13px;color:#c7cddb}
+.ins{margin-top:10px;font-size:12.5px;border-radius:6px;padding:8px 10px;border:1px solid}
+.ins.info{color:var(--ac);border-color:color-mix(in srgb,var(--ac) 30%,transparent);background:color-mix(in srgb,var(--ac) 8%,transparent)}
+.ins.relax{color:var(--blue);border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.07)}
+.ins.warn{color:#ff8a8a;border-color:rgba(240,82,82,.35);background:rgba(240,82,82,.07)}
+.ins.ok{color:var(--green);border-color:rgba(52,201,138,.3);background:rgba(52,201,138,.07)}
+.ins.done{color:var(--purple);border-color:rgba(157,126,247,.35);background:rgba(157,126,247,.08)}
+.pnl{padding:10px 14px}
+.pnl h3{margin:0 0 7px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pnl h3 small{font-weight:400;letter-spacing:0;text-transform:none;color:var(--faint);font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--line2);background:var(--surface2)}
+.chip.hot{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,.08)}
+.chip.ok{border-color:rgba(52,201,138,.5);color:var(--green)}
+.chip.bad{border-color:rgba(240,82,82,.45);color:#ff8a8a;text-decoration:line-through}
+.chip.mute{color:var(--faint);border-style:dashed}
+.chip.p{border-color:rgba(157,126,247,.5);color:var(--purple)}
+.chip.t{border-color:rgba(46,196,182,.5);color:var(--teal)}
+.chip.b{border-color:rgba(79,142,247,.5);color:#7fb0ff}
+.tw{overflow-x:auto}
+table.dt{border-collapse:collapse;width:100%;font-family:var(--f-mono);font-size:11.5px;font-variant-numeric:tabular-nums}
+.dt th{color:var(--faint);font-weight:400;text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+.dt td{padding:3px 6px;border-bottom:1px solid #1a1e28;white-space:nowrap}
+.dt td.hi{color:var(--amber);background:rgba(245,166,35,.1)}
+.dt tr.rh td{background:rgba(255,255,255,.03)}
+.dt td.inf{color:var(--faint)}
+
+.tk{padding:12px 16px}
+.tk h2{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tk ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px;max-width:90ch}
+.tk li::marker{color:var(--ac)}
+
+#ov h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ov p{color:var(--muted);margin:0 0 12px;font-size:13px}
+.ovt{border-collapse:collapse;width:100%;font-size:12.5px;min-width:720px}
+.ovt th{text-align:left;font-weight:500;color:var(--faint);font-size:11px;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid var(--line2)}
+.ovt td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.ovt td.m{font-family:var(--f-mono);font-size:12px}
+.ovt tr.cat td{color:var(--faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding-top:14px;border-bottom:none}
+.ovt .go{all:unset;cursor:pointer;font-family:var(--f-mono);font-weight:600}
+.ovt .go:hover{text-decoration:underline}
+.rule{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.rule div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px}
+.rule b{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:3px}
+#ops h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ops>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#ops .rule{margin:0 0 14px}
+.ovt td.how{color:#c7cddb;max-width:62ch}
+.ovt td.op{font-weight:500;white-space:nowrap}
+#pre h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#pre>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#pre .rule{margin-top:14px}
+.ovt.pm{min-width:980px}
+.ovt.pm td{vertical-align:middle}
+.lv{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11.5px;line-height:1.45;border:1px solid}
+.lv.any{color:var(--green);border-color:rgba(52,201,138,.35);background:rgba(52,201,138,.07)}
+.lv.req{color:var(--amber);border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.08)}
+.lv.no{color:#ff8a8a;border-color:rgba(240,82,82,.4);background:rgba(240,82,82,.08)}
+.lv.na{color:var(--faint);border-color:var(--line2);border-style:dashed}
+.pkey{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 0 12px;font-size:12px;color:var(--muted);align-items:center}
+
+svg text{font-family:var(--f-mono)}
+.el{paint-order:stroke;stroke:#0b0d12;stroke-width:4px;stroke-linejoin:round}
+
+@media (max-width:1100px){.work{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav.index{position:static;flex-direction:row;overflow-x:auto;gap:10px;padding-bottom:4px}
+  .grp{flex-direction:row;align-items:center;flex:none}
+  .grp-l{display:none}
+  .nb .hn{display:none}
+  .nb .ab{min-width:0}
+  .spec{grid-template-columns:minmax(0,1fr)}
+  .topbar .keys{display:none}
+  .lang{margin-left:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="topbar">
+  <h1 id="t-h1"></h1>
+  <span class="sub" id="t-sub"></span>
+  <span class="keys" id="t-keys"></span>
+  <button class="lang" id="lang" type="button"></button>
+</div>
+
+<div class="shell">
+  <nav class="index" id="nav"></nav>
+  <main id="main">
+    <section id="algo">
+      <div class="ahead"><span class="abbr" id="a-abbr"></span><span class="nm" id="a-name"></span><span class="rt" id="a-rt"></span></div>
+      <div class="spec" style="margin-top:10px">
+        <div><div class="k">Input</div><div class="v" id="s-in"></div></div>
+        <div><div class="k">Output</div><div class="v" id="s-out"></div></div>
+        <div><div class="k" id="k-req"></div><div class="v" id="s-req"></div></div>
+      </div>
+      <div class="work" style="margin-top:14px">
+        <div class="card gcard">
+          <div class="hd"><span id="g-cap"></span><span class="badge" id="g-badge"></span></div>
+          <svg id="g" viewBox="0 0 560 380" role="img"></svg>
+          <div class="controls">
+            <button class="btn" id="b-prev" type="button">← Prev</button>
+            <button class="btn play" id="b-play" type="button">▶ Play</button>
+            <button class="btn" id="b-next" type="button">Next →</button>
+            <div class="prog"><i id="prog"></i></div>
+            <span class="ctr" id="ctr"></span>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="right">
+          <div class="card stepbox">
+            <div class="slbl" id="s-lbl"></div>
+            <div class="stitle" id="s-title"></div>
+            <div class="desc" id="s-desc"></div>
+            <div class="ins" id="s-ins"></div>
+          </div>
+          <div id="panels" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+      </div>
+      <div class="card tk" style="margin-top:14px"><h2 id="tk-h"></h2><ul id="tk"></ul></div>
+    </section>
+    <section id="ov" hidden></section>
+    <section id="ops" hidden></section>
+    <section id="pre" hidden></section>
+  </main>
+</div>
+
+<style>
+.legend b.sw{width:11px;height:11px;border-radius:3px;border:1.5px solid}
+.ovt td.yes{color:var(--green);font-family:var(--f-mono);font-size:11.5px}
+.ovt td.nope{color:#ff8a8a;font-family:var(--f-mono);font-size:11.5px}
+.ovt td.code{font-family:var(--f-mono);font-size:11.5px;white-space:pre;color:#c9d3ea}
+pre.rec{margin:0;font-family:var(--f-mono);font-size:11.5px;line-height:1.55;color:#c9d3ea;white-space:pre;overflow-x:auto}
+h3.sub2{font-family:var(--f-disp);font-weight:400;font-size:19px;margin:22px 0 8px}
+</style>
+<script>
+/* ============================== language ============================== */
+let LANG='en';
+const tr=(zh,en)=>LANG==='en'?en:zh;
+const L2=x=>Array.isArray(x)?(LANG==='en'?x[1]:x[0]):x;
+
+/* ============================== helpers ============================== */
+const clone = o => JSON.parse(JSON.stringify(o));
+function rec(){ const L=[]; return { L, add(o){ L.push(clone(o)); } }; }
+const tbl = (title, head, rows, hi=[], sub='', rowhi=[]) => ({k:'table', title, head, rows, hi, sub, rowhi});
+const chips = (title, items, sub='') => ({k:'chips', title, items, sub});
+const note = (title, text) => ({k:'note', title, text});
+const code = (title, text) => ({k:'code', title, text});
+const partC=(a1,a2,a3,a4)=>tbl('Part (c)',[tr('项','item'),tr('答案','answer')],[[tr('(1) 子问题数','(1) # subproblems'),a1],[tr('(2) 填表','(2) fill table'),a2],[tr('(3) 从哪取','(3) extract from'),a3],[tr('(4) 取答案','(4) extraction'),a4]]);
+const D={
+  cell:(x,y,w,h,v,st,o={})=>({k:'cell',x,y,w,h,v:String(v),st,...o}),
+  txt:(x,y,s,o={})=>({k:'txt',x,y,s:String(s),...o}),
+};
+const CS={n:['#141820','#2d3344','#c9d3ea'],dim:['#0e1117','#1c2130','#3e4559'],hot:['#3d2a00','#f5a623','#f5a623'],ok:['#0d3326','#34c98a','#34c98a'],
+  b:['#0f2140','#4f8ef7','#8fb8ff'],p:['#1a1040','#9d7ef7','#bba5ff'],t:['#082828','#2ec4b6','#2ec4b6'],r:['#3a1010','#f05252','#ff8a8a'],ghost:['#0b0d12','#1f2431','#2e3446']};
+const COL={amber:'#f5a623',green:'#34c98a',blue:'#4f8ef7',red:'#f05252',teal:'#2ec4b6',purple:'#9d7ef7',muted:'#8189a0',faint:'#4a5268',text:'#e3e7f0',soft:'#c7cddb'};
+
+/* a DP table: R rows × C cols; rl = row labels, cl = [index, char] column labels */
+function gridScene(R,C,o){
+  const lw=o.lw||44, cs=Math.min(46,Math.floor((500-lw)/C),Math.floor(262/R)), W=lw+C*cs, x0=(560-W)/2+lw, y0=74, out=[];
+  if(o.cap) out.push(D.txt(280,20,o.cap,{c:'muted',fs:12}));
+  o.cl.forEach(([a,b],j)=>{ const hi=o.colHi===j; out.push(D.txt(x0+j*cs+cs/2,y0-26,a,{c:hi?'amber':'faint',fs:10})); if(b) out.push(D.txt(x0+j*cs+cs/2,y0-11,b,{c:hi?'amber':'soft',fs:12.5,w:600})); });
+  o.rl.forEach((s,i)=>out.push(D.txt(x0-8,y0+i*cs+cs/2+1,s,{c:o.rowHi===i?'amber':'soft',fs:11.5,a:'end'})));
+  for(let i=0;i<R;i++) for(let j=0;j<C;j++){ const s=o.st(i,j); if(s==='none') continue;
+    out.push(D.cell(x0+j*cs+1.5,y0+i*cs+1.5,cs-3,cs-3,o.val(i,j),s,{fs:cs<36?11:(String(o.val(i,j)).length>3?11.5:13)})); }
+  if(o.foot) out.push(D.txt(280,Math.min(368,y0+R*cs+24),o.foot,{c:'amber',fs:12.5}));
+  return out;
+}
+
+/* ============================== LIS ============================== */
+function simLIS(a){
+  const n=a.length, T=Array(n).fill(null), Rc=rec(); let seenEmpty=false;
+  const REC='T(1) = 1\nT(i) = 1 + max{T(j) : 1 <= j <= i-1,\n                  a[j] < a[i]}\n       where 2 <= i <= n';
+  const sc=(cur,deps,bj,final,foot)=>gridScene(2,n,{rl:['a','T'],cl:a.map((_,k)=>[String(k+1),'']),cap:tr('上行 = 输入 a[i]，下行 = T(i)','top row = input a[i], bottom row = T(i)'),
+    val:(r,j)=>r===0?a[j]:(T[j]==null?'':T[j]),
+    st:(r,j)=>{ const mx=Math.max(...T.filter(v=>v!=null)); if(final) return r===1&&T[j]===mx?'ok':'n';
+      if(j===cur) return 'hot'; if(cur!=null&&j<cur) return deps.includes(j)?(j===bj?'ok':'b'):'dim'; if(r===1&&T[j]==null) return 'ghost'; return 'n'; },foot});
+  const mxNow=()=>{ const f=T.filter(v=>v!=null); return f.length?Math.max(...f):'–'; };
+  T[0]=1;
+  Rc.add({t:'Base case：T(1) = 1',d:tr('只有 a[1] 一个元素，以它结尾的递增子序列长度为 1。','Only a[1] exists; the increasing subsequence ending at it has length 1.'),
+    ins:tr('subproblem 要写 "which includes a[i]"：把「末尾是谁」编进 state，否则 T(i) 无法判断能不能接上 a[i]。','The subproblem says "which includes a[i]": it puts the last element into the state, otherwise T(i) cannot tell whether a[i] extends it.'),it:'info',
+    S:sc(0,[],null,false,'T(1) = 1'),P:[code('(b) Recurrence',REC),chips(tr('目前全表 max','max so far'),[{x:'max(T) = '+mxNow(),c:'hot'}])]});
+  for(let i=1;i<n;i++){
+    const deps=[]; for(let j=0;j<i;j++) if(a[j]<a[i]) deps.push(j);
+    const mv=deps.length?Math.max(...deps.map(j=>T[j])):0, bj=deps.find(j=>T[j]===mv);
+    T[i]=1+mv;
+    const list=deps.length?deps.map(j=>`T(${j+1})=${T[j]}`).join(', '):'';
+    const empty=!deps.length;
+    Rc.add({t:`T(${i+1}) = ${T[i]}`,d:tr(`向左扫 j = 1..${i}，只要 a[j] < a[${i+1}] = ${a[i]} 的：\n`,`Scan j = 1..${i}, keeping only a[j] < a[${i+1}] = ${a[i]}:\n`)+(empty?tr('没有满足条件的 j → max{} = 0。\n','No j qualifies → max{} = 0.\n'):`{${list}}\n`)+`T(${i+1}) = 1 + ${mv} = ${T[i]}`,
+      ins:empty&&!seenEmpty?(seenEmpty=true,tr('空集约定 max{} = 0：不需要额外写一个「找不到 j 时 T(i)=1」的分支。','Empty-set convention max{} = 0: no extra branch for "no such j" is needed.')):(i===1?tr('每格要向左扫一遍 → 每格 O(n)，所以 (2) 填表 O(n²)，而 (1) 子问题数只有 O(n)。','Each cell scans left → O(n) per cell, so (2) fill is O(n²) while (1) # subproblems is only O(n).'):''),
+      it:empty?'ok':'info',S:sc(i,deps,bj,false,`T(${i+1}) = 1 + max{${deps.map(j=>T[j]).join(', ')}} = ${T[i]}`),
+      P:[code('(b) Recurrence',REC),chips(tr('依赖的 j','qualifying j'),deps.length?deps.map(j=>({x:`j=${j+1}: T=${T[j]}`,c:j===bj?'ok':'b'})):[{x:'max{} = 0',c:'mute'}]),chips(tr('目前全表 max','max so far'),[{x:'max(T) = '+mxNow(),c:'hot'}])]});
+  }
+  const mx=Math.max(...T), at=T.indexOf(mx)+1;
+  Rc.add({t:tr('Extraction：max(T(*))','Extraction: max(T(*))'),d:tr(`答案 = max(T(*)) = ${mx}（在 i = ${at}），而 T(${n}) = ${T[n-1]}。\n给 state 加了「必须包含 a[i]」的约束，答案就分散在全表。`,`Answer = max(T(*)) = ${mx} (at i = ${at}), while T(${n}) = ${T[n-1]}.\nAdding "must include a[i]" to the state spreads the answer across the whole table.`),
+    ins:tr('(3) 写 max(T(*))，(4) 是 O(n)，不是 O(1)。写 T(n) 会错。','(3) is max(T(*)) and (4) is O(n), not O(1). Writing T(n) is wrong.'),it:'done',
+    S:sc(null,[],null,true,`max(T(*)) = ${mx}   ·   T(${n}) = ${T[n-1]}`),P:[partC('O(n)','O(n²)','max(T(*))','O(n)')]});
+  return Rc.L;
+}
+
+/* ============================== two-sequence 2D (LCS / substring / edit distance) ============================== */
+function sim2D(x,y,mode){
+  const n=x.length, m=y.length, T=Array.from({length:n+1},()=>Array(m+1).fill(null)), Rc=rec();
+  const RECS={
+    lcs:'T(i,0) = 0   where 0 <= i <= n\nT(0,j) = 0   where 1 <= j <= m\nT(i,j) = 1 + T(i-1,j-1)          if x[i] = y[j]\n       = max{T(i-1,j), T(i,j-1)}  if x[i] != y[j]\n       where 1 <= i <= n, 1 <= j <= m',
+    sub:'T(i,0) = 0   where 0 <= i <= n\nT(0,j) = 0   where 1 <= j <= m\nT(i,j) = 1 + T(i-1,j-1)   if x[i] = y[j]\n       = 0                 if x[i] != y[j]\n       where 1 <= i <= n, 1 <= j <= m',
+    ed:'T(i,0) = i   where 0 <= i <= n\nT(0,j) = j   where 1 <= j <= m\nT(i,j) = min{1+T(i-1,j), 1+T(i,j-1),\n            T(i-1,j-1)}    if x[i] = y[j]\n       = min{1+T(i-1,j), 1+T(i,j-1),\n            1+T(i-1,j-1)}  if x[i] != y[j]\n       where 1 <= i <= n, 1 <= j <= m'};
+  const REC=RECS[mode];
+  let deps=[], pick=null, curC=null, final=false, mx=0;
+  const key=(i,j)=>i+','+j;
+  const sc=foot=>gridScene(n+1,m+1,{rl:['0',...x.split('').map((c,k)=>`${k+1} ${c}`)],cl:[['0',''],...y.split('').map((c,k)=>[String(k+1),c])],
+    cap:`x = ${x}   ·   y = ${y}`, rowHi:curC?curC[0]:null, colHi:curC?curC[1]:null,
+    val:(i,j)=>T[i][j]==null?'':T[i][j],
+    st:(i,j)=>{ if(final){ if(mode==='sub') return T[i][j]===mx&&mx>0?'ok':(i===0||j===0?'t':'n'); return i===n&&j===m?'ok':(i===0||j===0?'t':'n'); }
+      if(curC&&curC[0]===i&&curC[1]===j) return 'hot'; if(pick===key(i,j)) return 'ok'; if(deps.includes(key(i,j))) return 'b';
+      if(T[i][j]==null) return 'ghost'; return (i===0||j===0)?'t':'n'; },foot});
+  for(let i=0;i<=n;i++) T[i][0]=mode==='ed'?i:0; for(let j=1;j<=m;j++) T[0][j]=mode==='ed'?j:0;
+  const PN=(extra=[])=>[code('(b) Recurrence',REC),...extra];
+  Rc.add({t:'Base cases',d:mode==='ed'?tr(`T(i,0) = i：把 x[1..i] 变成空串要删 i 次。\nT(0,j) = j：从空串变成 y[1..j] 要插 j 次。`,`T(i,0) = i: turning x[1..i] into the empty string takes i deletions.\nT(0,j) = j: building y[1..j] from nothing takes j insertions.`):
+      tr('第 0 行、第 0 列全是 0：有一个串是空的，公共部分长度为 0。','Row 0 and column 0 are all 0: with one string empty, nothing is shared.'),
+    ins:tr('两条 base 的 bounds 要错开一格：T(i,0) 用 0 ≤ i ≤ n，T(0,j) 用 1 ≤ j ≤ m。','Stagger the two base-case bounds: T(i,0) uses 0 ≤ i ≤ n, T(0,j) uses 1 ≤ j ≤ m.'),it:'info',S:sc(),P:PN()});
+  let firstM=true, firstX=true;
+  for(let i=1;i<=n;i++) for(let j=1;j<=m;j++){
+    const eq=x[i-1]===y[j-1]; curC=[i,j]; let desc, foot, ins='', it='hide';
+    if(mode==='lcs'){
+      if(eq){ T[i][j]=1+T[i-1][j-1]; deps=[]; pick=key(i-1,j-1);
+        desc=tr(`x[${i}] = y[${j}] = '${x[i-1]}'：配对。\nT(${i},${j}) = 1 + T(${i-1},${j-1}) = 1 + ${T[i-1][j-1]} = ${T[i][j]}`,`x[${i}] = y[${j}] = '${x[i-1]}': match them.\nT(${i},${j}) = 1 + T(${i-1},${j-1}) = 1 + ${T[i-1][j-1]} = ${T[i][j]}`);
+        foot=`1 + T(${i-1},${j-1}) = ${T[i][j]}`;
+        if(firstM){ firstM=false; ins=tr('相等时一定存在用上这一对的最优解（交换论证），所以不用再和 ↑ ← 取 max。','When equal, some optimal solution uses this pair (exchange argument), so no max with ↑ and ← is needed.'); it='ok'; } }
+      else { const u=T[i-1][j], l=T[i][j-1]; T[i][j]=Math.max(u,l); deps=[key(i-1,j),key(i,j-1)]; pick=u>=l?key(i-1,j):key(i,j-1);
+        desc=tr(`x[${i}] = '${x[i-1]}' ≠ y[${j}] = '${y[j-1]}'：至少一个没被用上。\nT(${i},${j}) = max{T(${i-1},${j}), T(${i},${j-1})} = max{${u}, ${l}} = ${T[i][j]}`,`x[${i}] = '${x[i-1]}' ≠ y[${j}] = '${y[j-1]}': at least one is unused.\nT(${i},${j}) = max{T(${i-1},${j}), T(${i},${j-1})} = max{${u}, ${l}} = ${T[i][j]}`);
+        foot=`max{${u}, ${l}} = ${T[i][j]}`;
+        if(firstX){ firstX=false; ins=tr('max{...} 本身就表示「比较两个格」，裸写 T(i-1,j) 就丢了这层含义。','max{...} itself expresses comparing the two cells; writing a bare T(i-1,j) loses that.'); it='info'; } } }
+    else if(mode==='sub'){
+      if(eq){ T[i][j]=1+T[i-1][j-1]; deps=[]; pick=key(i-1,j-1);
+        desc=tr(`x[${i}] = y[${j}] = '${x[i-1]}'：在对角线上延长。\nT(${i},${j}) = 1 + T(${i-1},${j-1}) = ${T[i][j]}`,`x[${i}] = y[${j}] = '${x[i-1]}': extend along the diagonal.\nT(${i},${j}) = 1 + T(${i-1},${j-1}) = ${T[i][j]}`); foot=`1 + T(${i-1},${j-1}) = ${T[i][j]}`;
+        if(firstM){ firstM=false; ins=tr('subproblem 要写 "ending at x[i] and y[j]"：子串必须连续，所以要求两个末尾字符都被用上。','The subproblem says "ending at x[i] and y[j]": a substring is contiguous, so both last characters must be used.'); it='info'; } }
+      else { T[i][j]=0; deps=[]; pick=null;
+        desc=tr(`x[${i}] = '${x[i-1]}' ≠ y[${j}] = '${y[j-1]}'：子串在这里断开 → 0。`,`x[${i}] = '${x[i-1]}' ≠ y[${j}] = '${y[j-1]}': the substring breaks here → 0.`); foot=`T(${i},${j}) = 0`;
+        if(firstX){ firstX=false; ins=tr('不匹配归 0，不是 max{↑, ←}。写成 max 就变回 LCS 了。','A mismatch resets to 0, not max{↑, ←}. Writing max turns it back into LCS.'); it='warn'; } }
+      mx=Math.max(mx,T[i][j]); }
+    else { // edit distance
+      const c=[1+T[i-1][j],1+T[i][j-1],(eq?0:1)+T[i-1][j-1]], k=['del','ins',eq?'match':'sub'], r=Math.min(...c), bi=c.indexOf(r);
+      T[i][j]=r; deps=[key(i-1,j),key(i,j-1),key(i-1,j-1)]; pick=deps[bi];
+      desc=tr(`x[${i}] = '${x[i-1]}'，y[${j}] = '${y[j-1]}'${eq?'，相等':'，不等'}。\n删 1+T(${i-1},${j}) = ${c[0]}；插 1+T(${i},${j-1}) = ${c[1]}；${eq?'对齐':'替换'} ${eq?'':'1+'}T(${i-1},${j-1}) = ${c[2]}\nmin = ${r}`,
+        `x[${i}] = '${x[i-1]}', y[${j}] = '${y[j-1]}'${eq?', equal':', different'}.\ndelete 1+T(${i-1},${j}) = ${c[0]}; insert 1+T(${i},${j-1}) = ${c[1]}; ${eq?'match':'substitute'} ${eq?'':'1+'}T(${i-1},${j-1}) = ${c[2]}\nmin = ${r}`);
+      foot=`min{${c.join(', ')}} = ${r}  (${k[bi]})`;
+      if(i===1&&j===1){ ins=tr('三个方向对应三种操作：↑ 删 x[i]、← 插 y[j]、↖ 对齐/替换。两个分支按 x[i] = y[j] 是否成立划分，互斥。','Three directions, three operations: ↑ delete x[i], ← insert y[j], ↖ match/substitute. The two branches split on x[i] = y[j], so they are mutually exclusive.'); it='info'; } }
+    Rc.add({t:`T(${i},${j}) = ${T[i][j]}`,d:desc,ins,it,S:sc(foot),P:PN(mode==='sub'?[chips(tr('目前全表 max','max so far'),[{x:'max = '+mx,c:'hot'}])]:[])});
+  }
+  curC=null; deps=[]; pick=null; final=true;
+  if(mode==='sub'){ Rc.add({t:tr('Extraction：max(T(*,*))','Extraction: max(T(*,*))'),d:tr(`最长公共子串长度 = max(T(*,*)) = ${mx}。T(${n},${m}) = ${T[n][m]}，不一定是答案。`,`Longest common substring = max(T(*,*)) = ${mx}. T(${n},${m}) = ${T[n][m]} need not be the answer.`),
+      ins:tr('官方 6.8：(3) max(T(*,*))，(4) O(n·m)。','Official 6.8: (3) max(T(*,*)), (4) O(n·m).'),it:'done',S:sc(`max(T(*,*)) = ${mx}`),P:[partC('O(n·m)','O(n·m)','max(T(*,*))','O(n·m)')]}); }
+  else Rc.add({t:tr(`Extraction：T(${n},${m}) = ${T[n][m]}`,`Extraction: T(${n},${m}) = ${T[n][m]}`),d:mode==='lcs'?tr(`LCS 长度 = T(n,m) = ${T[n][m]}。\n要输出子序列本身：从 T(n,m) 倒着走，相等就取字符走 ↖，否则走较大的一边。`,`LCS length = T(n,m) = ${T[n][m]}.\nTo output the subsequence: walk back from T(n,m); on a match take the character and go ↖, otherwise go toward the larger neighbor.`):
+      tr(`编辑距离 = T(n,m) = ${T[n][m]}（${x} → ${y}）。`,`Edit distance = T(n,m) = ${T[n][m]} (${x} → ${y}).`),
+    ins:tr('答案就在右下角一格：(3) T(n,m)，(4) O(1)。backtracking 写在 (c)(3)，用文字一两句。','The answer is the bottom-right cell: (3) T(n,m), (4) O(1). Backtracking goes in (c)(3), in one or two sentences of words.'),it:'done',S:sc(`T(${n},${m}) = ${T[n][m]}`),P:[partC('O(n·m)','O(n·m)','T(n,m)','O(1)')]});
+  return Rc.L;
+}
+
+/* ============================== Knapsack (0/1 or unlimited) ============================== */
+function simKS(w,v,B,rep){
+  const n=w.length, T=Array.from({length:n+1},()=>Array(B+1).fill(null)), Rc=rec();
+  const REC=rep?'T(i,0) = 0   where 0 <= i <= n\nT(0,b) = 0   where 1 <= b <= B\nT(i,b) = max{T(i-1,b), v[i] + T(i,b-w[i])}\n                          if w[i] <= b\n       = T(i-1,b)         if w[i] > b\n       where 1 <= i <= n, 1 <= b <= B'
+    :'T(i,0) = 0   where 0 <= i <= n\nT(0,b) = 0   where 1 <= b <= B\nT(i,b) = max{T(i-1,b), v[i] + T(i-1,b-w[i])}\n                          if w[i] <= b\n       = T(i-1,b)         if w[i] > b\n       where 1 <= i <= n, 1 <= b <= B';
+  let deps=[], pick=null, curC=null, final=false;
+  const key=(i,j)=>i+','+j;
+  const sc=foot=>gridScene(n+1,B+1,{lw:76,rl:['0',...w.map((wi,k)=>`${k+1} (${wi}, ${v[k]})`)],cl:Array.from({length:B+1},(_,b)=>['b',String(b)]),
+    cap:tr('行 = 物品 i (w, v) · 列 = 容量 b','rows = item i (w, v) · columns = capacity b'),rowHi:curC?curC[0]:null,colHi:curC?curC[1]:null,
+    val:(i,j)=>T[i][j]==null?'':T[i][j],
+    st:(i,j)=>{ if(final) return i===n&&j===B?'ok':(i===0||j===0?'t':'n'); if(curC&&curC[0]===i&&curC[1]===j) return 'hot'; if(pick===key(i,j)) return 'ok'; if(deps.includes(key(i,j))) return 'b'; if(T[i][j]==null) return 'ghost'; return (i===0||j===0)?'t':'n'; },foot});
+  for(let i=0;i<=n;i++) T[i][0]=0; for(let b=1;b<=B;b++) T[0][b]=0;
+  const PN=(extra=[])=>[code('(b) Recurrence',REC),...extra];
+  Rc.add({t:'Base cases',d:tr('容量 0 或没有物品可用：价值 0。\n第 0 行 b 从 1 开始，和第 0 列错开。','Capacity 0 or no items available: value 0.\nRow 0 starts at b = 1, staggered with column 0.'),
+    ins:tr('「总重量不超过 B」是约束 → B 必须进表的一维。只用 T(i) 的话，「拿」就没有约束了。','"Total weight at most B" is a constraint, so B must be a table dimension. With only T(i), taking an item would be unconstrained.'),it:'info',S:sc(),P:PN()});
+  let fTake=true, fSkip=true, fSame=true;
+  for(let i=1;i<=n;i++) for(let b=1;b<=B;b++){
+    curC=[i,b]; const wi=w[i-1], vi=v[i-1]; let desc, foot, ins='', it='hide';
+    if(wi>b){ T[i][b]=T[i-1][b]; deps=[]; pick=key(i-1,b);
+      desc=tr(`w[${i}] = ${wi} > b = ${b}：放不下。\nT(${i},${b}) = T(${i-1},${b}) = ${T[i][b]}`,`w[${i}] = ${wi} > b = ${b}: it does not fit.\nT(${i},${b}) = T(${i-1},${b}) = ${T[i][b]}`); foot=`T(${i-1},${b}) = ${T[i][b]}`;
+      if(fSkip){ fSkip=false; ins=tr('两个分支用 w[i] ≤ b / w[i] > b 划分，互斥。别靠「从上往下第一个匹配」。','The branches split on w[i] ≤ b / w[i] > b, so they are mutually exclusive. Do not rely on first-match order.'); it='info'; } }
+    else { const ri=rep?i:i-1, skip=T[i-1][b], take=vi+T[ri][b-wi]; T[i][b]=Math.max(skip,take); deps=[key(i-1,b),key(ri,b-wi)]; pick=take>skip?key(ri,b-wi):key(i-1,b);
+      desc=tr(`w[${i}] = ${wi} ≤ b = ${b}：\n不拿 T(${i-1},${b}) = ${skip}；拿 ${vi} + T(${ri},${b-wi}) = ${take}\nT(${i},${b}) = ${T[i][b]}`,`w[${i}] = ${wi} ≤ b = ${b}:\nskip T(${i-1},${b}) = ${skip}; take ${vi} + T(${ri},${b-wi}) = ${take}\nT(${i},${b}) = ${T[i][b]}`);
+      foot=`max{${skip}, ${vi} + ${T[ri][b-wi]}} = ${T[i][b]}`;
+      if(rep&&take>skip&&T[ri][b-wi]!==T[i-1][b-wi]&&fSame){ fSame=false; ins=tr(`同一行取值：T(${i},${b-wi}) 里已经拿过物品 ${i}，这里再拿一次。0/1 版本只能看上一行。`,`Same-row lookup: T(${i},${b-wi}) already used item ${i}, and we take it again. The 0/1 version may only look at the row above.`); it='ok'; }
+      else if(fTake){ fTake=false; ins=rep?tr('拿完 i 还停在第 i 行 = i 还在货架上，可以再拿。','After taking i we stay in row i: item i is still available.'):tr('拿完 i 跳到第 i−1 行 = i 用完了，封存。','After taking i we move to row i−1: item i is used up.'); it='info'; } }
+    Rc.add({t:`T(${i},${b}) = ${T[i][b]}`,d:desc,ins,it,S:sc(foot),P:PN()});
+  }
+  curC=null; deps=[]; pick=null; final=true;
+  Rc.add({t:tr(`Extraction：T(n,B) = ${T[n][B]}`,`Extraction: T(n,B) = ${T[n][B]}`),d:tr(`最大价值 = T(${n},${B}) = ${T[n][B]}。`,`Maximum value = T(${n},${B}) = ${T[n][B]}.`)+(rep?tr('\n同一组物品不限次数：比 0/1 版本的 8 更大。','\nSame items with unlimited copies: more than the 0/1 answer of 8.'):tr('\n不限次数版本在同样输入下是 9（物品 1 拿三次）。','\nThe unlimited version on the same input gives 9 (item 1 three times).')),
+    ins:tr('O(nB) 是伪多项式：B 只占 log B 位，n·B = n·2^(log B)。Exam 3 会再考。','O(nB) is pseudo-polynomial: B takes only log B bits, and n·B = n·2^(log B). Exam 3 comes back to this.'),it:'done',S:sc(`T(${n},${B}) = ${T[n][B]}`),P:[partC('O(n·B)','O(n·B)','T(n,B)','O(1)')]});
+  return Rc.L;
+}
+
+/* ============================== Chain Matrix Multiplication ============================== */
+function simCMM(m){
+  const n=m.length-1, T=Array.from({length:n+1},()=>Array(n+1).fill(null)), Rc=rec();
+  const REC='T(i,i) = 0   where 1 <= i <= n\nT(i,j) = min{T(i,k) + T(k+1,j)\n            + m[i-1]*m[k]*m[j] : i <= k <= j-1}\n       where n-1 >= i >= 1, i+1 <= j <= n';
+  let cur=null, best=[], other=[], final=false, split={};
+  const key=(i,j)=>i+','+j;
+  const sc=foot=>gridScene(n,n,{rl:Array.from({length:n},(_,i)=>'i='+(i+1)),cl:Array.from({length:n},(_,j)=>['j',String(j+1)]),
+    cap:Array.from({length:n},(_,k)=>`A${k+1} ${m[k]}×${m[k+1]}`).join('  ·  '),rowHi:cur?cur[0]-1:null,colHi:cur?cur[1]-1:null,
+    val:(r,c)=>T[r+1][c+1]==null?'':T[r+1][c+1],
+    st:(r,c)=>{ const i=r+1,j=c+1; if(j<i) return 'none'; if(final) return i===1&&j===n?'ok':(i===j?'t':'n');
+      if(cur&&cur[0]===i&&cur[1]===j) return 'hot'; if(best.includes(key(i,j))) return 'b'; if(other.includes(key(i,j))) return 'p'; if(T[i][j]==null) return 'ghost'; return i===j?'t':'n'; },foot});
+  for(let i=1;i<=n;i++) T[i][i]=0;
+  Rc.add({t:'Base case：T(i,i) = 0',d:tr('单个矩阵不用乘。只填上三角，对角线是 base。','A single matrix needs no multiplication. Only the upper triangle is filled; the diagonal is the base case.'),
+    ins:tr('唯一不是 prefix 的类型：右段 A[k+1..j] 不是任何 prefix，所以 state 要两个端点。','The one type that is not a prefix: the right part A[k+1..j] is not a prefix, so the state needs both endpoints.'),it:'info',S:sc(),P:[code('(b) Recurrence',REC)]});
+  let first=true;
+  for(let i=n-1;i>=1;i--) for(let j=i+1;j<=n;j++){
+    const rows=[]; let bv=Infinity, bk=null;
+    for(let k=i;k<=j-1;k++){ const c=T[i][k]+T[k+1][j]+m[i-1]*m[k]*m[j]; rows.push([k,T[i][k],T[k+1][j],`${m[i-1]}·${m[k]}·${m[j]}`,c]); if(c<bv){bv=c;bk=k;} }
+    T[i][j]=bv; split[key(i,j)]=bk; cur=[i,j];
+    best=[key(i,bk),key(bk+1,j)]; other=[]; for(let k=i;k<=j-1;k++) if(k!==bk){ other.push(key(i,k)); other.push(key(k+1,j)); }
+    other=other.filter(x=>!best.includes(x));
+    const ri=rows.findIndex(r=>r[0]===bk);
+    Rc.add({t:`T(${i},${j}) = ${bv}`,d:tr(`枚举最后一次乘法的切点 k = ${i}..${j-1}：\n`,`Enumerate the split k = ${i}..${j-1} of the last multiplication:\n`)+rows.map(r=>`k=${r[0]}: ${r[1]} + ${r[2]} + ${r[3]} = ${r[4]}`).join('\n')+`\n→ min = ${bv} (k = ${bk})`,
+      ins:first?(first=false,tr('填表顺序就是 bounds：i 从 n−1 倒着走、j 正着走。这样 T(k+1,j)（下面的行）已经填好。写成 1 ≤ i < j ≤ n 表达不出方向。','The fill order is the bounds: i runs down from n−1, j runs up. That way T(k+1,j) (a lower row) is already filled. Writing 1 ≤ i < j ≤ n does not express this order.')):(i===1&&j===n?tr('k=2 的左段 1000 不是最便宜的单次乘法，但合并只要 500：贪心先挑 B×C 会落到 60,200。','At k=2 the left part costs 1000, not the cheapest single product, but the merge costs only 500. Greedy picks B×C first and ends at 60,200.'):''),
+      it:i===1&&j===n?'warn':'info',S:sc(`T(${i},${bk}) + T(${bk+1},${j}) + ${m[i-1]}·${m[bk]}·${m[j]} = ${bv}`),
+      P:[code('(b) Recurrence',REC),tbl(tr('切点候选','Split candidates'),['k',`T(i,k)`,`T(k+1,j)`,tr('最后一次乘法','last product'),tr('合计','total')],rows.map(r=>r.map(String)),[],tr('每格 O(n) → 填表 O(n³)','O(n) per cell → O(n³) fill'),[ri])]});
+  }
+  cur=null; best=[]; other=[]; final=true;
+  const k=split[key(1,n)];
+  Rc.add({t:tr(`Extraction：T(1,n) = ${T[1][n]}`,`Extraction: T(1,n) = ${T[1][n]}`),d:tr(`最少乘法次数 = T(1,${n}) = ${T[1][n]}，在右上角。\n最优切点 k = ${k} → (A1×A2)×(A3×A4)。`,`Minimum cost = T(1,${n}) = ${T[1][n]}, in the top-right corner.\nBest split k = ${k} → (A1×A2)×(A3×A4).`),
+    ins:tr('(1) O(n²) 个子问题，但 (2) 每格枚举 k → O(n³)。两个数不一样。','(1) O(n²) subproblems, but (2) each cell enumerates k → O(n³). The two numbers differ.'),it:'done',S:sc(`T(1,${n}) = ${T[1][n]}`),P:[partC('O(n²)','O(n³)','T(1,n)','O(1)')]});
+  return Rc.L;
+}
+
+/* ============================== data ============================== */
+const CATS={c1:['1D','1D'],c2:['两个序列 · 2D','Two sequences · 2D'],c3:['容量 · 2D','Capacity · 2D'],c4:['区间','Interval']};
+const ALGOS=[
+ {id:'lis',cat:'c1',abbr:'LIS',hn:['最长递增子序列','longest increasing subsequence'],name:'Longest Increasing Subsequence',c:'--blue',rt:'O(n²)',cap:['a = 3 1 4 1 5 9 2','a = 3 1 4 1 5 9 2'],
+  in:['数组 <code>a[1..n]</code>','Array <code>a[1..n]</code>'],out:['最长严格递增子序列的长度','Length of the longest strictly increasing subsequence'],
+  req:['subproblem 要加 <span class="warn">"which includes a[i]"</span> → 答案取 <code>max(T(*))</code>','Subproblem adds <span class="warn">"which includes a[i]"</span> → answer is <code>max(T(*))</code>'],
+  sub:'T(i) is the length of the longest increasing subsequence of a[1..i], which includes a[i].',rec:'T(1) = 1\nT(i) = 1 + max{T(j) : 1<=j<=i-1, a[j]<a[i]}\n  where 2 <= i <= n',base:'T(1) = 1',ext:['max(T(*))','O(n)'],run:['O(n)','O(n²)'],
+  sim:()=>simLIS([3,1,4,1,5,9,2]),
+  tk:[['「前 i 个的 LIS 长度」这个定义会卡死：表里存不下「末尾是谁」，而 tuple 被禁。','"LIS length of the first i" dead-ends: the table cannot store which element ends it, and tuples are banned.'],
+      ['最大和递增子序列：把 <code>1 +</code> 换成 <code>a[i] +</code>。non-decreasing：<code>&lt;</code> 换成 <code>&lt;=</code>。','Max-sum increasing subsequence: replace <code>1 +</code> with <code>a[i] +</code>. Non-decreasing: replace <code>&lt;</code> with <code>&lt;=</code>.'],
+      ['套娃信封：先 copy 再排序（不能改输入），再跑 LIS。','Russian-doll envelopes: copy, then sort (the input is immutable), then run LIS.'],
+      ['bitonic、计数版都要第二张表，staff 说这几乎总是把问题搞复杂。','Bitonic and counting versions need a second table; staff say this almost always overcomplicates things.']]},
+ {id:'lcs',cat:'c2',abbr:'LCS',hn:['最长公共子序列','longest common subsequence'],name:'Longest Common Subsequence',c:'--purple',rt:'O(n·m)',cap:['x = ABCB · y = BDCAB','x = ABCB · y = BDCAB'],
+  in:['两个序列 <code>x[1..n]</code>、<code>y[1..m]</code>','Two sequences <code>x[1..n]</code>, <code>y[1..m]</code>'],out:['最长公共子序列的长度','Length of the longest common subsequence'],
+  req:['两条 base 的 bounds <span class="warn">错开一格</span>','Stagger the two base-case bounds <span class="warn">by one</span>'],
+  sub:'T(i,j) is the length of the longest common subsequence of x[1..i] and y[1..j].',rec:'T(i,j) = 1 + T(i-1,j-1)          if x[i] = y[j]\n       = max{T(i-1,j), T(i,j-1)}  if x[i] != y[j]',base:'T(i,0) = 0, 0<=i<=n\nT(0,j) = 0, 1<=j<=m',ext:['T(n,m)','O(1)'],run:['O(nm)','O(nm)'],
+  sim:()=>sim2D('ABCB','BDCAB','lcs'),
+  tk:[['相等时直接 <code>1 + T(i-1,j-1)</code>，不用再和 ↑ ← 取 max（交换论证）。三分支写法数值对，但别这么写。','On a match write <code>1 + T(i-1,j-1)</code> alone (exchange argument). The three-way max is numerically right, but stick to the standard form.'],
+      ['Longest palindromic subsequence：LCS(x, reverse(x))，reverse 要建新表。','Longest palindromic subsequence: LCS(x, reverse(x)); build the reverse as a new table.'],
+      ['只允许删除使两串相等：<code>n + m − 2·LCS</code>。最短公共超序列：<code>n + m − LCS</code>。','Delete-only to make them equal: <code>n + m − 2·LCS</code>. Shortest common supersequence: <code>n + m − LCS</code>.'],
+      ['要返回子序列本身：在 (c)(3) 用文字写 backtracking，不建第二张表。','To return the subsequence itself, describe the backtracking in words in (c)(3); no second table.']]},
+ {id:'sub',cat:'c2',abbr:'LCSub',hn:['最长公共子串','longest common substring'],name:'Longest Common Substring (DPV 6.8)',c:'--teal',rt:'O(n·m)',cap:['x = ABAB · y = BABA','x = ABAB · y = BABA'],
+  in:['两个串 <code>x[1..n]</code>、<code>y[1..m]</code>','Two strings <code>x[1..n]</code>, <code>y[1..m]</code>'],out:['最长公共<span class="warn">连续</span>子串的长度','Length of the longest common <span class="warn">contiguous</span> substring'],
+  req:['不匹配<span class="warn">归 0</span>；答案 <code>max(T(*,*))</code>','A mismatch <span class="warn">resets to 0</span>; answer is <code>max(T(*,*))</code>'],
+  sub:'T(i,j) is the length of the longest common substring of x[1..i] and y[1..j] ending at x[i] and y[j].',rec:'T(i,j) = 1 + T(i-1,j-1)  if x[i] = y[j]\n       = 0                if x[i] != y[j]',base:'T(i,0) = 0, 0<=i<=n\nT(0,j) = 0, 1<=j<=m',ext:['max(T(*,*))','O(nm)'],run:['O(nm)','O(nm)'],
+  sim:()=>sim2D('ABAB','BABA','sub'),
+  tk:[['和 LCS 只差一行：不匹配时归 0。这是官方 6.8。','One line differs from LCS: a mismatch gives 0. This is official 6.8.'],
+      ['加了 "ending at" 约束 → 答案分散 → (3) <code>max(T(*,*))</code>，(4) <code>O(n·m)</code>。','The "ending at" constraint spreads the answer → (3) <code>max(T(*,*))</code>, (4) <code>O(n·m)</code>.'],
+      ['和 LIS 同一个因果：给 state 加约束换来能写 recurrence，代价是 extraction 要扫全表。','Same cause as LIS: constraining the state makes the recurrence writable, at the cost of scanning the whole table to extract.']]},
+ {id:'ed',cat:'c2',abbr:'ED',hn:['编辑距离','edit distance'],name:'Edit Distance (optional)',c:'--red',rt:'O(n·m)',cap:['SNOW → SUNNY','SNOW → SUNNY'],
+  in:['两个串 <code>x[1..n]</code>、<code>y[1..m]</code>','Two strings <code>x[1..n]</code>, <code>y[1..m]</code>'],out:['把 x 变成 y 的最少插入 / 删除 / 替换次数','Minimum insertions / deletions / substitutions turning x into y'],
+  req:['累积型 base：<code>T(i,0) = i</code>、<code>T(0,j) = j</code>','Accumulating base cases: <code>T(i,0) = i</code>, <code>T(0,j) = j</code>'],
+  sub:'T(i,j) is the minimum number of edits to transform x[1..i] into y[1..j].',rec:'T(i,j) = min{1+T(i-1,j), 1+T(i,j-1), T(i-1,j-1)}    if x[i] = y[j]\n       = min{1+T(i-1,j), 1+T(i,j-1), 1+T(i-1,j-1)}  if x[i] != y[j]',base:'T(i,0) = i, 0<=i<=n\nT(0,j) = j, 1<=j<=m',ext:['T(n,m)','O(1)'],run:['O(nm)','O(nm)'],
+  sim:()=>sim2D('SNOW','SUNNY','ed'),
+  tk:[['↑ 删 x[i]，← 插 y[j]，↖ 对齐或替换。','↑ deletes x[i], ← inserts y[j], ↖ matches or substitutes.'],
+      ['分支按 <code>x[i] = y[j]</code> 划分，两行互斥；不要另写 diff 函数让人猜。','Split the branches on <code>x[i] = y[j]</code> so they are mutually exclusive; do not introduce an undefined diff function.'],
+      ['官方 6.26 Alignment 是 max 版、带打分函数 δ，base 写成 <code>T(i,0) = T(i-1,0) + δ(x[i],-)</code>。考前看 Ed 上关于 base case 的澄清。','Official 6.26 (Alignment) is the max version with a score δ and base <code>T(i,0) = T(i-1,0) + δ(x[i],-)</code>. Check the Ed clarification on base cases before the exam.']]},
+ {id:'ks',cat:'c3',abbr:'KS',hn:['0/1 背包','0/1 knapsack'],name:'Knapsack without repetition',c:'--amber',rt:'O(n·B)',cap:['4 个物品 · B = 6','4 items · B = 6'],
+  in:['重量 <code>w[1..n]</code>、价值 <code>v[1..n]</code>、容量 <code>B</code>','Weights <code>w[1..n]</code>, values <code>v[1..n]</code>, capacity <code>B</code>'],out:['总重 ≤ B 时的最大总价值','Maximum total value with total weight ≤ B'],
+  req:['拿完 i 跳到 <span class="warn">i−1 行</span>','After taking i, go to <span class="warn">row i−1</span>'],
+  sub:'T(i,b) is the maximum total value achievable using a subset of items 1..i with total weight at most b.',rec:'T(i,b) = max{T(i-1,b), v[i]+T(i-1,b-w[i])}  if w[i] <= b\n       = T(i-1,b)                          if w[i] > b',base:'T(i,0) = 0, 0<=i<=n\nT(0,b) = 0, 1<=b<=B',ext:['T(n,B)','O(1)'],run:['O(nB)','O(nB)'],
+  sim:()=>simKS([2,3,4,5],[3,4,5,6],6,false),
+  tk:[['每出现一个「总量不超过 X」的约束，X 就进表的一维。两个约束 → 3D（LC 474）。','Every "total at most X" constraint adds X as a dimension. Two constraints → 3D (LC 474).'],
+      ['Subset Sum：<code>v = w = a</code>，(3) 写 <code>return TRUE if t = T(n,t) else FALSE</code>（官方 6.18）。','Subset Sum: <code>v = w = a</code>; (3) is <code>return TRUE if t = T(n,t) else FALSE</code> (official 6.18).'],
+      ['恰好装满：base 改成 <code>T(0,0) = 0</code>、<code>T(0,b) = -inf</code>（b &gt; 0）。','Exactly full: change the base to <code>T(0,0) = 0</code>, <code>T(0,b) = -inf</code> for b &gt; 0.']]},
+ {id:'ksr',cat:'c3',abbr:'KS∞',hn:['可重复背包','unlimited knapsack'],name:'Knapsack with repetition',c:'--green',rt:'O(n·B)',cap:['同一组物品 · B = 6','Same items · B = 6'],
+  in:['同上，每个物品可拿任意次','Same input; each item may be taken any number of times'],out:['总重 ≤ B 时的最大总价值','Maximum total value with total weight ≤ B'],
+  req:['拿完 i 留在<span class="warn">同一行 i</span>','After taking i, stay in <span class="warn">row i</span>'],
+  sub:'T(i,b) is the maximum total value achievable using items 1..i, each any number of times, with total weight at most b.',rec:'T(i,b) = max{T(i-1,b), v[i]+T(i,b-w[i])}  if w[i] <= b\n       = T(i-1,b)                        if w[i] > b\n1D: T(b) = max{v[i]+T(b-w[i]) : 1<=i<=n, w[i]<=b}',base:'T(i,0) = 0, 0<=i<=n\nT(0,b) = 0, 1<=b<=B',ext:['T(n,B) · 1D: T(B)','O(1)'],run:['O(nB) · 1D: O(B)','O(nB)'],
+  sim:()=>simKS([2,3,4,5],[3,4,5,6],6,true),
+  tk:[['和 0/1 只差一个下标：<code>T(i, b−w[i])</code> vs <code>T(i−1, b−w[i])</code>。不会重复计数，因为容量严格变小。','One index differs from 0/1: <code>T(i, b−w[i])</code> vs <code>T(i−1, b−w[i])</code>. No double counting, since capacity strictly shrinks.'],
+      ['1D 版（官方 6.19 风格）：(1) <code>O(B)</code> 但 (2) <code>O(nB)</code>，两个数不一样。','1D version (official 6.19 style): (1) <code>O(B)</code> but (2) <code>O(nB)</code>; the numbers differ.'],
+      ['Coin change 最少枚数：with repetition + <code>min</code> + <code>inf</code>。方案计数：<code>sum</code> 代替 max。','Coin change, fewest coins: with repetition + <code>min</code> + <code>inf</code>. Counting ways: <code>sum</code> instead of max.']]},
+ {id:'cmm',cat:'c4',abbr:'CMM',hn:['矩阵链乘','chain matrix multiplication'],name:'Chain Matrix Multiplication',c:'--purple',rt:'O(n³)',cap:['DPV 例子 · m = (50, 20, 1, 10, 100)','DPV example · m = (50, 20, 1, 10, 100)'],
+  in:['维度 <code>m[0..n]</code>，<code>A[i]</code> 是 <code>m[i-1] × m[i]</code>','Dimensions <code>m[0..n]</code>; <code>A[i]</code> is <code>m[i-1] × m[i]</code>'],out:['算出 A[1]×…×A[n] 的最少标量乘法次数','Minimum scalar multiplications to compute A[1]×…×A[n]'],
+  req:['bounds <span class="warn"><code>n-1 &gt;= i &gt;= 1, i+1 &lt;= j &lt;= n</code></span>','Bounds <span class="warn"><code>n-1 &gt;= i &gt;= 1, i+1 &lt;= j &lt;= n</code></span>'],
+  sub:'T(i,j) is the minimum number of scalar multiplications needed to compute A[i] x ... x A[j].',rec:'T(i,j) = min{T(i,k) + T(k+1,j) + m[i-1]*m[k]*m[j]\n            : i <= k <= j-1}\n  where n-1 >= i >= 1, i+1 <= j <= n',base:'T(i,i) = 0, 1<=i<=n',ext:['T(1,n)','O(1)'],run:['O(n²)','O(n³)'],
+  sim:()=>simCMM([50,20,1,10,100]),
+  tk:[['不管怎么加括号，<code>A[i..j]</code> 的结果都是 <code>m[i-1] × m[j]</code>：形状只由端点决定，所以子问题解耦。','However A[i..j] is parenthesized, the result is <code>m[i-1] × m[j]</code>: the shape depends only on the endpoints, so subproblems are independent.'],
+      ['枚举 k = 枚举「最后一次乘法」= 枚举二叉树的根，穷尽所有方案。','Enumerating k enumerates the last multiplication, the root of the parse tree, which covers every parenthesization.'],
+      ['切点型 <code>i &lt;= k &lt;= j-1</code> 只要 <code>T(i,i)=0</code>。根型（Optimal BST 6.20）<code>i &lt;= k &lt;= j</code> 会产生空区间，要加 <code>T(i,i-1)=0</code>。','Split type <code>i &lt;= k &lt;= j-1</code> needs only <code>T(i,i)=0</code>. Root type (Optimal BST 6.20) <code>i &lt;= k &lt;= j</code> creates empty intervals; add <code>T(i,i-1)=0</code>.'],
+      ['想练 CMM：LC 1039 多边形三角剖分几乎一模一样。','To practice CMM: LC 1039 (polygon triangulation) is nearly identical.']]},
+];
+
+/* ============================== rendering ============================== */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let A=null, STEPS=[], cur=0, timer=null, VIEW='lis';
+const LG2=[['hot','当前格','current cell'],['b','依赖的格','cells it reads'],['ok','取到的那个','the one chosen'],['t','base case','base case'],['ghost','未填','not filled yet']];
+const LEG={lis:[['hot','当前 i','current i'],['b','a[j] < a[i] 的 j','j with a[j] < a[i]'],['ok','取到 max 的 j','j giving the max'],['dim','不满足条件','excluded'],['ghost','未填','not filled yet']],
+  lcs:LG2,sub:[['hot','当前格','current cell'],['ok','依赖的对角格 / 最终 max','diagonal cell read / final max'],['t','base case','base case'],['ghost','未填','not filled yet']],ed:LG2,ks:LG2,ksr:LG2,
+  cmm:[['hot','当前 T(i,j)','current T(i,j)'],['b','最优 k 的两段','the two parts at the best k'],['p','其他 k 的候选','other k candidates'],['t','base（对角线）','base (diagonal)'],['ghost','未填','not filled yet']]};
+function mk(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; }
+
+function applyStatic(){
+  document.documentElement.lang=LANG==='en'?'en':'zh-CN';
+  $('t-h1').textContent=tr('DP 总复习','Dynamic Programming Review');
+  document.title=$('t-h1').textContent;
+  $('t-sub').textContent=tr('CS-6515 Exam 1 · 五类 DP 逐格填表，每格数值由真实运行 recurrence 生成','CS-6515 Exam 1 · five DP types, filled cell by cell');
+  $('t-keys').innerHTML=tr('<kbd>←</kbd> <kbd>→</kbd> 单步 · <kbd>Space</kbd> 播放 · <kbd>[</kbd> <kbd>]</kbd> 换算法','<kbd>←</kbd> <kbd>→</kbd> step · <kbd>Space</kbd> play · <kbd>[</kbd> <kbd>]</kbd> switch algorithm');
+  $('lang').textContent=LANG==='en'?'中文':'English';
+  $('lang').setAttribute('aria-label',tr('切换到英文','Switch to Chinese'));
+  $('nav').setAttribute('aria-label',tr('算法索引','Algorithm index'));
+  $('k-req').textContent=tr('要求 / 注意','Requirements / notes');
+  $('tk-h').textContent=tr('考点 · 陷阱','Exam points · traps');
+  $('g').setAttribute('aria-label',tr('DP 表演示','DP table animation'));
+}
+function buildNav(){
+  const nav=$('nav'); nav.innerHTML='';
+  const g0=document.createElement('div'); g0.className='grp'; g0.innerHTML=`<div class="grp-l">${tr('总览','Overview')}</div>`;
+  [['ov',tr('五类型','Five types'),tr('对照表','side by side')],['ops',tr('写法规则','Format rules'),tr('Fall 2026 ✓/✗','Fall 2026 ✓/✗')],['pre',tr('选型矩阵','Pick a state'),tr('变体 → subproblem','variant → subproblem')]].forEach(([id,ab,hn])=>{
+    const b=document.createElement('button'); b.type='button'; b.className='nb'; b.dataset.id=id; b.style.setProperty('--c','var(--text)');
+    b.innerHTML=`<span class="ab">${ab}</span><span class="hn">${hn}</span>`; b.onclick=()=>select(id); g0.appendChild(b); });
+  nav.appendChild(g0);
+  Object.keys(CATS).forEach(cat=>{ const gr=document.createElement('div'); gr.className='grp'; gr.innerHTML=`<div class="grp-l">${L2(CATS[cat])}</div>`;
+    ALGOS.filter(a=>a.cat===cat).forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='nb'; b.dataset.id=a.id; b.style.setProperty('--c',`var(${a.c})`);
+      b.innerHTML=`<span class="ab">${a.abbr}</span><span class="hn">${L2(a.hn)}</span>`; b.onclick=()=>select(a.id); gr.appendChild(b); });
+    nav.appendChild(gr); });
+}
+const FIB={abbr:'FIB',sub:'T(i) is the i-th Fibonacci number.',rec:'T(i) = T(i-1) + T(i-2)\n  where 3 <= i <= n',base:'T(1) = 1\nT(2) = 1',ext:['T(n)','O(1)'],run:['O(n)','O(n)']};
+function buildOverview(){
+  let h=`<h2>${tr('五类 DP 对照','The five DP types side by side')}</h2><p>${tr('(a) subproblem 用英文原句照抄；(b) 只换分支条件和 base；(c) 四项分别报。点名字跳到逐格演示。','Copy the (a) sentence as written; in (b) change only the branch conditions and base cases; report the four items of (c) separately. Click a name for its walkthrough.')}</p>`;
+  h+=`<div class="card tw"><table class="ovt" style="min-width:1080px"><thead><tr><th>${tr('类型','Type')}</th><th>(a) Subproblem</th><th>(b) Recurrence</th><th>Base case</th><th>(c)(3) / (4)</th><th>(c)(1) / (2)</th></tr></thead><tbody>`;
+  const row=(a,link)=>`<tr><td>${link?`<button type="button" class="go" style="color:var(${a.c})" data-go="${a.id}">${a.abbr}</button>`:`<span class="m" style="color:var(--muted)">${a.abbr}</span>`}</td><td style="max-width:28ch;font-size:12px">${a.sub}</td><td class="code">${esc(a.rec)}</td><td class="code">${esc(a.base)}</td><td class="m">${a.ext[0]}<br><span style="color:${a.ext[1]==='O(1)'?'var(--muted)':'var(--amber)'}">${a.ext[1]}</span></td><td class="m">${a.run[0]}<br><span style="color:${a.run[0]===a.run[1]?'var(--muted)':'var(--amber)'}">${a.run[1]}</span></td></tr>`;
+  h+=`<tr class="cat"><td colspan="6">${tr('1D','1D')}</td></tr>`+row(FIB,false);
+  Object.keys(CATS).forEach(cat=>{ if(cat!=='c1') h+=`<tr class="cat"><td colspan="6">${L2(CATS[cat])}</td></tr>`; ALGOS.filter(a=>a.cat===cat).forEach(a=>h+=row(a,true)); });
+  h+='</tbody></table></div><p style="margin-top:8px;font-size:12px">'+tr('橙色 = 和左边那个数不一样，或 extraction 不是 O(1)。这两处最常丢分。','Amber = differs from the number above it, or extraction is not O(1). These are the two most common point losses.')+'</p><div class="rule">'+
+   tr('<div><b>State 原则</b>state 必须包含「未来决策需要知道的、关于过去的全部信息」，不多也不少。还需要知道 XX，XX 就进 state。</div>','<div><b>The state principle</b>The state must hold everything future decisions need to know about the past, no more and no less. If you still need XX, XX goes into the state.</div>')+
+   tr('<div><b>(1) ≠ (2)</b>每格要扫一遍（LIS、CMM、1D 背包、6.4）时，填表比子问题数多一个因子。</div>','<div><b>(1) ≠ (2)</b>When each cell scans (LIS, CMM, 1D knapsack, 6.4), filling costs one factor more than the number of subproblems.</div>')+
+   tr('<div><b>答案不在单格</b>为写出 recurrence 给 state 加约束（includes a[i]、ending at），答案就分散在全表：max(T(*))，O(表大小)。</div>','<div><b>The answer is not in one cell</b>Constraining the state to make the recurrence writable (includes a[i], ending at) spreads the answer: max(T(*)), O(table size).</div>')+
+   tr('<div><b>不写的东西</b>不写 correctness、不写 justification、不画示例表、不写 pseudocode、(b) 里不写 return。</div>','<div><b>What not to write</b>No correctness proof, no justification, no example tables, no pseudocode, no return in (b).</div>')+
+   tr('<div><b>reduce 流程</b>选划分 / 加括号 → CMM；有数值上限 → 背包；两个序列 → LCS；相邻选中项有约束 → LIS；只看固定几步 → FIB。</div>','<div><b>Reduction checklist</b>Choosing a split or parenthesization → CMM; a numeric cap → knapsack; two sequences → LCS; constraints between consecutive picks → LIS; a fixed look-back → FIB.</div>')+
+   tr('<div><b>考试</b>两道 DP 各 10 分，90 分钟。草稿可以打在答题框底部，交卷前删干净。</div>','<div><b>The exam</b>Two DP problems, 10 points each, 90 minutes. You may draft at the bottom of the answer box; delete it before submitting.</div>')+
+   '</div>';
+  $('ov').innerHTML=h; $('ov').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>select(b.dataset.go));
+}
+
+/* [rule zh, rule en, ✓, ✗, why zh, why en] */
+const RULES=[
+ ['(a) 措辞','(a) wording',[
+  ['用文字，点出 prefix','In words, naming the prefix','T(i) is the length of the LIS of a[1..i], which includes a[i].','T(i) is the max length so far.','不点 prefix 判不合格式','Without the prefix it fails the format'],
+  ['(a) 不写 bounds','No bounds in (a)','T(i,j) is the length of the LCS of x[1..i] and y[1..j].','T(i,j), 1<=i<=n, 1<=j<=m, is ...','bounds 留给 (b)，写在这里会引起歧义','Bounds belong in (b); here they cause ambiguity'],
+  ['输入从 1 编号','Inputs are 1-indexed','a[1..n], T(0) = 0 as a base','a[0..n-1]','表可以从 0 或 −1 开始，输入不行','Tables may start at 0 or −1; inputs may not'],
+  ['题目约束默认隐含','Problem constraints are implicit','... of a[1..i], which includes a[i].','... which is strictly increasing and uses no repeated index ...','只用 includes / ending at 加新约束','Use includes / ending at only to add a new constraint']]],
+ ['(b) Recurrence','(b) Recurrence',[
+  ['数学等式，不是程序','An equation, not a program','T(i) = 1 + max{T(j) : 1<=j<=i-1, a[j]<a[i]}','for j in 1..i-1: if a[j]<a[i]: T(i)=max(T(i),T(j)+1)','for / 逐行控制流 = pseudocode','for loops and line-by-line control flow are pseudocode'],
+  ['不能自引用','No self-reference','max{T(k) : 1<=k<=i-1}','T(i) = max(T(i), T(i-1))','从代码倒推最常犯','The usual mistake when translating from code'],
+  ['条件互斥','Mutually exclusive conditions','... if w[i] <= b\n... if w[i] > b','... if w[i] <= b\n... if w[i] >= b','不能靠「第一个匹配」的优先级；可以用 otherwise','No first-match priority; otherwise is allowed'],
+  ['空集 max{} = 0','Empty set: max{} = 0','T(i) = 1 + max{T(j) : 1<=j<=i-1, a[j]<a[i]}','T(i) = 1   if no j < i has a[j] < a[i]  (extra branch)','多一个分支还要和主分支互斥，徒增风险','An extra branch must also be exclusive with the main one: pure risk'],
+  ['每行 bounds 上下界都要有','Every line has upper and lower bounds','where 2 <= i <= n','where i >= 2','表是有限的，缺天花板算错','Tables are finite; a missing ceiling is wrong'],
+  ['base 与 recurrence 不重叠，2D 错开','Base and recurrence do not overlap; stagger in 2D','T(i,0)=0, 0<=i<=n\nT(0,j)=0, 1<=j<=m','T(i,0)=0, 0<=i<=n\nT(0,j)=0, 0<=j<=m','官方样例全部错开写','Every official example staggers them'],
+  ['被引用的格都要有定义','Every referenced cell is defined','T(0)=0, T(1)=a[1], 2<=i<=n','T(i-2) with i from 1 and no T(-1)','自检 A：逐个下标过一遍','Self-check A: walk through every index'],
+  ['bounds 表达填表方向','Bounds express fill order','where n-1 >= i >= 1, i+1 <= j <= n','where 1 <= i < j <= n','CMM 独有失分点','A CMM-specific point loss'],
+  ['禁止 argmax / argmin','No argmax / argmin','min{...}','argmin{...}','被有意排除','Deliberately excluded'],
+  ['不写 return','No return in (b)','(b) ends with the last where line','return T(n)','return 属于 (c)(3)','Return belongs to (c)(3)']]],
+ ['表与 (c)','The table and (c)',[
+  ['表只存 primitive','The table holds primitives only','two tables T(i), L(i)','T(i) = (length, last element)','tuple / list / set 都禁；inf 合法','No tuple / list / set; inf is fine'],
+  ['不能改输入','The input is immutable','copy a into S, sort S','sort a in place','copy 进新表可以，建好后也不能改','Copying into a new table is fine; it cannot change once built'],
+  ['extraction 按定义取','Extract according to the definition','(3) max(T(*))   (4) O(n)','(3) T(n)   (4) O(1)','加了 includes / ending at 就要取全表 max','With includes / ending at, take the max over the table'],
+  ['(1) 和 (2) 分开算','Count (1) and (2) separately','(1) O(n)   (2) O(n²)','(1) O(n)   (2) O(n)','每格扫一遍时两者不同','They differ when each cell scans'],
+  ['backtracking 用文字','Backtracking in words','(c)(3): walk back from T(n,m); on a match take x[i] and go to T(i-1,j-1) ...','a second table P(i,j) of pointers + pseudocode','放 (c)(3)，一两句','Put it in (c)(3), one or two sentences']]]
+];
+function buildOps(){
+  let h=`<h2>${tr('Fall 2026 DP 写法规则','Fall 2026 DP format rules')}</h2><p>${tr('统领全部规则的一句话：recurrence 是一个数学等式，不是一段程序。依据 Ed #9 / #10 和 HW1 官方样例。','One sentence covers them all: a recurrence is a mathematical equation, not a program. Based on Ed #9 / #10 and the HW1 official solutions.')}</p>`;
+  h+='<div class="rule" style="margin:0 0 14px">'+
+   tr('<div><b>(a) Subproblem</b>一句英文，点出 prefix（CMM 是区间），用题面原词。</div>','<div><b>(a) Subproblem</b>One English sentence naming the prefix (an interval for CMM), using the problem\'s own words.</div>')+
+   tr('<div><b>(b) Recurrence</b>base 和 recurrence 各自带 bounds；只用 max / min / sum / AND / OR / inf / %。</div>','<div><b>(b) Recurrence</b>Base and recurrence each carry bounds; use only max / min / sum / AND / OR / inf / %.</div>')+
+   tr('<div><b>(c) 四个独立评分项</b>(1) 子问题数 · (2) 填表 runtime · (3) 从哪取 · (4) 取答案 runtime。分析的是你写的 recurrence。</div>','<div><b>(c) four separate items</b>(1) # subproblems · (2) fill runtime · (3) where to extract · (4) extraction runtime. Analyze the recurrence you wrote.</div>')+
+   tr('<div><b>只要 bottom-up</b>不用 recursion / memoization。记号随意（T[i][j] 或 T(i,j)），全程一致。</div>','<div><b>Bottom-up only</b>No recursion or memoization. Any notation (T[i][j] or T(i,j)), used consistently.</div>')+
+   '</div>';
+  h+=`<div class="card tw"><table class="ovt" style="min-width:980px"><thead><tr><th>${tr('规则','Rule')}</th><th>✓ ${tr('这样写','Write this')}</th><th>✗ ${tr('别这样写','Not this')}</th><th>${tr('为什么','Why')}</th></tr></thead><tbody>`;
+  RULES.forEach(([gz,ge,rows])=>{ h+=`<tr class="cat"><td colspan="4">${tr(gz,ge)}</td></tr>`;
+    rows.forEach(r=>{ h+=`<tr><td class="op">${tr(r[0],r[1])}</td><td class="yes" style="white-space:pre-wrap">${esc(r[2])}</td><td class="nope" style="white-space:pre-wrap">${esc(r[3])}</td><td class="how">${tr(r[4],r[5])}</td></tr>`; }); });
+  h+='</tbody></table></div>';
+  $('ops').innerHTML=h;
+}
+
+/* matrix columns: 1D prefix · two prefixes · interval · + extra dimension. level: any / req / no / na */
+const MCOLS=[['1D prefix  T(i)','1D prefix  T(i)'],['两个 prefix  T(i,j)','Two prefixes  T(i,j)'],['区间  T(i,j) = [i..j]','Interval  T(i,j) = [i..j]'],['加一维（容量 / 状态）','Extra dimension (capacity / state)']];
+const MAT=[
+ ['1D','1D',[
+  ['FIB / 爬楼梯','FIB / climbing stairs',null,[['any','✓ 固定看 1–2 格','✓ fixed look-back'],['na','—','—'],['na','—','—'],['na','—','—']],'T(n)'],
+  ['House Robber','House Robber',null,[['any','✓ 不选 / 选 i 两分支','✓ skip / take i'],['na','—','—'],['na','—','—'],['na','—','—']],'T(n)'],
+  ['LIS / 最大和递增子序列','LIS / max-sum increasing','lis',[['req','✓ 加 "includes a[i]"','✓ add "includes a[i]"'],['na','—','—'],['no','不需要','not needed'],['na','—','—']],'max(T(*))'],
+  ['套娃信封 / 最长链','Nested envelopes / longest chain','lis',[['req','✓ copy + 排序后 LIS','✓ copy, sort, then LIS'],['na','—','—'],['na','—','—'],['na','—','—']],'max(T(*))'],
+  ['Bitonic','Bitonic',null,[['req','两张表：正向 + 反向','two tables: forward + backward'],['na','—','—'],['na','—','—'],['na','—','—']],'max{T(i)+S(i)−1}']]],
+ ['两个序列','Two sequences',[
+  ['LCS','LCS','lcs',[['no','存不下两个进度','cannot hold two positions'],['any','✓ T(i,j)','✓ T(i,j)'],['na','—','—'],['na','—','—']],'T(n,m)'],
+  ['最长公共子串','Longest common substring','sub',[['no','—','—'],['req','✓ 加 "ending at x[i], y[j]"','✓ add "ending at x[i], y[j]"'],['na','—','—'],['na','—','—']],'max(T(*,*))'],
+  ['Edit distance','Edit distance','ed',[['no','—','—'],['any','✓ 三方向取 min','✓ min over three moves'],['na','—','—'],['na','—','—']],'T(n,m)'],
+  ['最长回文子序列','Longest palindromic subsequence',null,[['no','—','—'],['any','LCS(x, reverse x)','LCS(x, reverse x)'],['any','或 T(i,j) on x[i..j]','or T(i,j) on x[i..j]'],['na','—','—']],'T(n,n) / T(1,n)'],
+  ['LCS of 3','LCS of 3',null,[['no','—','—'],['req','三个 prefix → 3D','three prefixes → 3D'],['na','—','—'],['na','—','—']],'T(n,m,k)']]],
+ ['容量 / 预算','Capacity / budget',[
+  ['0/1 背包','0/1 knapsack','ks',[['no','缺「还剩多少容量」','missing remaining capacity'],['na','—','—'],['na','—','—'],['req','✓ T(i,b)，拿了跳 i−1','✓ T(i,b), take → row i−1'],],'T(n,B)'],
+  ['可重复背包','Unlimited knapsack','ksr',[['any','1D T(b) 也行，(1)≠(2)','1D T(b) works, (1)≠(2)'],['na','—','—'],['na','—','—'],['req','✓ T(i,b)，拿了留在 i','✓ T(i,b), take → stay in row i']],'T(n,B) / T(B)'],
+  ['Subset Sum / Partition','Subset Sum / Partition','ks',[['no','—','—'],['na','—','—'],['na','—','—'],['req','✓ v = w = a；Partition 取 t = sum/2','✓ v = w = a; Partition uses t = sum/2']],'TRUE if t = T(n,t)'],
+  ['Coin change 最少枚数','Coin change, fewest coins','ksr',[['any','✓ T(v) + min + inf（6.19）','✓ T(v) + min + inf (6.19)'],['na','—','—'],['na','—','—'],['any','或 2D','or 2D']],'T(v)'],
+  ['两个容量约束','Two capacity limits',null,[['no','—','—'],['na','—','—'],['na','—','—'],['req','✓ 每个约束一维 → 3D','✓ one dimension per limit → 3D']],'T(n,B,C)']]],
+ ['划分 / 加括号','Splitting / parenthesizing',[
+  ['CMM / 三角剖分','CMM / triangulation','cmm',[['no','右段不是 prefix','right part is not a prefix'],['na','—','—'],['req','✓ 切点 i ≤ k ≤ j−1','✓ split i ≤ k ≤ j−1'],['na','—','—']],'T(1,n)'],
+  ['Optimal BST（6.20）','Optimal BST (6.20)','cmm',[['no','—','—'],['na','—','—'],['req','✓ 根 i ≤ k ≤ j，加 T(i,i−1)=0','✓ root i ≤ k ≤ j, add T(i,i−1)=0'],['na','—','—']],'T(1,n)'],
+  ['回文切分最少刀','Palindrome partitioning, min cuts',null,[['req','✓ T(i) 最少刀数','✓ T(i) = min cuts'],['na','—','—'],['req','先预处理 isPal(i,j)','precompute isPal(i,j)'],['na','—','—']],'T(n)'],
+  ['布尔表达式加括号','Boolean parenthesization',null,[['no','—','—'],['na','—','—'],['req','✓ 两张表 true / false 计数','✓ two tables: true / false counts'],['no','tuple 被禁','tuples banned']],'Tt(1,n)']]]
+];
+function buildPre(){
+  const lv=(l,t)=>`<span class="lv ${l}">${t}</span>`;
+  let h=`<h2>${tr('变体 → 该选哪种 subproblem','Variant → which subproblem')}</h2><p>${tr('先定 state 的形状，再照抄母题的三段，只改三处：subproblem 那句话、分支条件、base case。','Fix the shape of the state first, then copy the parent problem\'s three parts and change only the subproblem sentence, the branch conditions and the base case.')}</p>`;
+  h+=`<div class="pkey">${lv('any',tr('直接选这个','choose this'))}${lv('req',tr('选这个，但要加约束 / 预处理 / 额外一维','choose this, with a constraint / precomputation / extra dimension'))}${lv('no',tr('行不通','does not work'))}${lv('na',tr('不相关','not relevant'))}</div>`;
+  h+=`<div class="card tw"><table class="ovt pm"><thead><tr><th>${tr('变体','Variant')}</th>${MCOLS.map(c=>`<th>${L2(c)}</th>`).join('')}<th>(c)(3)</th></tr></thead><tbody>`;
+  MAT.forEach(([gz,ge,rows])=>{ h+=`<tr class="cat"><td colspan="6">${tr(gz,ge)}</td></tr>`;
+    rows.forEach(([vz,ve,go,cells,ext])=>{ const a=go?ALGOS.find(x=>x.id===go):null;
+      h+=`<tr><td>${tr(vz,ve)}${a?`<br><button type="button" class="go" style="color:var(${a.c});font-size:11px" data-go="${a.id}">→ ${a.abbr}</button>`:''}</td>${cells.map(([l,z,e])=>`<td>${z==='—'?lv(l,l==='no'?'✗':'—'):lv(l,tr(z,e))}</td>`).join('')}<td class="m" style="color:var(--amber)">${ext}</td></tr>`; }); });
+  h+='</tbody></table></div><div class="rule">'+
+   tr('<div><b>一个上限 = 一维</b>题目里每出现一次「总量不超过 X」，X 就进表。两个上限就是 3D。</div>','<div><b>One cap = one dimension</b>Each "total at most X" in the problem puts X in the table. Two caps make it 3D.</div>')+
+   tr('<div><b>合并代价看两端</b>合并两段的代价取决于两段端点 → 区间 DP，表只填上三角。</div>','<div><b>Merge cost depends on both ends</b>If combining two parts depends on their endpoints → interval DP, upper triangle only.</div>')+
+   tr('<div><b>相邻选中项有约束</b>→ "includes a[i]"，答案取全表 max，(4) = O(n)。</div>','<div><b>Constraint between consecutive picks</b>→ "includes a[i]"; the answer is the table max, (4) = O(n).</div>')+
+   tr('<div><b>子串 vs 子序列</b>连续 → "ending at" + 不匹配归 0；可跳 → 两个 prefix + max。</div>','<div><b>Substring vs subsequence</b>Contiguous → "ending at" + reset to 0; skippable → two prefixes + max.</div>')+
+   tr('<div><b>想存 tuple 的时候</b>说明 state 不够：要么加一维，要么开第二张表。</div>','<div><b>When you want to store a tuple</b>The state is too small: add a dimension or use a second table.</div>')+
+   tr('<div><b>自检 B</b>只拿到表里的数字，够不够做第 i 步的决策？还缺 XX，XX 就进 state。</div>','<div><b>Self-check B</b>Given only the numbers in the table, can you make step i\'s decision? If XX is missing, XX goes into the state.</div>')+
+   '</div>';
+  $('pre').innerHTML=h; $('pre').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>select(b.dataset.go));
+}
+
+const STATIC=['ov','ops','pre'];
+function select(id, keep){
+  stop(); VIEW=id;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  try{ history.replaceState(null,'','#'+id); }catch(e){}
+  if(STATIC.includes(id)){ $('algo').hidden=true; STATIC.forEach(x=>$(x).hidden=x!==id); A=null; if(!keep) window.scrollTo({top:0}); return; }
+  $('algo').hidden=false; STATIC.forEach(x=>$(x).hidden=true);
+  A=ALGOS.find(a=>a.id===id); if(!A.steps) A.steps=A.sim(); STEPS=A.steps;
+  cur=keep?Math.min(cur,STEPS.length-1):0;
+  document.documentElement.style.setProperty('--ac',`var(${A.c})`);
+  $('a-abbr').textContent=A.abbr; $('a-name').textContent=A.name; $('a-rt').textContent=A.rt;
+  $('s-in').innerHTML=L2(A.in); $('s-out').innerHTML=L2(A.out); $('s-req').innerHTML=L2(A.req);
+  $('g-cap').textContent=L2(A.cap); $('tk').innerHTML=A.tk.map(t=>`<li>${L2(t)}</li>`).join('');
+  $('legend').innerHTML=(LEG[A.id]||[]).map(([k,zh,en])=>{ const c=CS[k]; return `<span><b class="sw" style="background:${c[0]};border-color:${c[1]}"></b>${tr(zh,en)}</span>`; }).join('');
+  render();
+}
+function draw(svg,p){
+  if(p.k==='cell'){ const c=CS[p.st]||CS.n; mk('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:4,fill:c[0],stroke:c[1],'stroke-width':1.6},svg);
+    if(p.v!==''){ const t=mk('text',{x:p.x+p.w/2,y:p.y+p.h/2+1,'text-anchor':'middle','dominant-baseline':'middle','font-size':p.fs||13,'font-weight':600,fill:c[2]},svg); t.textContent=p.v; } }
+  else if(p.k==='txt'){ if(p.s==='') return; const t=mk('text',{x:p.x,y:p.y,'text-anchor':p.a||'middle','dominant-baseline':'middle','font-size':p.fs||12,'font-weight':p.w||400,fill:COL[p.c]||p.c||COL.muted},svg); t.textContent=p.s; }
+}
+function render(){
+  const s=STEPS[cur], svg=$('g'); svg.innerHTML='';
+  (s.S||[]).forEach(p=>draw(svg,p));
+  $('g-badge').textContent=`step ${cur}`;
+  $('s-lbl').textContent=`STEP ${cur} / ${STEPS.length-1}`; $('s-title').textContent=s.t; $('s-desc').textContent=s.d;
+  const ins=$('s-ins'); ins.hidden=!s.ins||s.it==='hide'; ins.className='ins '+(s.it||'info'); ins.textContent=s.ins||'';
+  $('panels').innerHTML=(s.P||[]).map(panel).join('');
+  $('b-prev').disabled=cur===0; $('b-next').disabled=cur===STEPS.length-1;
+  $('prog').style.width=(STEPS.length>1?cur/(STEPS.length-1)*100:0)+'%'; $('ctr').textContent=`${cur} / ${STEPS.length-1}`;
+}
+function panel(p){
+  const head=`<h3>${esc(p.title)}${p.sub?` <small>${esc(p.sub)}</small>`:''}</h3>`;
+  if(p.k==='chips') return `<div class="card pnl">${head}<div class="chips">${p.items.map(i=>`<span class="chip ${i.c||''}">${esc(i.x)}</span>`).join('')}</div></div>`;
+  if(p.k==='note') return `<div class="card pnl">${head}<div style="font-family:var(--f-mono);font-size:17px;color:var(--ac)">${esc(p.text)}</div></div>`;
+  if(p.k==='code') return `<div class="card pnl">${head}<pre class="rec">${esc(p.text)}</pre></div>`;
+  const hi=new Set(p.hi||[]), rh=new Set(p.rowhi||[]);
+  return `<div class="card pnl">${head}<div class="tw"><table class="dt"><thead><tr>${p.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
+    p.rows.map((r,i)=>`<tr class="${rh.has(i)?'rh':''}">${r.map((c,j)=>`<td class="${hi.has(i+','+j)?'hi':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+`</tbody></table></div></div>`;
+}
+function stop(){ if(timer){clearInterval(timer);timer=null;} $('b-play').textContent='▶ Play'; }
+function go(d){ if(!A) return; const n=cur+d; if(n<0||n>STEPS.length-1) return; cur=n; render(); }
+function setLang(l){
+  LANG=l;
+  ALGOS.forEach(a=>a.steps=null);
+  applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre(); select(VIEW,true);
+}
+$('lang').onclick=()=>setLang(LANG==='en'?'zh':'en');
+$('b-prev').onclick=()=>{stop();go(-1);}; $('b-next').onclick=()=>{stop();go(1);};
+$('b-play').onclick=()=>{ if(timer){stop();return;} if(cur===STEPS.length-1){cur=0;render();}
+  $('b-play').textContent='⏸ Pause'; timer=setInterval(()=>{ if(cur<STEPS.length-1){cur++;render();} else stop(); },1800); };
+document.addEventListener('keydown',e=>{ if(e.target.closest&&e.target.closest('input,textarea,button')&&e.key===' ') return;
+  if(e.key==='ArrowRight'){stop();go(1);} else if(e.key==='ArrowLeft'){stop();go(-1);}
+  else if(e.key===' '&&A){e.preventDefault();$('b-play').click();}
+  else if(e.key===']'||e.key==='['){ const ids=[...STATIC,...ALGOS.map(a=>a.id)]; const i=ids.indexOf(VIEW); const j=(i+(e.key===']'?1:-1)+ids.length)%ids.length; select(ids[j]); } });
+
+applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre();
+const h0=(location.hash||'').slice(1);
+select([...STATIC,...ALGOS.map(a=>a.id)].includes(h0)?h0:'lis');
+</script>
+
+</body></html>

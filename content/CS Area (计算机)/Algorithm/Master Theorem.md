@@ -2,7 +2,7 @@
 title: Master Theorem
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 There are many data we want to study together like a paired data point described in the [[#Application]] section. (volume of the trade and the price of the stock bought). Aggregating them together will ease the decision making process.

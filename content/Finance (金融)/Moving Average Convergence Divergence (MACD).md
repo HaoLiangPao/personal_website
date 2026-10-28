@@ -2,7 +2,7 @@
 title: Moving Average Convergence Divergence (MACD)
 tags:
   - Finance
-draft: "false"
+draft: false
 ---
 ## Definition 
 

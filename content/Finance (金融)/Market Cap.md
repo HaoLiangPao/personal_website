@@ -2,7 +2,7 @@
 title: Market Cap
 tags:
   - Finance
-draft: "false"
+draft: false
 ---
 
 ## Definition

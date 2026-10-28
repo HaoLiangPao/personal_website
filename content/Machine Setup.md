@@ -2,7 +2,7 @@
 title: Machine Setup
 tags:
   - CS
-draft: "true"
+draft: true
 ---
 ## Definition 
 

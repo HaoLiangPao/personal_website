@@ -2,7 +2,7 @@
 title: Coin Flipping Casino
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

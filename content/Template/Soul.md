@@ -1,9 +1,9 @@
 ---
-title: 
+title:
 tags:
   - People
   - Author
-draft: "true"
+draft: true
 ---
 ## Background Info
 

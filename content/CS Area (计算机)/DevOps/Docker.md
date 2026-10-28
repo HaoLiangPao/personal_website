@@ -2,7 +2,7 @@
 title: Docker
 tags:
   - CS
-draft: "true"
+draft: true
 ---
 ## Definition 
 

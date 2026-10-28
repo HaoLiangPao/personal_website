@@ -2,7 +2,7 @@
 title: PTF
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

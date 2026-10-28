@@ -1,3 +1,8 @@
+---
+draft: false
+tags:
+  - CS
+---
 ### CPU
 
 | Level        | Model     | Usage          | Brank | Price | Link | Notes              |

@@ -1,5 +1,6 @@
 ---
 title: Hi how is the life?
+draft: false
 ---
 ## Hi! It's Hao here 👋
 

@@ -2,7 +2,7 @@
 title: Markov Decision Problem (MDP)
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

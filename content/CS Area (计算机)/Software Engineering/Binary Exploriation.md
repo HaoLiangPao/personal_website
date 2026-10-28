@@ -3,7 +3,7 @@ title: Binary Exploriation
 tags:
   - CS
   - cyber_security
-draft: "false"
+draft: false
 ---
 ## Definition 
 

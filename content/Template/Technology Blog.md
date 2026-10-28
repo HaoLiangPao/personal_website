@@ -1,7 +1,7 @@
 ---
-title: 
+title:
 tags:
   - Tech
   - Blog
-draft: "true"
+draft: true
 ---

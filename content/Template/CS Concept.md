@@ -1,7 +1,7 @@
 ---
-title: 
+title:
 tags:
   - CS
-draft: "true"
+draft: true
 ---
 ## Definition 

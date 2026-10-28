@@ -3,7 +3,7 @@ title: zOS
 tags:
   - CS
   - IBM
-draft: "false"
+draft: false
 ---
 ## Definition 
 

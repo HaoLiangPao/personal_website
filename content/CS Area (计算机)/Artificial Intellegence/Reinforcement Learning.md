@@ -2,7 +2,7 @@
 title: Reinforcement Learning
 tags:
   - CS
-draft: "true"
+draft: true
 ---
 ## Definition 
 

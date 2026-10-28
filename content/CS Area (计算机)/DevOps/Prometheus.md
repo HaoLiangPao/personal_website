@@ -2,7 +2,7 @@
 title: Prometheus
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

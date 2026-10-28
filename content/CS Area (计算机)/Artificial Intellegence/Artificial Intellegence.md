@@ -2,7 +2,7 @@
 title: Artificial Intellegence
 tags:
   - CS
-draft: "true"
+draft: true
 ---
 ## Definition 
 

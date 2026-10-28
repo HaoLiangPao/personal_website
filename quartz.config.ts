@@ -1,5 +1,6 @@
 import { QuartzConfig } from "./quartz/cfg"
 import * as Plugin from "./quartz/plugins"
+import { StandaloneHtmlLinks } from "./publishing/standalone-html"
 
 /**
  * Quartz 4.0 Configuration
@@ -71,10 +72,9 @@ const config: QuartzConfig = {
       Plugin.GitHubFlavoredMarkdown(),
       Plugin.TableOfContents(),
       Plugin.CrawlLinks({ markdownLinkResolution: "shortest" }),
+      StandaloneHtmlLinks(),
       Plugin.Description(),
       Plugin.Latex({ renderEngine: "katex" }),
-      Plugin.RemoveDrafts(), // hide the pages that are not ready to publish yet
-
     ],
     filters: [Plugin.RemoveDrafts()],
     emitters: [

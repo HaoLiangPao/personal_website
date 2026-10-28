@@ -2,7 +2,7 @@
 title: Symlink
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 
 There are two types of symlinks:

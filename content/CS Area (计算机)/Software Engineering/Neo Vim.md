@@ -2,7 +2,7 @@
 title: Neo Vim
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

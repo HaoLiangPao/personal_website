@@ -2,7 +2,7 @@
 title: Data Normalization
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

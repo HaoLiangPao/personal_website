@@ -1,9 +1,9 @@
 ---
-title: 
+title:
 tags:
   - Reading
   - Book
-draft: "true"
+draft: true
 ---
 
 

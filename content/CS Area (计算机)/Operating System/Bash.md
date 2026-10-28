@@ -2,7 +2,7 @@
 title: Bash
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Defination
 

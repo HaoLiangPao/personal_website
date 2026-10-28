@@ -2,7 +2,7 @@
 title: Commodity Channel Index (CCI)
 tags:
   - Finance
-draft: "false"
+draft: false
 ---
 ## Definition 
 

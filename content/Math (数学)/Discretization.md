@@ -2,7 +2,7 @@
 title: Discretization
 tags:
   - Math
-draft: "false"
+draft: false
 ---
 ## Definition 
 #todo 学一下啥是 Discretization，以前听说过离散数学但是从来没接触过

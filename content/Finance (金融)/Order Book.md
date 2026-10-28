@@ -2,7 +2,7 @@
 title: Order Book
 tags:
   - Finance
-draft: "false"
+draft: false
 ---
 ## Definition 
 

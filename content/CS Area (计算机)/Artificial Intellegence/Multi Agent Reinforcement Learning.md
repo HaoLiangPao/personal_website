@@ -2,7 +2,7 @@
 title: Multi Agent Reinforcement Learning
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

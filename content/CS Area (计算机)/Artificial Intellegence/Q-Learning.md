@@ -2,7 +2,7 @@
 title: Q-Learning
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 A well-known [[Markov Decision Problem (MDP)#Model Free Learning]] algorithm, it will glean information about the real-world as it interacts with it, iteratively deducing the properties of $T$ (the transition function) and $R$ (the reward function). *The beauty of Q-learning is that it’s guaranteed to provide an optimal policy.*

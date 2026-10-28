@@ -1,14 +1,15 @@
 ---
-title: "Task B"
-source: "https://github.gatech.edu/pages/cs6035-tools/cs6035-tools.github.io/Projects/DatabaseSecurity/TaskB.html"
+title: Task B
+source: https://github.gatech.edu/pages/cs6035-tools/cs6035-tools.github.io/Projects/DatabaseSecurity/TaskB.html
 author:
   - "[[CS 6035]]"
 published:
 created: 2025-04-19
-description: "Intro to Information Security"
+description: Intro to Information Security
 tags:
-  - "clippings"
-  - "OMSCS"
+  - clippings
+  - OMSCS
+draft: true
 ---
 ## TASK B: INFERENCE ATTACK- #1 (flag1 - 20 pts)
 

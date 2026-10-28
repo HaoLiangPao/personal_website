@@ -2,7 +2,7 @@
 title: Dyna-Q
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 [[Q-Learning]]’s biggest limitation is that it requires many experience tuples (and thus real-world steps) to converge. 

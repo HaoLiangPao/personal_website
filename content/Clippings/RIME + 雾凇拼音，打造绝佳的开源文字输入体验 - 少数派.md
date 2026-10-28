@@ -1,13 +1,14 @@
 ---
-title: "RIME + 雾凇拼音，打造绝佳的开源文字输入体验 - 少数派"
-source: "https://sspai.com/post/89281"
+title: RIME + 雾凇拼音，打造绝佳的开源文字输入体验 - 少数派
+source: https://sspai.com/post/89281
 author:
   - "[[爱拼安小匠]]"
 published: 2024-07-01
 created: 2025-06-25
-description: "为 RIME 量身打造的雾凇拼音，是目前维护最积极、功能最强大的 RIME 输入方案，拥有精心打磨的大容量词库、开箱即用的中文输入体验。"
+description: 为 RIME 量身打造的雾凇拼音，是目前维护最积极、功能最强大的 RIME 输入方案，拥有精心打磨的大容量词库、开箱即用的中文输入体验。
 tags:
-  - "clippings"
+  - clippings
+draft: false
 ---
 作为与文字相伴的工作者，一款称手的输入法是刚需。
 

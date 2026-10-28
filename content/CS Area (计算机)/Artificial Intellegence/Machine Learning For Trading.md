@@ -2,7 +2,7 @@
 title: Machine Learning For Trading
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Background
 

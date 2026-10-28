@@ -3,7 +3,7 @@ title: Return Oriented Programming (ROP)
 tags:
   - CS
   - cyber_security
-draft: "false"
+draft: false
 ---
 # Return Oriented Programming (ROP)
 

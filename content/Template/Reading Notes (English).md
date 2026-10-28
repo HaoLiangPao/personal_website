@@ -3,7 +3,7 @@ title: Reading Notes (English)
 tags:
   - Reading
   - Book
-draft: "true"
+draft: true
 ---
 
 《TITLE》

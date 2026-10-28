@@ -5,7 +5,7 @@ tags:
   - Book
   - Psycho
   - Self_development
-draft: "false"
+draft: false
 ---
 《认知觉醒：开启自我改变的原动力》/ 《# Cognitive Awakening (Unlock the Motivity for Self Change)》
 # What you have studied

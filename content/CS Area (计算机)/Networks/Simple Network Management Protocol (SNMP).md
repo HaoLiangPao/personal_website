@@ -2,7 +2,7 @@
 title: Simple Network Management Protocol (SNMP)
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

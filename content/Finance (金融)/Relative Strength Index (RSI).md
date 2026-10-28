@@ -2,7 +2,7 @@
 title: Relative Strength Index (RSI)
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 

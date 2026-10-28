@@ -1,10 +1,9 @@
 import { QuartzFilterPlugin } from "../types"
 
+// Publication requires an explicit Boolean false. Invalid/missing flags stay hidden.
 export const RemoveDrafts: QuartzFilterPlugin<{}> = () => ({
   name: "RemoveDrafts",
   shouldPublish(_ctx, [_tree, vfile]) {
-    const draftFlag: boolean =
-      vfile.data?.frontmatter?.draft === true || vfile.data?.frontmatter?.draft === "true"
-    return !draftFlag
+    return vfile.data?.frontmatter?.draft === false
   },
 })

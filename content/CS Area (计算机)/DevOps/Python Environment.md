@@ -2,7 +2,7 @@
 title: Python Environment
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 Python environment is very hard to setup, there are many tools can be used:

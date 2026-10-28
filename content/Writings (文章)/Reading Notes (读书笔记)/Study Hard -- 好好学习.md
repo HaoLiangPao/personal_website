@@ -5,7 +5,7 @@ tags:
   - Book
   - Psycho
   - Self_development
-draft: "false"
+draft: false
 ---
 《好好学习》/ 《Study Hard》
 # What you have studied

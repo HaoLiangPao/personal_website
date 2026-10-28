@@ -2,7 +2,7 @@
 title: CRON
 tags:
   - CS
-draft: "false"
+draft: false
 ---
 ## Definition 
 Cron is a time-based job scheduler in Unix-like operating systems, including Linux and macOS.
