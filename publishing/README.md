@@ -1,6 +1,6 @@
 # Quartz 5 候选版本：同步、核验与本地预览
 
-本目录仅用于本地验收，分支为 `codex/quartz5-migration`。当前线上仍为独立目录 `/home/hao/Desktop/personal_website` 中的 v4。迁移分支未推送；这里的工作流只有手动校验，不含部署步骤与 Pages 写权限。
+本目录已通过本地验收，作为 Quartz 5 的正式维护目录。发布分支为 `codex/quartz5`；推送到该分支会先测试和核验，再部署到 GitHub Pages。旧版 v4 分支与 `/home/hao/Desktop/personal_website` 目录保留用于恢复。
 
 ## 启动预览
 
@@ -46,7 +46,7 @@ node publishing/publish.mjs sync --apply \
   --site .
 ```
 
-同步先临时构建验证，再备份并替换候选 content。独立编辑过的目标文件会阻止覆盖。之后重新启动预览。这个命令只更新本地候选，不提交、不推送、不部署；内容源的原 pw_deploy.sh 仍是 v4 流程，不应拿它为 v5 构建。
+同步先临时构建验证，再备份并替换候选 content。独立编辑过的目标文件会阻止覆盖。之后重新启动预览。这个命令只更新本地 content，不提交、不推送、不部署。正式切换后，内容源的 pw_deploy.sh 会委托本目录的同一检查器运行；资源清单仍在内容源的 publishing/assets.json 中维护。
 
 ## 迁移适配
 
@@ -56,4 +56,4 @@ v5 会把与文件夹同名的文件规范到 index 路径。当前有一篇隐�
 
 保留 giscus 的仓库与分类配置。迁移时只读核验仓库尚无评论讨论；没有创建讨论或发送评论。本地页面尚无对应讨论时出现的 giscus 查询 404 与文章页面状态分开处理。
 
-正式 v5 部署需要另行验收并恢复经过审核的部署工作流；本目录不会因为普通提交就自动部署。
+正式部署工作流为 .github/workflows/deploy-quartz5.yml，只有 codex/quartz5 分支推送或手动触发才部署；全部测试、类型检查和发布门槛通过后才允许发布。每次上线提供 static/release.json 记录版本与提交。旧 v4 自动部署在切换后停用。

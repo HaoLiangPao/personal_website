@@ -1,0 +1,65 @@
+name: Deploy Quartz 5 to GitHub Pages
+
+on:
+  push:
+    branches:
+      - codex/quartz5
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Generate locked plugin index
+        run: npm run install-plugins
+      - name: Test framework and publication safeguards
+        run: npm test
+      - name: Check TypeScript
+        run: node node_modules/typescript/bin/tsc --noEmit --incremental false
+      - name: Validate publication policy and build production site
+        run: node publishing/publish.mjs check --source content --site . --output public
+      - name: Record deployed version
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs'
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'))
+          const release = {
+            quartz: pkg.version,
+            commit: process.env.GITHUB_SHA,
+            branch: process.env.GITHUB_REF_NAME,
+            runId: process.env.GITHUB_RUN_ID,
+            builtAt: new Date().toISOString()
+          }
+          fs.writeFileSync('public/static/release.json', JSON.stringify(release, null, 2) + '\n')
+          JS
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy validated site
+        id: deployment
+        uses: actions/deploy-pages@v4
