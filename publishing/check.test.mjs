@@ -89,6 +89,24 @@ test("stale draft pages and hidden output cannot pass despite a clean search ind
   assert.throws(() => verifyBuild(p, out), /不应出现在网站输出/)
 })
 
+test("standalone links must stay inside a project site and target approved HTML", (t) => {
+  const f = fixture(t), out = path.join(f.root, "public")
+  const articleSlug = "CS/Algorithms/Course"
+  const p = { articles: [{path:"index.md",slug:"index",draft:false},{path:"CS/Algorithms/Course.md",slug:articleSlug,draft:false}], assets:[], html:["interactive/demo.html"], hiddenHtml:[] }
+  for (const dir of ["static", "CS/Algorithms", "interactive"]) fs.mkdirSync(path.join(out, dir), {recursive:true})
+  fs.writeFileSync(path.join(out, "static/contentIndex.json"), JSON.stringify({index:{},[articleSlug]:{}}))
+  fs.writeFileSync(path.join(out, "sitemap.xml"), `<urlset><loc>https://example.com/</loc><loc>https://example.com/${articleSlug}</loc></urlset>`)
+  fs.writeFileSync(path.join(out, "index.html"), "Home")
+  fs.writeFileSync(path.join(out, "interactive/demo.html"), "Interactive review")
+  const page = path.join(out, articleSlug + ".html")
+  fs.writeFileSync(page, '<a href="../../../interactive/demo.html" data-standalone>Review</a>')
+  assert.throws(() => verifyBuild(p, out), /越出站点前缀/)
+  fs.writeFileSync(page, '<a href="../../interactive/unapproved.html" data-standalone>Review</a>')
+  assert.throws(() => verifyBuild(p, out), /没有指向已批准/)
+  fs.writeFileSync(page, '<a href="../../interactive/demo.html" data-standalone>Review</a>')
+  assert.equal(verifyBuild(p, out).htmlPages, 1)
+})
+
 test("independent target edits are refused; the previous sync is repeatable", (t) => {
   const f = fixture(t)
   const git = (...args) => { const r = spawnSync("git", args, { cwd: f.root, encoding: "utf8" }); assert.equal(r.status, 0, r.stderr) }

@@ -69,3 +69,5 @@ node publishing/publish.mjs check --source content --site . --output public
 CS6515 卡片使用 `data-standalone` 和 `data-router-ignore`。网站配置中的 `StandaloneHtmlLinks` 在 CrawlLinks 之后恢复这些链接的 `.html` 后缀，并避开普通笔记悬浮预览和关系图链接处理。`cs6515-cards.scss` 的样式仅作用于这三张卡片；网站的 custom.scss 保存实际样式。
 
 CS6515 入口和三个互动页已获准发布。入口默认显示英文，以原生语言选项切换中文；三个互动页每次打开默认英文，页面内的 `中文` / `English` 按钮用于当前页面的语言切换，不读取旧的语言偏好。Downloads 中的原始 HTML 保持不变。
+
+卡片 href 按当前 Quartz 的 vault-root 解析方式写为 `interactive/cs6515/…html`，由 Quartz 生成相对链接。构建校验同时在模拟项目站点前缀下核对所有 `data-standalone` 链接，越出前缀或指向未批准的 HTML 会停止发布。部署前预览也应包含 `/personal_website/`，避免根目录预览掩盖多余的 `../`。

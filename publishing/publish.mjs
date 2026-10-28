@@ -160,6 +160,24 @@ export function verifyBuild(plan, output) {
   for (const name of plan.hiddenHtml) {
     if (fs.existsSync(path.join(output, slug(name) + ".html"))) fail(`未获准发布的 HTML 出现在构建中：${name}`)
   }
+  // Test marked HTML links under a project-site prefix: root previews can mask
+  // too many ../ segments because browsers clamp navigation at the host root.
+  const prefix = "/__quartz_project_site__/"
+  const approvedHtml = new Set(plan.html.map((name) => slug(name) + ".html"))
+  for (const article of plan.articles.filter((a) => !a.draft)) {
+    const html = fs.readFileSync(path.join(output, article.slug + ".html"), "utf8")
+    for (const [tag] of html.matchAll(/<a\b[^>]*>/gi)) {
+      if (!/\bdata-standalone(?:\s|=|>)/i.test(tag)) continue
+      const href = tag.match(/\bhref\s*=\s*["']([^"']*)["']/i)?.[1]
+      if (!href) fail(`独立 HTML 链接缺少 href：${article.path}`)
+      const url = new URL(href, "https://quartz.local" + prefix + article.slug + ".html")
+      if (url.origin !== "https://quartz.local" || !url.pathname.startsWith(prefix)) {
+        fail(`独立 HTML 链接越出站点前缀：${article.path} → ${href}`)
+      }
+      const target = decodeURIComponent(url.pathname.slice(prefix.length))
+      if (!approvedHtml.has(target)) fail(`独立 HTML 链接没有指向已批准的页面：${article.path} → ${href}`)
+    }
+  }
   for (const [name] of tree(output, { includeHidden: true })) {
     if (/\.(base|md)$/i.test(name) || name.split("/").some((part) => part.startsWith("."))) fail(`不应出现在网站输出的文件：${name}`)
   }

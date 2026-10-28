@@ -16,21 +16,21 @@ draft: false
 <p>My Graduate Algorithms study notes connect algorithm preconditions, execution steps, and problem-solving techniques. The three interactive reviews below cover dynamic programming, divide and conquer, and graph algorithms. Each opens in its own full-page view, starts in English, and includes a Chinese language switch.</p>
 <h2>Interactive reviews</h2>
 <div class="cs6515-cards">
-<a class="cs6515-card cs6515-dp" href="../../interactive/cs6515/dynamic-programming.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<a class="cs6515-card cs6515-dp" href="interactive/cs6515/dynamic-programming.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
 <svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M28 8h64v54H28zM28 26h64M28 44h64M49 8v54M70 8v54"/><path d="M31 11h15v12H31zM52 29h15v12H52zM73 47h16v12H73z" fill="currentColor" stroke="none" opacity=".35"/></svg>
 <strong>Dynamic Programming</strong>
 <span>Follow subproblems and recurrences as the solution takes shape, cell by cell.</span>
 <span class="cs6515-topics">LIS, LCS, knapsack, matrix-chain multiplication</span>
 <span class="cs6515-open">Open the DP review</span>
 </a>
-<a class="cs6515-card cs6515-dc" href="../../interactive/cs6515/divide-and-conquer.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<a class="cs6515-card cs6515-dc" href="interactive/cs6515/divide-and-conquer.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
 <svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M60 19 32 40M60 19l28 21M32 47 18 62M32 47l14 15M88 47 74 62M88 47l14 15"/><rect x="48" y="4" width="24" height="15" rx="2" fill="currentColor" fill-opacity=".2"/><rect x="21" y="34" width="22" height="13" rx="2"/><rect x="77" y="34" width="22" height="13" rx="2"/></svg>
 <strong>Divide and Conquer</strong>
 <span>Split the problem, solve recursively, and combine the results.</span>
 <span class="cs6515-topics">Binary search, mergesort, Fast Select, recurrences</span>
 <span class="cs6515-open">Open the D&amp;C review</span>
 </a>
-<a class="cs6515-card cs6515-graph" href="../../interactive/cs6515/graph-algorithms.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<a class="cs6515-card cs6515-graph" href="interactive/cs6515/graph-algorithms.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
 <svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M24 35 58 12 96 30 72 58 24 35M58 12l14 46M24 35l72-5"/><circle cx="24" cy="35" r="6" fill="var(--light)"/><circle cx="58" cy="12" r="6" fill="currentColor"/><circle cx="96" cy="30" r="6" fill="var(--light)"/><circle cx="72" cy="58" r="6" fill="var(--light)"/></svg>
 <strong>Graph Algorithms</strong>
 <span>Check graph conditions, then follow search, relaxation, and augmentation.</span>
@@ -57,21 +57,21 @@ draft: false
 <p>这里整理我的 Graduate Algorithms 学习资料，把算法的适用条件、执行过程和解题思路连接起来。下面三个互动页面分别覆盖动态规划、分治和图算法；每个页面会独立打开，默认显示英文，也可以切换为中文。</p>
 <h2>交互复习</h2>
 <div class="cs6515-cards">
-<a class="cs6515-card cs6515-dp" href="../../interactive/cs6515/dynamic-programming.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<a class="cs6515-card cs6515-dp" href="interactive/cs6515/dynamic-programming.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
 <svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M28 8h64v54H28zM28 26h64M28 44h64M49 8v54M70 8v54"/><path d="M31 11h15v12H31zM52 29h15v12H52zM73 47h16v12H73z" fill="currentColor" stroke="none" opacity=".35"/></svg>
 <strong>动态规划</strong>
 <span>从子问题到状态转移，逐格看清答案如何形成。</span>
 <span class="cs6515-topics">LIS、LCS、背包、矩阵链乘</span>
 <span class="cs6515-open">打开 DP 互动复习</span>
 </a>
-<a class="cs6515-card cs6515-dc" href="../../interactive/cs6515/divide-and-conquer.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<a class="cs6515-card cs6515-dc" href="interactive/cs6515/divide-and-conquer.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
 <svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M60 19 32 40M60 19l28 21M32 47 18 62M32 47l14 15M88 47 74 62M88 47l14 15"/><rect x="48" y="4" width="24" height="15" rx="2" fill="currentColor" fill-opacity=".2"/><rect x="21" y="34" width="22" height="13" rx="2"/><rect x="77" y="34" width="22" height="13" rx="2"/></svg>
 <strong>分治</strong>
 <span>拆开问题、递归求解，再把局部结果合起来。</span>
 <span class="cs6515-topics">二分、归并、Fast Select、递推</span>
 <span class="cs6515-open">打开 D&amp;C 互动复习</span>
 </a>
-<a class="cs6515-card cs6515-graph" href="../../interactive/cs6515/graph-algorithms.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<a class="cs6515-card cs6515-graph" href="interactive/cs6515/graph-algorithms.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
 <svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M24 35 58 12 96 30 72 58 24 35M58 12l14 46M24 35l72-5"/><circle cx="24" cy="35" r="6" fill="var(--light)"/><circle cx="58" cy="12" r="6" fill="currentColor"/><circle cx="96" cy="30" r="6" fill="var(--light)"/><circle cx="72" cy="58" r="6" fill="var(--light)"/></svg>
 <strong>图算法</strong>
 <span>先辨认图的条件，再跟随搜索、松弛与增广。</span>
