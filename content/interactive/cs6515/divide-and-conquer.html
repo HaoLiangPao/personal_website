@@ -1,0 +1,796 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Divide and Conquer Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar · left algorithm index · main workspace (graph + controls | step & state panels) · takeaways.
+   Deliberately single dark theme, continuing the look of the March per-algorithm pages. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0d12; --surface:#12151c; --surface2:#181c25; --line:#232836; --line2:#2e3446;
+  --text:#e3e7f0; --muted:#8189a0; --faint:#4a5268;
+  --blue:#4f8ef7; --green:#34c98a; --red:#f05252; --amber:#f5a623; --teal:#2ec4b6; --purple:#9d7ef7;
+  --ac:var(--blue);
+  --f-body:'DM Sans','PingFang SC','Noto Sans SC','Microsoft YaHei',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --f-disp:'Instrument Serif','Songti SC','Noto Serif SC',Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:var(--f-body);font-size:14px;line-height:1.6;font-weight:400}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(11,13,18,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar h1{margin:0;font-family:var(--f-disp);font-weight:400;font-size:22px;letter-spacing:.01em}
+.topbar .sub{color:var(--muted);font-size:12px}
+.topbar .keys{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.lang{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;font-weight:600;padding:4px 12px;border-radius:5px;border:1px solid var(--line2);color:var(--text);background:var(--surface2)}
+.lang:hover{border-color:var(--muted)}
+.lang:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+kbd{font-family:var(--f-mono);font-size:10px;border:1px solid var(--line2);border-radius:3px;padding:0 4px;color:var(--muted)}
+
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;
+  padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1440px;margin:0 auto}
+nav.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);align-self:start;display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:2px}
+.grp-l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 8px 3px}
+.nb{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:5px 8px;border-radius:5px;color:var(--muted)}
+.nb .ab{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--text);min-width:64px}
+.nb .hn{font-size:11.5px}
+.nb:hover{background:var(--surface)}
+.nb:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.nb.on{background:var(--surface2)}
+.nb.on .ab{color:var(--c)}
+
+main{min-width:0;display:flex;flex-direction:column;gap:14px}
+.ahead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.ahead .abbr{font-family:var(--f-mono);font-size:26px;font-weight:600;color:var(--ac)}
+.ahead .nm{color:var(--muted);font-size:14px}
+.rt{margin-left:auto;font-family:var(--f-mono);font-size:12.5px;color:var(--amber);border:1px solid rgba(245,166,35,.3);background:rgba(245,166,35,.08);padding:2px 10px;border-radius:4px}
+.spec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.spec>div{background:var(--surface);padding:9px 12px;min-width:0}
+.spec .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:2px}
+.spec .v{font-size:12.5px}
+.spec code,.tk code,.desc code,.ovt code,.rule code{font-family:var(--f-mono);font-size:.92em;color:#c9d3ea}
+.warn{color:var(--amber)}
+
+.work{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.gcard .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.badge{font-family:var(--f-mono);font-size:11px;color:var(--ac);border:1px solid var(--line2);border-radius:4px;padding:1px 8px;white-space:nowrap}
+svg#g{display:block;width:100%;height:auto}
+.controls{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;padding:5px 12px;border:1px solid var(--line2);border-radius:5px;color:var(--text)}
+.btn:hover:not([disabled]){border-color:var(--muted)}
+.btn:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.btn[disabled]{opacity:.35;cursor:default}
+.btn.play{background:var(--ac);border-color:var(--ac);color:#0b0d12;font-weight:600}
+.prog{flex:1;min-width:80px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .25s}
+.ctr{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 14px 12px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend b{display:inline-block;width:16px;height:3px;border-radius:2px}
+
+.right{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stepbox{padding:12px 14px}
+.slbl{font-family:var(--f-mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em}
+.stitle{font-family:var(--f-disp);font-style:italic;font-size:20px;line-height:1.3;margin:2px 0 8px;text-wrap:balance}
+.desc{white-space:pre-line;font-size:13px;color:#c7cddb}
+.ins{margin-top:10px;font-size:12.5px;border-radius:6px;padding:8px 10px;border:1px solid}
+.ins.info{color:var(--ac);border-color:color-mix(in srgb,var(--ac) 30%,transparent);background:color-mix(in srgb,var(--ac) 8%,transparent)}
+.ins.relax{color:var(--blue);border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.07)}
+.ins.warn{color:#ff8a8a;border-color:rgba(240,82,82,.35);background:rgba(240,82,82,.07)}
+.ins.ok{color:var(--green);border-color:rgba(52,201,138,.3);background:rgba(52,201,138,.07)}
+.ins.done{color:var(--purple);border-color:rgba(157,126,247,.35);background:rgba(157,126,247,.08)}
+.pnl{padding:10px 14px}
+.pnl h3{margin:0 0 7px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pnl h3 small{font-weight:400;letter-spacing:0;text-transform:none;color:var(--faint);font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--line2);background:var(--surface2)}
+.chip.hot{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,.08)}
+.chip.ok{border-color:rgba(52,201,138,.5);color:var(--green)}
+.chip.bad{border-color:rgba(240,82,82,.45);color:#ff8a8a;text-decoration:line-through}
+.chip.mute{color:var(--faint);border-style:dashed}
+.chip.p{border-color:rgba(157,126,247,.5);color:var(--purple)}
+.chip.t{border-color:rgba(46,196,182,.5);color:var(--teal)}
+.chip.b{border-color:rgba(79,142,247,.5);color:#7fb0ff}
+.tw{overflow-x:auto}
+table.dt{border-collapse:collapse;width:100%;font-family:var(--f-mono);font-size:11.5px;font-variant-numeric:tabular-nums}
+.dt th{color:var(--faint);font-weight:400;text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+.dt td{padding:3px 6px;border-bottom:1px solid #1a1e28;white-space:nowrap}
+.dt td.hi{color:var(--amber);background:rgba(245,166,35,.1)}
+.dt tr.rh td{background:rgba(255,255,255,.03)}
+.dt td.inf{color:var(--faint)}
+
+.tk{padding:12px 16px}
+.tk h2{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tk ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px;max-width:90ch}
+.tk li::marker{color:var(--ac)}
+
+#ov h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ov p{color:var(--muted);margin:0 0 12px;font-size:13px}
+.ovt{border-collapse:collapse;width:100%;font-size:12.5px;min-width:720px}
+.ovt th{text-align:left;font-weight:500;color:var(--faint);font-size:11px;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid var(--line2)}
+.ovt td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.ovt td.m{font-family:var(--f-mono);font-size:12px}
+.ovt tr.cat td{color:var(--faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding-top:14px;border-bottom:none}
+.ovt .go{all:unset;cursor:pointer;font-family:var(--f-mono);font-weight:600}
+.ovt .go:hover{text-decoration:underline}
+.rule{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.rule div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px}
+.rule b{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:3px}
+#ops h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ops>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#ops .rule{margin:0 0 14px}
+.ovt td.how{color:#c7cddb;max-width:62ch}
+.ovt td.op{font-weight:500;white-space:nowrap}
+#pre h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#pre>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#pre .rule{margin-top:14px}
+.ovt.pm{min-width:980px}
+.ovt.pm td{vertical-align:middle}
+.lv{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11.5px;line-height:1.45;border:1px solid}
+.lv.any{color:var(--green);border-color:rgba(52,201,138,.35);background:rgba(52,201,138,.07)}
+.lv.req{color:var(--amber);border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.08)}
+.lv.no{color:#ff8a8a;border-color:rgba(240,82,82,.4);background:rgba(240,82,82,.08)}
+.lv.na{color:var(--faint);border-color:var(--line2);border-style:dashed}
+.pkey{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 0 12px;font-size:12px;color:var(--muted);align-items:center}
+
+svg text{font-family:var(--f-mono)}
+.el{paint-order:stroke;stroke:#0b0d12;stroke-width:4px;stroke-linejoin:round}
+
+@media (max-width:1100px){.work{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav.index{position:static;flex-direction:row;overflow-x:auto;gap:10px;padding-bottom:4px}
+  .grp{flex-direction:row;align-items:center;flex:none}
+  .grp-l{display:none}
+  .nb .hn{display:none}
+  .nb .ab{min-width:0}
+  .spec{grid-template-columns:minmax(0,1fr)}
+  .topbar .keys{display:none}
+  .lang{margin-left:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="topbar">
+  <h1 id="t-h1"></h1>
+  <span class="sub" id="t-sub"></span>
+  <span class="keys" id="t-keys"></span>
+  <button class="lang" id="lang" type="button"></button>
+</div>
+
+<div class="shell">
+  <nav class="index" id="nav"></nav>
+  <main id="main">
+    <section id="algo">
+      <div class="ahead"><span class="abbr" id="a-abbr"></span><span class="nm" id="a-name"></span><span class="rt" id="a-rt"></span></div>
+      <div class="spec" style="margin-top:10px">
+        <div><div class="k">Input</div><div class="v" id="s-in"></div></div>
+        <div><div class="k">Output</div><div class="v" id="s-out"></div></div>
+        <div><div class="k" id="k-req"></div><div class="v" id="s-req"></div></div>
+      </div>
+      <div class="work" style="margin-top:14px">
+        <div class="card gcard">
+          <div class="hd"><span id="g-cap"></span><span class="badge" id="g-badge"></span></div>
+          <svg id="g" viewBox="0 0 560 380" role="img"></svg>
+          <div class="controls">
+            <button class="btn" id="b-prev" type="button">← Prev</button>
+            <button class="btn play" id="b-play" type="button">▶ Play</button>
+            <button class="btn" id="b-next" type="button">Next →</button>
+            <div class="prog"><i id="prog"></i></div>
+            <span class="ctr" id="ctr"></span>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="right">
+          <div class="card stepbox">
+            <div class="slbl" id="s-lbl"></div>
+            <div class="stitle" id="s-title"></div>
+            <div class="desc" id="s-desc"></div>
+            <div class="ins" id="s-ins"></div>
+          </div>
+          <div id="panels" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+      </div>
+      <div class="card tk" style="margin-top:14px"><h2 id="tk-h"></h2><ul id="tk"></ul></div>
+    </section>
+    <section id="ov" hidden></section>
+    <section id="ops" hidden></section>
+    <section id="pre" hidden></section>
+  </main>
+</div>
+
+<style>
+.legend b.sw{width:11px;height:11px;border-radius:3px;border:1.5px solid}
+.tpl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:0 0 14px}
+.tpl div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px}
+.tpl b{display:block;font-family:var(--f-mono);font-size:11.5px;color:var(--amber);font-weight:600;margin-bottom:3px}
+.ovt td.yes{color:var(--green)}
+.ovt td.nope{color:#ff8a8a}
+h3.sub2{font-family:var(--f-disp);font-weight:400;font-size:19px;margin:22px 0 8px}
+</style>
+<script>
+/* ============================== language ============================== */
+let LANG='en';
+const tr=(zh,en)=>LANG==='en'?en:zh;
+const L2=x=>Array.isArray(x)?(LANG==='en'?x[1]:x[0]):x;
+
+/* ============================== helpers ============================== */
+const clone = o => JSON.parse(JSON.stringify(o));
+function rec(){ const L=[]; return { L, add(o){ L.push(clone(o)); } }; }
+const tbl = (title, head, rows, hi=[], sub='', rowhi=[]) => ({k:'table', title, head, rows, hi, sub, rowhi});
+const chips = (title, items, sub='') => ({k:'chips', title, items, sub});
+const note = (title, text) => ({k:'note', title, text});
+const EMPTY=()=>[{x:tr('空','empty'),c:'mute'}];
+
+/* scene primitives (drawn fresh each step) */
+const D={
+  cell:(x,y,w,h,v,st,o={})=>({k:'cell',x,y,w,h,v:String(v),st,...o}),
+  txt:(x,y,s,o={})=>({k:'txt',x,y,s:String(s),...o}),
+  rect:(x,y,w,h,o={})=>({k:'rect',x,y,w,h,...o}),
+  line:(x1,y1,x2,y2,o={})=>({k:'line',x1,y1,x2,y2,...o}),
+};
+/* cell states: [fill, stroke, text] */
+const CS={n:['#141820','#2d3344','#c9d3ea'],dim:['#0e1117','#1c2130','#3e4559'],hot:['#3d2a00','#f5a623','#f5a623'],ok:['#0d3326','#34c98a','#34c98a'],
+  b:['#0f2140','#4f8ef7','#8fb8ff'],p:['#1a1040','#9d7ef7','#bba5ff'],t:['#082828','#2ec4b6','#2ec4b6'],r:['#3a1010','#f05252','#ff8a8a'],ghost:['#0b0d12','#232836','#2e3446']};
+const COL={amber:'#f5a623',green:'#34c98a',blue:'#4f8ef7',red:'#f05252',teal:'#2ec4b6',purple:'#9d7ef7',muted:'#8189a0',faint:'#4a5268',text:'#e3e7f0',line:'#2e3446',soft:'#c7cddb'};
+
+/* a 1-indexed array row with optional value bars and pointer labels */
+function arrScene(A, st, o){
+  const {x0,y,cw=32,ch=30,bars=false,bmax=1,ptr=[]}=o, out=[];
+  A.forEach((v,k)=>{ const x=x0+k*cw, s=st[k];
+    if(bars){ const h=Math.max(4,v/bmax*125); const c=CS[s]||CS.n;
+      out.push(D.rect(x+5,y-8-h,cw-10,h,{f:c[1],s:'none',o:s==='dim'?.18:.55,r:2})); }
+    out.push(D.cell(x+2,y,cw-4,ch,v,s));
+    out.push(D.txt(x+cw/2,y+ch+13,k+1,{c:s==='dim'?'#2e3446':'faint',fs:10.5})); });
+  const by={}; ptr.forEach(p=>{ (by[p.i]=by[p.i]||[]).push(p); });
+  Object.keys(by).forEach(i=>{ by[i].forEach((p,j)=>out.push(D.txt(x0+(i-1)*cw+cw/2,y+ch+31+j*15,p.s,{c:p.c,fs:12.5,w:600}))); });
+  return out;
+}
+
+/* ============================== Binary Search ============================== */
+function simBS(A,T){
+  const Rc=rec(), n=A.length, cw=32, x0=(560-n*cw)/2, bmax=Math.max(...A);
+  let L=1,R=n; const hist=[], sizes=[n];
+  const sc=(m,res,cmp)=>{ const st=A.map((_,k)=>{const i=k+1; if(res&&i===res) return 'ok'; if(i<L||i>R) return 'dim'; if(i===m) return 'hot'; return 'n';});
+    const ptr=[]; if(!res){ ptr.push({i:L,s:'L',c:'blue'}); ptr.push({i:R,s:'R',c:'blue'}); if(m) ptr.push({i:m,s:'m',c:'amber'}); }
+    return [D.txt(280,28,`target = ${T}`,{c:'text',fs:13,w:600}), ...arrScene(A,st,{x0,y:200,cw,bars:true,bmax,ptr}),
+      D.txt(280,318,cmp||'',{c:'amber',fs:13}), D.txt(280,352,tr('区间大小：','range size: ')+sizes.join(' → '),{c:'muted',fs:11.5})]; };
+  const PN=m=>[chips(tr('当前区间','Current range'),[{x:'L = '+L,c:'b'},{x:'m = '+(m??'–'),c:m?'hot':'mute'},{x:'R = '+R,c:'b'}],tr('闭区间 [L, R]','closed range [L, R]')),
+    tbl(tr('每一轮','Rounds'),['#','L','R','m','A[m]',tr('结果','result')],hist.length?hist:[['–','','','','','']],[],'',[hist.length-1]),
+    note(tr('递推式','Recurrence'),'T(n) = T(n/2) + O(1)')];
+  Rc.add({t:tr('输入：已排序数组 + target','Input: sorted array + target'),d:tr(`A[1..${n}] 已升序，找 ${T}。\n搜索区间从整个数组 [1, ${n}] 开始。`,`A[1..${n}] is sorted ascending; we look for ${T}.\nThe search range starts as the whole array [1, ${n}].`),
+    ins:tr('能用 BS 的前提：输入已排序（或存在单调判定）。(b) 第一句就要说这个。','Precondition: the input is sorted (or a monotone test exists). Say so in the first sentence of (b).'),it:'info',S:sc(null),P:PN(null)});
+  let round=0;
+  while(L<=R){ round++; const m=Math.floor((L+R)/2), v=A[m-1];
+    if(v<T){ hist.push([round,L,R,m,v,`< ${T} → L=${m+1}`]);
+      Rc.add({t:tr(`第 ${round} 轮：A[m] 太小`,`Round ${round}: A[m] too small`),d:tr(`m = ⌊(${L}+${R})/2⌋ = ${m}，A[${m}] = ${v} < ${T}。\n左半（含 m）都 ≤ ${v}，不可能是答案 → 保留 [${m+1}, ${R}]。`,`m = ⌊(${L}+${R})/2⌋ = ${m}, A[${m}] = ${v} < ${T}.\nEverything at or left of m is ≤ ${v}, so it cannot be the answer → keep [${m+1}, ${R}].`),
+        ins:tr('丢掉一整半的依据是「有序」，不是 mid 处这一次比较本身。','We may drop a whole half because the array is sorted, not because of one comparison at m.'),it:'info',S:sc(m,null,`A[${m}] = ${v} < ${T}  →  L = ${m+1}`),P:PN(m)});
+      L=m+1; }
+    else if(v>T){ hist.push([round,L,R,m,v,`> ${T} → R=${m-1}`]);
+      Rc.add({t:tr(`第 ${round} 轮：A[m] 太大`,`Round ${round}: A[m] too large`),d:tr(`m = ⌊(${L}+${R})/2⌋ = ${m}，A[${m}] = ${v} > ${T}。\n右半（含 m）都 ≥ ${v} → 保留 [${L}, ${m-1}]。`,`m = ⌊(${L}+${R})/2⌋ = ${m}, A[${m}] = ${v} > ${T}.\nEverything at or right of m is ≥ ${v} → keep [${L}, ${m-1}].`),
+        ins:tr('每轮只走一边：a = 1，不是 2。','Only one side per round: a = 1, not 2.'),it:'warn',S:sc(m,null,`A[${m}] = ${v} > ${T}  →  R = ${m-1}`),P:PN(m)});
+      R=m-1; }
+    else { hist.push([round,L,R,m,v,'= T ✓']);
+      Rc.add({t:tr('找到，返回下标','Found: return the index'),d:tr(`m = ${m}，A[${m}] = ${v} = target。\n返回 ${m}。共 ${round} 轮，⌈log₂(${n}+1)⌉ = ${Math.ceil(Math.log2(n+1))}。`,`m = ${m}, A[${m}] = ${v} = target.\nReturn ${m}. ${round} rounds; ⌈log₂(${n}+1)⌉ = ${Math.ceil(Math.log2(n+1))}.`),
+        ins:tr('官方输出是「第一个碰到的」匹配，不是最左。要最左/最右/插入位置都算 modification，要声明。','The spec returns the first match encountered, not the leftmost. Leftmost / rightmost / insertion point are modifications and must be declared.'),it:'done',S:sc(m,m,`A[${m}] = ${v} = ${T}  ✓`),P:PN(m)});
+      return Rc.L; }
+    sizes.push(Math.max(0,R-L+1)); }
+  return Rc.L;
+}
+
+/* ============================== Rotated-array minimum (modified BS) ============================== */
+function simRot(A){
+  const Rc=rec(), n=A.length, cw=36, x0=(560-n*cw)/2, bmax=Math.max(...A);
+  let L=1,R=n; const hist=[];
+  const sc=(m,res,cmp)=>{ const st=A.map((_,k)=>{const i=k+1; if(res&&i===res) return 'ok'; if(i<L||i>R) return 'dim'; if(i===m) return 'hot'; if(i===R) return 'b'; return 'n';});
+    const ptr=[]; if(!res){ ptr.push({i:L,s:'L',c:'blue'}); ptr.push({i:R,s:'R',c:'blue'}); if(m) ptr.push({i:m,s:'m',c:'amber'}); }
+    return [D.txt(280,28,tr('两段升序：第一段整体 > 第二段','Two ascending runs: run 1 is entirely above run 2'),{c:'muted',fs:12}), ...arrScene(A,st,{x0,y:200,cw,bars:true,bmax,ptr}),
+      D.txt(280,320,cmp||'',{c:'amber',fs:13})]; };
+  const PN=m=>[chips(tr('当前区间','Current range'),[{x:'L = '+L,c:'b'},{x:'m = '+(m??'–'),c:m?'hot':'mute'},{x:'R = '+R,c:'b'}]),
+    tbl(tr('每一轮','Rounds'),['#','L','R','m','A[m]','A[R]',tr('去向','keep')],hist.length?hist:[['–','','','','','','']],[],'',[hist.length-1]),
+    tbl(tr('改了哪些插槽','Slots changed'),[tr('插槽','slot'),tr('改动','change')],[['S2',tr('比 A[m] vs A[R]，不是 vs target','A[m] vs A[R], not vs a target')],['S3',tr('左支保留 m：[L, m]','left branch keeps m: [L, m]')],['S4',tr('L = R 时停','stop at L = R')],['S5',tr('返回值不是下标','returns a value')]])];
+  Rc.add({t:tr('题：旋转后的升序数组找最小','Problem: minimum of a rotated sorted array'),d:tr(`A[1..${n}] 互不相同、原本升序，被旋转过。\n整体无序，但被分成两段升序。最小值 = 第二段的第一个元素。`,`A[1..${n}] has distinct values, was sorted, then rotated.\nNot sorted overall, but it is two ascending runs. The minimum is the first element of run 2.`),
+    ins:tr('能二分的条件不是「有序」，而是能 O(1) 判断答案在左还是右。','Binary search needs a constant-time test that says left or right, not a fully sorted array.'),it:'info',S:sc(null),P:PN(null)});
+  let round=0;
+  while(L<R){ round++; const m=Math.floor((L+R)/2), v=A[m-1], r=A[R-1];
+    if(v>r){ hist.push([round,L,R,m,v,r,`[${m+1}, ${R}]`]);
+      Rc.add({t:tr(`第 ${round} 轮：m 在第一段`,`Round ${round}: m is in run 1`),d:tr(`A[${m}] = ${v} > A[${R}] = ${r}。\nm 和 R 不可能在同一段升序里，所以 m 在第一段，最小值严格在 m 右边 → [${m+1}, ${R}]。`,`A[${m}] = ${v} > A[${R}] = ${r}.\nm and R cannot be in the same run, so m is in run 1 and the minimum is strictly right of m → [${m+1}, ${R}].`),
+        ins:tr('S2 改动：比较对象从固定 target 换成 A[R]。这就是 (b) 要论证的单调判定。','S2 change: compare against A[R] instead of a fixed target. This is the monotone test (b) must justify.'),it:'info',S:sc(m,null,`A[${m}] = ${v} > A[${R}] = ${r}  →  L = ${m+1}`),P:PN(m)});
+      L=m+1; }
+    else { hist.push([round,L,R,m,v,r,`[${L}, ${m}]`]);
+      Rc.add({t:tr(`第 ${round} 轮：m 在第二段`,`Round ${round}: m is in run 2`),d:tr(`A[${m}] = ${v} < A[${R}] = ${r}。\nm 和 R 在同一段，m 之后都更大 → 最小值在 m 或其左边 → [${L}, ${m}]。`,`A[${m}] = ${v} < A[${R}] = ${r}.\nm and R are in the same run, everything after m is larger → the minimum is at or left of m → [${L}, ${m}].`),
+        ins:tr('S3 改动：保留 m 本身，因为 m 可能就是第二段的开头。写成 R = m−1 会丢答案。','S3 change: keep m itself, since m may be the start of run 2. Writing R = m−1 can lose the answer.'),it:'warn',S:sc(m,null,`A[${m}] = ${v} < A[${R}] = ${r}  →  R = ${m}`),P:PN(m)});
+      R=m; } }
+  Rc.add({t:tr('区间只剩一个：返回它','One element left: return it'),d:tr(`L = R = ${L}，返回 A[${L}] = ${A[L-1]}。\n每轮 m < R，两个分支都严格缩小区间，必然终止。`,`L = R = ${L}; return A[${L}] = ${A[L-1]}.\nEach round has m < R, so both branches strictly shrink the range and the search ends.`),
+    ins:tr('(c)：改动都是常数时间 → 「no impact to the original O(log n)」，不用重推递推式。','(c): every change is constant time → "no impact to the original O(log n)"; no need to re-derive the recurrence.'),it:'done',S:sc(null,L,`min = A[${L}] = ${A[L-1]}`),P:PN(null)});
+  return Rc.L;
+}
+
+/* ============================== Merge Sort (DFS order) ============================== */
+function simMS(A0){
+  const Rc=rec(), n=A0.length, LV=Math.log2(n), cw=30, ch=28, gap=16;
+  const nodes={}; const key=(lo,hi)=>lo+'-'+hi;
+  (function mk(lo,hi,l){ nodes[key(lo,hi)]={lo,hi,l,vals:A0.slice(lo-1,hi),vis:false,st:'p'}; if(hi>lo){ const md=Math.floor((lo+hi)/2); mk(lo,md,l+1); mk(md+1,hi,l+1);} })(1,n,0);
+  nodes[key(1,n)].vis=true;
+  const xOf=(lo,l)=>{ const size=n>>l, g=(lo-1)/size, w=n*cw+((1<<l)-1)*gap; return (560-w)/2+(lo-1)*cw+g*gap; };
+  const yOf=l=>40+l*86;
+  const work=Array(LV).fill(0); let stack=[], cur=null, comps=0;
+  const sc=()=>{ const out=[];
+    Object.values(nodes).forEach(nd=>{ if(!nd.vis||nd.l===0) return; const md=null;
+      const par=Object.values(nodes).find(p=>p.l===nd.l-1&&p.lo<=nd.lo&&p.hi>=nd.hi);
+      const px=xOf(par.lo,par.l)+(par.hi-par.lo+1)*cw/2, cx=xOf(nd.lo,nd.l)+(nd.hi-nd.lo+1)*cw/2;
+      out.push(D.line(px,yOf(par.l)+ch,cx,yOf(nd.l),{s:'line',w:1.4})); });
+    Object.values(nodes).forEach(nd=>{ if(!nd.vis) return; const x=xOf(nd.lo,nd.l), y=yOf(nd.l);
+      nd.vals.forEach((v,k)=>out.push(D.cell(x+k*cw+1.5,y,cw-3,ch,v,nd.st,{fs:12})));
+      if(cur&&cur===key(nd.lo,nd.hi)) out.push(D.rect(x-4,y-4,(nd.hi-nd.lo+1)*cw+8,ch+8,{s:'amber',d:'5 3',sw:1.6})); });
+    for(let l=0;l<=LV;l++) out.push(D.txt(16,yOf(l)+ch/2+1,'L'+l,{c:'faint',fs:10.5,a:'start'}));
+    return out; };
+  const PN=()=>[chips(tr('递归栈','Recursion stack'),stack.length?stack.map((s,i)=>({x:s,c:i===stack.length-1?'hot':''})):EMPTY(),tr('栈底 → 栈顶','bottom → top')),
+    tbl(tr('每层工作量','Work per level'),[tr('层','level'),tr('子问题数','calls'),tr('大小','size'),tr('已 merge','merged')],
+      Array.from({length:LV},(_,l)=>[l,1<<l,n>>l,`${work[l]} / ${n}`]),[],tr('每层 merge 合计都是 n','each level merges n in total')),
+    note(tr('递推式','Recurrence'),'T(n) = 2T(n/2) + O(n)')];
+  Rc.add({t:tr('输入：未排序数组','Input: an unsorted array'),d:tr(`MS(1..${n})：数组还没排序。\n先切两半，两半各自递归排好，再 merge。`,`MS(1..${n}): the array is unsorted.\nSplit in half, sort each half recursively, then merge.`),
+    ins:tr('a = 2：两个递归调用都要执行（和 BS 的 a = 1 对比）。','a = 2: both recursive calls run (compare BS, where a = 1).'),it:'info',S:sc(),P:PN()});
+  function ms(lo,hi){
+    const nd=nodes[key(lo,hi)]; stack.push(`MS(${lo}..${hi})`);
+    if(lo===hi){ stack.pop(); return; }
+    const md=Math.floor((lo+hi)/2), a=nodes[key(lo,md)], b=nodes[key(md+1,hi)];
+    a.vis=b.vis=true; if(a.lo===a.hi) a.st='ok'; if(b.lo===b.hi) b.st='ok'; cur=key(lo,hi);
+    const leaf=a.lo===a.hi;
+    Rc.add({t:tr(`切分 [${lo}..${hi}]`,`Split [${lo}..${hi}]`),d:tr(`切成 [${lo}..${md}] 和 [${md+1}..${hi}]，先递归左半。`+(leaf?'\n两半都只有 1 个元素：base case，直接返回，已经有序。':''),`Split into [${lo}..${md}] and [${md+1}..${hi}]; recurse on the left half first.`+(leaf?'\nBoth halves have one element: base case, already sorted.':'')),
+      ins:leaf?tr('base case 要写进 (a)：大小为 1 的输入原样返回。','Put the base case in (a): a one-element input is returned as is.'):tr('切分只算下标，O(1)。O(n) 的工作在 merge。','Splitting only computes indices, O(1). The O(n) work is in the merge.'),it:'info',S:sc(),P:PN()});
+    ms(lo,md); ms(md+1,hi);
+    // merge
+    const Lv=a.vals.slice(), Rv=b.vals.slice(), outv=[]; let i=0,j=0,c=0;
+    while(i<Lv.length&&j<Rv.length){ c++; if(Lv[i]<=Rv[j]) outv.push(Lv[i++]); else outv.push(Rv[j++]); }
+    while(i<Lv.length) outv.push(Lv[i++]); while(j<Rv.length) outv.push(Rv[j++]);
+    comps+=c; nd.vals=outv; nd.st='ok'; a.st='dim'; b.st='dim'; work[nd.l]+=hi-lo+1; cur=key(lo,hi);
+    Rc.add({t:tr(`Merge 回 [${lo}..${hi}]`,`Merge into [${lo}..${hi}]`),d:tr(`[${Lv.join(', ')}] + [${Rv.join(', ')}]\n→ [${outv.join(', ')}]\n比较 ${c} 次，移动 ${hi-lo+1} 个元素。`,`[${Lv.join(', ')}] + [${Rv.join(', ')}]\n→ [${outv.join(', ')}]\n${c} comparisons, ${hi-lo+1} elements moved.`),
+      ins:lo===1&&hi===n?tr(`最后一次 merge。共比较 ${comps} 次；每层都 merge 了 n 个元素，共 log n 层 → O(n log n)。`,`Final merge. ${comps} comparisons in all; every level merges n elements across log n levels → O(n log n).`):
+        tr('两半各自已有序，所以只要比两个队首：线性时间。改 Merge Sort 时，统计「跨左右」的信息就加在这里。','Each half is already sorted, so only the two fronts are compared: linear time. When modifying Merge Sort, cross-half statistics go here.'),
+      it:lo===1&&hi===n?'done':'ok',S:sc(),P:PN()});
+    stack.pop();
+  }
+  ms(1,n);
+  return Rc.L;
+}
+
+/* ============================== Inversion count (modified Merge Sort) ============================== */
+function simInv(A0){
+  const Rc=rec(), n=A0.length, h=n/2, cw=34, ch=30, gap=26, x0=(560-(n*cw+gap))/2;
+  const xAt=k=>x0+k*cw+(k>=h?gap:0);
+  const brute=a=>{ let c=0; for(let i=0;i<a.length;i++) for(let j=i+1;j<a.length;j++) if(a[i]>a[j]) c++; return c; };
+  const Lv=A0.slice(0,h).sort((a,b)=>a-b), Rv=A0.slice(h).sort((a,b)=>a-b), iL=brute(A0.slice(0,h)), iR=brute(A0.slice(h));
+  let i=0,j=0,cross=0; const out=[], hist=[]; let showHalves=false, mark={};
+  const sc=(msg)=>{ const o=[];
+    o.push(D.txt(16,58,'A',{c:'faint',a:'start'}));
+    A0.forEach((v,k)=>o.push(D.cell(xAt(k)+2,42,cw-4,ch,v,showHalves?'dim':'n')));
+    o.push(D.txt(16,168,tr('排好','sorted'),{c:'faint',a:'start',fs:10.5}));
+    if(showHalves){
+      Lv.forEach((v,k)=>{ const st=k<i?'dim':(mark.L&&mark.L.includes(k)?'r':(k===i?'b':'n')); o.push(D.cell(xAt(k)+2,152,cw-4,ch,v,st)); });
+      Rv.forEach((v,k)=>{ const st=k<j?'dim':(mark.R===k?'hot':(k===j?'p':'n')); o.push(D.cell(xAt(h+k)+2,152,cw-4,ch,v,st)); });
+      if(i<h) o.push(D.txt(xAt(i)+cw/2,198,'i',{c:'blue',w:600})); if(j<h) o.push(D.txt(xAt(h+j)+cw/2,198,'j',{c:'purple',w:600}));
+      o.push(D.txt(xAt(0),134,`inv_L = ${iL}`,{c:'muted',a:'start',fs:11.5})); o.push(D.txt(xAt(h),134,`inv_R = ${iR}`,{c:'muted',a:'start',fs:11.5}));
+      o.push(D.txt(16,262,'merge',{c:'faint',a:'start',fs:10.5}));
+      for(let k=0;k<n;k++) o.push(D.cell(x0+k*((n*cw+gap)/n)+2,246,(n*cw+gap)/n-4,ch,k<out.length?out[k].v:'',k<out.length?(out[k].c||'ok'):'ghost'));
+      o.push(D.txt(280,325,`cross = ${cross}`,{c:'amber',fs:15,w:600}));
+      o.push(D.txt(280,352,msg||'',{c:'soft',fs:12}));
+    }
+    return o; };
+  const PN=()=>[chips(tr('计数','Counts'),[{x:`inv_L = ${showHalves?iL:'?'}`,c:'b'},{x:`inv_R = ${showHalves?iR:'?'}`,c:'p'},{x:`cross = ${cross}`,c:'hot'}]),
+    tbl(tr('从右半取元素时 +左半剩余','+ left remaining when taking from the right'),['y',tr('左半剩余','left remaining'),'+'],hist.length?hist:[['–','','']],[],'',[hist.length-1])];
+  Rc.add({t:tr('题：数逆序对','Problem: count inversions'),d:tr(`A = [${A0.join(', ')}]\n数满足 i < j 且 A[i] > A[j] 的对数。暴力 O(n²)。`,`A = [${A0.join(', ')}]\nCount pairs with i < j and A[i] > A[j]. Brute force is O(n²).`),
+    ins:tr('答案 = 左半内部 + 右半内部 + 跨越左右。三类不重叠且穷尽，这就是 (b) 的骨架。','Answer = inside left + inside right + across. The three are disjoint and cover everything: that is the skeleton of (b).'),it:'info',S:sc(),P:PN()});
+  showHalves=true;
+  Rc.add({t:tr('递归返回：两半已排序 + 各自计数','Recursion returns: sorted halves + their counts'),d:tr(`每次调用返回两样东西：排好的数组、内部逆序对数。\n左半 [${A0.slice(0,h).join(', ')}] → ${iL} 个；右半 [${A0.slice(h).join(', ')}] → ${iR} 个。`,`Each call returns two things: the sorted array and its internal inversion count.\nLeft [${A0.slice(0,h).join(', ')}] → ${iL}; right [${A0.slice(h).join(', ')}] → ${iR}.`),
+    ins:tr('modification 要在 (a) 声明：返回值多了一个整数。','Declare the modification in (a): each call returns one extra integer.'),it:'info',S:sc(tr('现在 merge，同时数跨越左右的对','now merge and count cross pairs')),P:PN()});
+  while(i<h&&j<h){ mark={};
+    if(Lv[i]<=Rv[j]){ const v=Lv[i]; out.push({v}); i++;
+      Rc.add({t:tr(`取左半的 ${v}`,`Take ${v} from the left`),d:tr(`${v} ≤ ${Rv[j]}：取左边。\n左边元素被取走时不计数：它和右半剩下的都不构成逆序。`,`${v} ≤ ${Rv[j]}: take from the left.\nNothing is counted when a left element is taken: it forms no inversion with what remains on the right.`),
+        ins:'',it:'hide',S:sc(),P:PN()}); }
+    else { const v=Rv[j], rem=h-i; mark={L:Array.from({length:rem},(_,k)=>i+k),R:j}; cross+=rem; hist.push([v,Lv.slice(i).join(','),'+'+rem]);
+      Rc.add({t:tr(`取右半的 ${v}，+${rem}`,`Take ${v} from the right, +${rem}`),d:tr(`${Lv[i]} > ${v}：取右边。\n左半还剩 [${Lv.slice(i).join(', ')}]，都 > ${v}，且原下标都在 ${v} 前面 → 每个都和 ${v} 构成逆序。cross += ${rem}。`,`${Lv[i]} > ${v}: take from the right.\nThe left still holds [${Lv.slice(i).join(', ')}], all > ${v} and all originally before it → each forms an inversion with ${v}. cross += ${rem}.`),
+        ins:tr('为什么全都 > y：左半已排序，队首都输给了 y，后面的只会更大。每个跨越对只在它的右端被取走时数一次。','Why all of them exceed y: the left half is sorted and its front already lost to y. Each cross pair is counted once, when its right member is taken.'),it:'ok',
+        S:sc(tr('红色 = 本次计入的逆序对','red = pairs counted now')),P:PN()});
+      j++; } }
+  mark={}; const rest=[]; while(i<h){ rest.push(Lv[i]); out.push({v:Lv[i]}); i++; } while(j<h){ rest.push(Rv[j]); out.push({v:Rv[j]}); j++; }
+  const total=iL+iR+cross;
+  Rc.add({t:tr('收尾 + 返回总数','Finish and return the total'),d:tr(`剩下的 [${rest.join(', ')}] 直接接上，不再计数。\n返回 ${iL} + ${iR} + ${cross} = ${total}。暴力核对：${brute(A0)}。`,`Append the leftover [${rest.join(', ')}]; nothing more to count.\nReturn ${iL} + ${iR} + ${cross} = ${total}. Brute-force check: ${brute(A0)}.`),
+    ins:tr('(c) 这里要写递推式：每层仍是 O(n) merge + O(1) 计数 → 2T(n/2)+O(n) = O(n log n)。别写「调用 O(n) 的 merge」，merge 不是 black box。','(c) needs the recurrence here: each level is still an O(n) merge plus O(1) counting → 2T(n/2)+O(n) = O(n log n). Do not say "call the O(n) merge"; merge is not a black box.'),it:'done',
+    S:sc(`total = ${iL} + ${iR} + ${cross} = ${total}`),P:PN()});
+  return Rc.L;
+}
+
+/* ============================== Fast Select ============================== */
+function simFS(A0,k0){
+  const Rc=rec(), levels=[], callStack=[];
+  const sortedAll=A0.slice().sort((a,b)=>a-b);
+  let A=A0.slice(), k=k0, lvl=0;
+  const grid=(cols,stFn,o={})=>{ const g=cols.length, cw=38, ch=26, gp=10, w=g*cw+(g-1)*gp, x0=(560-w)/2, y0=62, out=[];
+    cols.forEach((col,c)=>col.forEach((v,r)=>out.push(D.cell(x0+c*(cw+gp)+1,y0+r*(ch+4),cw-2,ch,v,stFn(v,c,r),{fs:12}))));
+    cols.forEach((col,c)=>out.push(D.txt(x0+c*(cw+gp)+cw/2,y0-10,tr('组','g')+(o.lab?o.lab[c]:c+1),{c:'faint',fs:10})));
+    if(o.blocks) o.blocks.forEach(b=>out.push(D.rect(x0+b.c0*(cw+gp)-4,y0+b.r0*(ch+4)-4,(b.c1-b.c0+1)*(cw+gp)-gp+8,(b.r1-b.r0+1)*(ch+4)+4,{s:b.s,d:'5 3',sw:1.8})));
+    return out; };
+  const cap=()=>D.txt(280,24,`Level ${lvl} · n = ${A.length} · k = ${k}`,{c:'text',fs:13,w:600});
+  const PN=(extra=[])=>[chips(tr('递归调用（找第 k 小）','Calls (k-th smallest)'),callStack.map((s,i)=>({x:s,c:i===callStack.length-1?'hot':''}))),
+    tbl(tr('每层','Per level'),['L','n','k','pivot','|lows|','|mids|','|highs|',tr('上界 7n/10','bound 7n/10')],levels.length?levels:[['–','','','','','','','']],[],'',[levels.length-1]), ...extra];
+  Rc.add({t:tr('题：找第 k 小（不排序）','Problem: k-th smallest without sorting'),d:tr(`n = ${A0.length}，k = ${k0}。排序后取第 k 个要 O(n log n)。\nFast Select 保证 O(n)：靠一个「足够居中」的 pivot。`,`n = ${A0.length}, k = ${k0}. Sorting first costs O(n log n).\nFast Select guarantees O(n) by finding a pivot that is central enough.`),
+    ins:tr('官方输出是第 k 小；第 k 大是 common modification，要声明。','The spec returns the k-th smallest; k-th largest is a common modification and must be declared.'),it:'info',
+    S:[D.txt(280,24,`n = ${A0.length} · k = ${k0}`,{c:'text',fs:13,w:600}),...grid(chunk(A0),()=>'n')],P:PN()});
+  function chunk(a){ const c=[]; for(let i=0;i<a.length;i+=5) c.push(a.slice(i,i+5)); return c; }
+  while(true){
+    callStack.push(`FS(n=${A.length}, k=${k})`);
+    if(A.length===1){ Rc.add({t:'Base case',d:tr(`n = 1，返回 ${A[0]}。`,`n = 1: return ${A[0]}.`),ins:'',it:'hide',S:[cap()],P:PN()}); break; }
+    const raw=chunk(A), sorted=raw.map(g=>g.slice().sort((a,b)=>a-b)), medIdx=sorted.map(g=>g.length===5?2:Math.ceil(g.length/2)-1);
+    const meds=sorted.map((g,i)=>g[medIdx[i]]), ms=meds.slice().sort((a,b)=>a-b), pivot=ms[Math.ceil(ms.length/2)-1];
+    if(lvl>0) Rc.add({t:tr(`Level ${lvl}：分组`,`Level ${lvl}: group`),d:tr(`新输入 ${A.length} 个元素，每 5 个一组，${raw.length} 组（最后一组可以不满 5 个）。`,`New input of ${A.length} elements, groups of 5: ${raw.length} groups (the last may be short).`),ins:'',it:'hide',S:[cap(),...grid(raw,()=>'n')],P:PN()});
+    else Rc.add({t:tr('每 5 个一组','Groups of 5'),d:tr(`${A.length} 个元素按原顺序每 5 个一组 → ${raw.length} 组。`,`Take the ${A.length} elements in order, 5 per group → ${raw.length} groups.`),ins:tr('组大小是常数，所以每组排序是 O(1)，全部 n/5 组合计 O(n)。','Group size is constant, so sorting a group is O(1); all n/5 groups total O(n).'),it:'info',S:[cap(),...grid(raw,()=>'n')],P:PN()});
+    Rc.add({t:tr('每组排序，取中位数','Sort each group, take its median'),d:tr(`组中位数：[${meds.join(', ')}]`,`Group medians: [${meds.join(', ')}]`),
+      ins:lvl===0?tr('这一步 + 下面的划分 = 递推式尾巴的 O(n)。','This step plus the partition below is the O(n) term of the recurrence.'):'',it:lvl===0?'info':'hide',
+      S:[cap(),...grid(sorted,(v,c,r)=>r===medIdx[c]?'hot':'n'),D.txt(280,250,tr('橙色 = 各组中位数','amber = group medians'),{c:'muted',fs:11.5})],P:PN()});
+    // pivot step
+    let S3;
+    if(lvl===0){ const ord=sorted.map((g,i)=>i).sort((a,b)=>meds[a]-meds[b]), cols=ord.map(i=>sorted[i]), half=Math.ceil(cols.length/2)-1;
+      S3=[cap(),...grid(cols,(v,c,r)=>v===pivot?'ok':(v<=pivot?'t':'n'),{lab:ord.map(i=>i+1),blocks:[{c0:0,c1:half,r0:0,r1:2,s:'teal'},{c0:half,c1:cols.length-1,r0:2,r1:4,s:'purple'}]}),
+        D.txt(280,250,tr('列按组中位数排开 · 青框 ≤ p · 紫框 ≥ p','columns ordered by median · teal box ≤ p · purple box ≥ p'),{c:'muted',fs:11.5}),
+        D.txt(280,285,tr(`至少 3·(n/10) = ${Math.floor(3*A.length/10)} 个 ≤ p → 任一侧 ≤ 7n/10 = ${Math.floor(7*A.length/10)}`,`at least 3·(n/10) = ${Math.floor(3*A.length/10)} are ≤ p → each side ≤ 7n/10 = ${Math.floor(7*A.length/10)}`),{c:'teal',fs:12.5})]; }
+    else S3=[cap(),...grid(sorted,(v,c,r)=>v===pivot?'ok':(r===medIdx[c]?'hot':'n'))];
+    Rc.add({t:tr(`pivot = 中位数的中位数 = ${pivot}`,`pivot = median of medians = ${pivot}`),d:tr(`对 ${meds.length} 个组中位数递归调用 FS，取第 ⌈${meds.length}/2⌉ 小 → ${pivot}。\n这是递归 #1，输入是新数组 medians，规模 n/5。`,`Recursive call on the ${meds.length} medians for the ⌈${meds.length}/2⌉-th smallest → ${pivot}.\nThis is recursive call #1; its input is a new array, the medians, of size n/5.`),
+      ins:lvl===0?tr('3/10 论证：一半的组中位数 ≤ p，每个这样的组至少 3 个 ≤ 它的中位数 ≤ p。所以 p 不会太偏。','The 3/10 argument: half the group medians are ≤ p, and each such group has at least 3 elements ≤ its median ≤ p. So p cannot be lopsided.'):tr('T(n/5)：找 pivot 是准备工作，不是「切两半」。','T(n/5): finding the pivot is preparation, not splitting into halves.'),it:lvl===0?'ok':'info',
+      S:S3,P:PN([note(tr('递归 #1','Call #1'),`FS(medians, ${Math.ceil(meds.length/2)}) = ${pivot}`)])});
+    const lows=A.filter(v=>v<pivot), mids=A.filter(v=>v===pivot), highs=A.filter(v=>v>pivot);
+    let dest, nk=k, side;
+    if(k<=lows.length){ dest=tr('→ lows','→ lows'); side='lows'; }
+    else if(k>lows.length+mids.length){ nk=k-lows.length-mids.length; dest=`→ highs, k=${nk}`; side='highs'; }
+    else { dest=tr('= pivot ✓','= pivot ✓'); side='mid'; }
+    levels.push([lvl,A.length,k,pivot,lows.length,mids.length,highs.length,Math.floor(7*A.length/10)]);
+    const pst=(v)=>{ const c=v<pivot?'b':v>pivot?'r':'hot'; if(side==='mid') return v===pivot?'ok':'dim'; if(side==='lows') return v<pivot?'b':'dim'; return v>pivot?'r':'dim'; };
+    const msg=side==='lows'?tr(`k = ${k} ≤ |lows| = ${lows.length} → 递归进 lows，k 不变`,`k = ${k} ≤ |lows| = ${lows.length} → recurse on lows, k unchanged`):
+      side==='highs'?tr(`k = ${k} > ${lows.length}+${mids.length} → 递归进 highs，k = ${k}−${lows.length}−${mids.length} = ${nk}`,`k = ${k} > ${lows.length}+${mids.length} → recurse on highs, k = ${k}−${lows.length}−${mids.length} = ${nk}`):
+      tr(`${lows.length} < k = ${k} ≤ ${lows.length}+${mids.length} → 答案就是 pivot`,`${lows.length} < k = ${k} ≤ ${lows.length}+${mids.length} → the answer is the pivot`);
+    Rc.add({t:side==='mid'?tr(`返回 ${pivot}`,`Return ${pivot}`):tr('三路划分 + 只递归一侧','3-way partition, recurse on one side'),
+      d:tr(`lows < ${pivot}：${lows.length} 个；mids = ${pivot}：${mids.length} 个；highs > ${pivot}：${highs.length} 个。\n`,`lows < ${pivot}: ${lows.length}; mids = ${pivot}: ${mids.length}; highs > ${pivot}: ${highs.length}.\n`)+msg+(side==='mid'?tr(`\n核对：排序后第 ${k0} 个 = ${sortedAll[k0-1]}。`,`\nCheck: the ${k0}-th of the sorted array = ${sortedAll[k0-1]}.`):''),
+      ins:side==='mid'?tr('T(n) = T(n/5) + T(7n/10) + O(n)：1/5 + 7/10 = 9/10 < 1，几何级数收敛 → O(n)。不能套 Master Theorem。','T(n) = T(n/5) + T(7n/10) + O(n): 1/5 + 7/10 = 9/10 < 1, so the geometric series converges → O(n). Master Theorem does not apply.'):
+        side==='highs'?tr('进 highs 时 k 要减掉扔掉的 |lows|+|mids|；进 lows 不用改。','Going into highs, subtract the discarded |lows|+|mids| from k; going into lows, k stays.'):
+        tr(`递归 #2：规模 ${lows.length} ≤ 7n/10 = ${Math.floor(7*A.length/10)}。这是真正的递归。`,`Recursive call #2: size ${lows.length} ≤ 7n/10 = ${Math.floor(7*A.length/10)}. This is the real recursion.`),
+      it:side==='mid'?'done':(side==='highs'?'warn':'ok'),
+      S:[cap(),...grid(sorted,(v)=>pst(v)),D.txt(280,250,`lows ${lows.length}   ·   mids ${mids.length}   ·   highs ${highs.length}`,{c:'soft',fs:12.5}),D.txt(280,285,msg,{c:'amber',fs:12})],P:PN()});
+    if(side==='mid') break;
+    A=side==='lows'?lows:highs; k=nk; lvl++;
+  }
+  return Rc.L;
+}
+
+/* ============================== Fast Multiply (Karatsuba) ============================== */
+function simFM(x,y,n){
+  const Rc=rec(), bits=v=>v.toString(2).padStart(n,'0').split(''), h=n/2, mask=(1<<h)-1;
+  const xl=x>>h, xr=x&mask, yl=y>>h, yr=y&mask, A=xl*yl, B=xr*yr, C=(xl+xr)*(yl+yr), mid=C-A-B, res=(A<<n)+(mid<<h)+B;
+  const cw=34, bx=280-n*cw/2;
+  const bitRow=(lab,v,yy,split)=>{ const o=[D.txt(bx-12,yy+15,`${lab} = ${v}`,{c:'muted',a:'end',fs:12})];
+    bits(v).forEach((b,i)=>o.push(D.cell(bx+i*cw+2,yy,cw-4,28,b,split?(i<h?'b':'p'):'n')));
+    if(split){ o.push(D.txt(bx+h*cw/2,yy-6+0,'',{})); } return o; };
+  const box=(i,title,lines,st)=>{ const x=22+i*176, o=[D.rect(x,150,164,84,{s:st?COL[st]:COL.line,f:'#12151c',sw:st?1.8:1.2})];
+    o.push(D.txt(x+82,170,title,{c:st||'muted',fs:13,w:600})); lines.forEach((l,j)=>o.push(D.txt(x+82,192+j*18,l,{c:'soft',fs:12}))); return o; };
+  const boxes=(upto,act)=>[
+    ...box(0,'A = xl · yl',upto>=1?[`${xl} · ${yl}`,`= ${A}`]:['…'],act===1?'amber':upto>=1?'green':null),
+    ...box(1,'B = xr · yr',upto>=2?[`${xr} · ${yr}`,`= ${B}`]:['…'],act===2?'amber':upto>=2?'green':null),
+    ...box(2,'C = (xl+xr)(yl+yr)',upto>=3?[`${xl+xr} · ${yl+yr}`,`= ${C}`]:['…'],act===3?'amber':upto>=3?'green':null)];
+  const top=split=>[...bitRow('x',x,40,split),...bitRow('y',y,84,split),
+    ...(split?[D.txt(bx+h*cw/2,128,tr('高位 l','high l'),{c:'blue',fs:11}),D.txt(bx+h*cw+h*cw/2,128,tr('低位 r','low r'),{c:'purple',fs:11})]:[])];
+  const PN=(u)=>[tbl(tr('子问题','Subproblems'),['',tr('值','value'),tr('递归？','recursive?')],[['xl, xr',`${xl}, ${xr}`,'–'],['yl, yr',`${yl}, ${yr}`,'–'],['A',u>=1?A:'?','✓ #1'],['B',u>=2?B:'?','✓ #2'],['C',u>=3?C:'?','✓ #3'],['C−A−B',u>=4?mid:'?',tr('✗ 减法 O(n)','✗ subtraction O(n)')]],[],'',[u>=1&&u<=3?u+1:-1]),
+    note(tr('递推式','Recurrence'),'T(n) = 3T(n/2) + O(n)')];
+  Rc.add({t:tr('输入：两个 n-bit 整数','Input: two n-bit integers'),d:tr(`x = ${bits(x).join('')}₂ = ${x}，y = ${bits(y).join('')}₂ = ${y}，n = ${n}。\n朴素拆法要 4 次子乘法。`,`x = ${bits(x).join('')}₂ = ${x}, y = ${bits(y).join('')}₂ = ${y}, n = ${n}.\nThe naive split needs 4 sub-multiplications.`),
+    ins:tr('输入约束：整数、两数等长、n = 2^k。调用前要在 (b) 里验证，不满足就先补前导 0。','Input constraints: integers, equal length, n = 2^k. Verify them in (b); pad with leading zeros if needed.'),it:'warn',S:[...top(false),...boxes(0)],P:PN(0)});
+  Rc.add({t:tr('按位劈成两半','Split each number in half'),d:tr(`x = 2^${h}·xl + xr：xl = ${xl}，xr = ${xr}\ny = 2^${h}·yl + yr：yl = ${yl}，yr = ${yr}\nxy = 2^${n}·xl·yl + 2^${h}·(xl·yr + xr·yl) + xr·yr`,`x = 2^${h}·xl + xr: xl = ${xl}, xr = ${xr}\ny = 2^${h}·yl + yr: yl = ${yl}, yr = ${yr}\nxy = 2^${n}·xl·yl + 2^${h}·(xl·yr + xr·yl) + xr·yr`),
+    ins:tr('中间项 xl·yr + xr·yl 要两次乘法。Karatsuba 的全部技巧就是把它省成零次。','The middle term xl·yr + xr·yl needs two products. Karatsuba\'s whole trick is to get it for free.'),it:'info',S:[...top(true),...boxes(0)],P:PN(0)});
+  Rc.add({t:tr('递归 #1：A = xl·yl','Call #1: A = xl·yl'),d:tr(`A = ${xl} · ${yl} = ${A}`,`A = ${xl} · ${yl} = ${A}`),ins:'',it:'hide',S:[...top(true),...boxes(1,1)],P:PN(1)});
+  Rc.add({t:tr('递归 #2：B = xr·yr','Call #2: B = xr·yr'),d:tr(`B = ${xr} · ${yr} = ${B}`,`B = ${xr} · ${yr} = ${B}`),ins:'',it:'hide',S:[...top(true),...boxes(2,2)],P:PN(2)});
+  Rc.add({t:tr('递归 #3：C = (xl+xr)(yl+yr)','Call #3: C = (xl+xr)(yl+yr)'),d:tr(`C = ${xl+xr} · ${yl+yr} = ${C}\n展开：C = xl·yl + xl·yr + xr·yl + xr·yr`,`C = ${xl+xr} · ${yl+yr} = ${C}\nExpanded: C = xl·yl + xl·yr + xr·yl + xr·yr`),
+    ins:tr('xl+xr 可能多 1 位（这里 3+1 = 4 = 100₂）。课上把它当作 n/2 规模处理，不影响递推式。','xl+xr may need one extra bit (here 3+1 = 4 = 100₂). The course treats it as size n/2; the recurrence is unchanged.'),it:'info',S:[...top(true),...boxes(3,3)],P:PN(3)});
+  Rc.add({t:tr('中间项 = C − A − B','Middle term = C − A − B'),d:tr(`C − A − B = ${C} − ${A} − ${B} = ${mid}\n核对：xl·yr + xr·yl = ${xl}·${yr} + ${xr}·${yl} = ${xl*yr+xr*yl} ✓`,`C − A − B = ${C} − ${A} − ${B} = ${mid}\nCheck: xl·yr + xr·yl = ${xl}·${yr} + ${xr}·${yl} = ${xl*yr+xr*yl} ✓`),
+    ins:tr('第 4 次乘法换成了两次减法，减法是 O(n)，进递推式尾巴。','The fourth product became two subtractions: O(n) work in the tail of the recurrence.'),it:'ok',
+    S:[...top(true),...boxes(3),D.txt(280,268,`C − A − B = ${mid}`,{c:'amber',fs:14,w:600})],P:PN(4)});
+  Rc.add({t:tr('移位相加，返回','Shift, add, return'),d:tr(`2^${n}·A + 2^${h}·(C−A−B) + B\n= ${A<<n} + ${mid<<h} + ${B} = ${res}\n核对：${x} × ${y} = ${x*y} ✓`,`2^${n}·A + 2^${h}·(C−A−B) + B\n= ${A<<n} + ${mid<<h} + ${B} = ${res}\nCheck: ${x} × ${y} = ${x*y} ✓`),
+    ins:tr('乘 2 的幂只是左移，O(n)。','Multiplying by a power of 2 is a left shift, O(n).'),it:'ok',
+    S:[...top(true),...boxes(3),D.txt(280,268,`2^${n}·${A} + 2^${h}·${mid} + ${B} = ${res}`,{c:'green',fs:14,w:600})],P:PN(4)});
+  // recursion tree
+  const tree=[]; const ys=[270,312,354], cnt=[1,3,9], nv=[1,4,16];
+  cnt.forEach((c,l)=>{ const sp=430/(c+1); for(let i=0;i<c;i++){ const xx=20+sp*(i+1);
+    if(l>0){ const pi=Math.floor(i/3), psp=430/(cnt[l-1]+1); tree.push(D.line(20+psp*(pi+1),ys[l-1]+7,xx,ys[l]-7,{s:'line',w:1.2})); }
+    tree.push(D.cell(xx-7,ys[l]-7,14,14,'','b')); }
+    tree.push(D.txt(548,ys[l]+4,`3^${l}·(n/2^${l})`,{c:'muted',a:'end',fs:10.5})); });
+  Rc.add({t:tr('递归树：每层 ×3/2','Recursion tree: each level ×3/2'),d:tr(`第 i 层：3^i 个调用，每个 n/2^i 位 → 本层工作 n·(3/2)^i。\n比值 a/b^d = 3/2 > 1：越往下越重，叶子主导。\n叶子数 3^(log₂n) = n^(log₂3) ≈ n^1.585。`,`Level i: 3^i calls of n/2^i bits → work n·(3/2)^i.\nRatio a/b^d = 3/2 > 1: levels get heavier going down, so the leaves dominate.\nLeaves: 3^(log₂n) = n^(log₂3) ≈ n^1.585.`),
+    ins:tr(`朴素 4T(n/2)+O(n)：叶子 4^(log₂n) = n²。少一次乘法，指数从 2 降到 1.585。`,`Naive 4T(n/2)+O(n): 4^(log₂n) = n² leaves. One fewer product drops the exponent from 2 to 1.585.`),it:'done',
+    S:[...top(true),...boxes(3),...tree],P:[tbl(tr('每层','Per level'),[tr('层','level'),'Karatsuba',tr('朴素','naive'),tr('本层工作','work')],cnt.map((c,l)=>[l,c,nv[l],`n·(3/2)^${l}`]).concat([['…','3^i','4^i','']])),note(tr('结果','Result'),'O(n^log₂3) ≈ O(n^1.585)')]});
+  return Rc.L;
+}
+
+/* ============================== data ============================== */
+const BS_A=[3,8,12,17,21,25,30,34,41,47,52,58,63,70,77];
+const ROT_A=[30,34,41,47,52,3,8,12,17,21,25];
+const MS_A=[38,27,43,3,9,82,10,25];
+const INV_A=[8,3,9,5,6,1,7,4];
+const FS_A=[42,20,51,84,7,10,69,13,47,75,8,65,28,5,12,56,54,9,31,85,71,55,89,73,16];
+
+const CATS={c1:['二分搜索','Binary search'],c2:['排序 / 合并','Sorting / merging'],c3:['选择','Selection'],c4:['乘法','Multiplication']};
+const ALGOS=[
+ {id:'bs',cat:'c1',abbr:'BS',hn:['标准二分','black box'],name:'Binary Search',c:'--blue',rt:'O(log n)',cap:['已排序 · 找 52','Sorted · find 52'],
+  in:['已排序列表 + 起止下标 + target','Sorted list + start/end index + target'],out:['<span class="warn">第一个碰到的</span>匹配下标，或 NOT FOUND','The <span class="warn">first match encountered</span>, or NOT FOUND'],
+  req:['输入必须有序（或有单调判定）；a = 1','Input must be sorted (or have a monotone test); a = 1'],
+  mods:['最左匹配 · 最右匹配 · 插入位置','leftmost · rightmost · insertion point'],
+  sim:()=>simBS(BS_A,52),
+  tk:[['可二分的本质是单调判定 <code>F…F T…T</code>，有序只是最常见的一种。','What binary search needs is a monotone test <code>F…F T…T</code>; a sorted array is just the most common case.'],
+      ['<code>A[i] = i</code> 类题：sorted + distinct ⇒ <code>A[i] − i</code> 单调不减。','<code>A[i] = i</code> problems: sorted + distinct ⇒ <code>A[i] − i</code> is non-decreasing.'],
+      ['边界未知（无限数组）：先倍增 1,2,4,… 定上界，再二分，O(log n) + O(log n)。倍增是自己的步骤，要单独描述和分析。','Unknown bound (infinite array): double 1,2,4,… to find an upper bound, then binary search: O(log n) + O(log n). Doubling is your own step; describe and analyze it separately.'],
+      ['答案空间二分：递推式变量是 M（值域），写 <code>O(n log M)</code>，别写成 <code>O(n log n)</code>。','Binary search on the answer: the recurrence variable is M (the value range); write <code>O(n log M)</code>, not <code>O(n log n)</code>.']]},
+ {id:'rot',cat:'c1',abbr:'BS′',hn:['旋转数组最小值','rotated minimum'],name:'Modified Binary Search · rotated-array minimum',c:'--teal',rt:'O(log n)',cap:['旋转过的升序数组','Rotated sorted array'],
+  in:['互不相同的升序数组，旋转了未知位数','Distinct sorted array, rotated an unknown amount'],out:['最小元素','The minimum element'],
+  req:['改了 S2 / S3 / S4 / S5，<span class="warn">每一处都要在 (a) 声明、(c) 点名</span>','Changes S2 / S3 / S4 / S5; <span class="warn">declare each in (a) and name each in (c)</span>'],
+  mods:['示范：比较对象 + 分支规则 + base case + 返回值','example: comparison + branch rule + base case + return value'],
+  sim:()=>simRot(ROT_A),
+  tk:[['(b) 的关键句：<code>A[m] &gt; A[R]</code> ⇒ m 和 R 不在同一段升序。','Key sentence for (b): <code>A[m] &gt; A[R]</code> ⇒ m and R are not in the same run.'],
+      ['保留 m（R = m）而不是 R = m−1：m 可能就是答案。','Keep m (R = m), not R = m−1: m may be the answer.'],
+      ['要论证终止：L &lt; R 时 m &lt; R，两个分支都严格缩小。','Argue termination: when L &lt; R, m &lt; R, so both branches shrink the range.'],
+      ['(c) 一句话：改动都是常数时间，对原 O(log n) 无影响。不用重写递推式。','(c) in one sentence: all changes are constant time, no impact on the original O(log n). No need to restate the recurrence.']]},
+ {id:'ms',cat:'c2',abbr:'MS',hn:['归并排序','black box'],name:'Merge Sort',c:'--purple',rt:'O(n log n)',cap:['8 个元素 · 递归树（DFS 顺序）','8 elements · recursion tree (DFS order)'],
+  in:['可比较元素列表 + 起止下标','List of comparable elements + start/end index'],out:['升序排好的列表','The list sorted ascending'],
+  req:['<span class="warn"><code>merge</code> 单独不是 black box</span>，要说「修改 Merge Sort」','<span class="warn"><code>merge</code> alone is not a black box</span>; say "modify Merge Sort"'],
+  mods:['降序','descending order'],
+  sim:()=>simMS(MS_A),
+  tk:[['2T(n/2)+O(n)：a=2 两半都做，b=2，d=1 → b^d = a → <code>O(n log n)</code>。','2T(n/2)+O(n): a=2 (both halves), b=2, d=1 → b^d = a → <code>O(n log n)</code>.'],
+      ['和「减半淘汰」<code>T(n/2)+O(n) = O(n)</code> 只差递归一边还是两边。','Compare the halving-elimination pattern <code>T(n/2)+O(n) = O(n)</code>: the only difference is recursing on one side or both.'],
+      ['merge 时左右各自已有序，是统计「跨越左右」信息的免费窗口。','During merge both halves are sorted, so it is a free moment to count cross-half information.'],
+      ['题干说元素只能判等不能比大小（2.23 Majority）→ MS / BS / FS 都不能用，只能自己设计 D&C。','If elements can only be tested for equality (2.23 Majority), MS / BS / FS are all off-limits; design your own D&C.']]},
+ {id:'inv',cat:'c2',abbr:'MS′',hn:['逆序对计数','inversion count'],name:'Modified Merge Sort · counting inversions',c:'--amber',rt:'O(n log n)',cap:['顶层 merge 逐步计数','Top-level merge, step by step'],
+  in:['数组 <code>A[1..n]</code>','Array <code>A[1..n]</code>'],out:['逆序对个数（每次调用另外返回排好的数组）','Number of inversions (each call also returns the sorted array)'],
+  req:['改了返回值 + merge 内部计数 → (c) <span class="warn">要写递推式</span>','Changes the return value and counts inside merge → (c) <span class="warn">must give the recurrence</span>'],
+  mods:['示范：返回值 + merge 时统计','example: return value + counting during merge'],
+  sim:()=>simInv(INV_A),
+  tk:[['从右半取 y 时 +「左半剩余个数」：它们都 &gt; y，且原下标都在 y 之前。','When y is taken from the right, add the number left in the left half: all exceed y and all come before y.'],
+      ['从左半取元素时不计数，否则会重复。','Count nothing when taking from the left, or pairs get double counted.'],
+      ['Reverse Pairs（<code>a &gt; 2b</code>）：merge 前单独用双指针扫一遍，再正常 merge。','Reverse pairs (<code>a &gt; 2b</code>): run a separate two-pointer scan before the normal merge.'],
+      ['(b) 要讲 base case：单个元素没有任何对，返回 0。','(b) should state the base case: one element has no pairs, return 0.']]},
+ {id:'fs',cat:'c3',abbr:'FS',hn:['median of medians','black box'],name:'Fast Select',c:'--green',rt:'O(n)',cap:['n = 25 · 5 列 × 5 行','n = 25 · 5 columns × 5 rows'],
+  in:['列表 + 起止下标 + 整数 k','List + start/end index + integer k'],out:['第 k <span class="warn">小</span>的元素','The k-th <span class="warn">smallest</span> element'],
+  req:['不需要排序或有序；只要元素可比较','No sorting or order needed; elements must be comparable'],
+  mods:['第 k 大','k-th largest'],
+  sim:()=>simFS(FS_A,8),
+  tk:[['两个递归项：<code>T(n/5)</code> 找 pivot（输入是 medians），<code>T(7n/10)</code> 继续搜（输入是原数组一侧）。','Two recursive terms: <code>T(n/5)</code> finds the pivot (input: the medians), <code>T(7n/10)</code> keeps searching (input: one side of the original).'],
+      ['不平衡切分不能套 MT：用分数和 1/5 + 7/10 = 9/10 &lt; 1 → <code>O(n)</code>。','Unequal subproblems rule out MT: use the sum 1/5 + 7/10 = 9/10 &lt; 1 → <code>O(n)</code>.'],
+      ['为什么是 5：g = 3 时 1/3 + 2/3 = 1，退化成 <code>O(n log n)</code>。5 是最小可行的；7、9 也行。','Why 5: with g = 3, 1/3 + 2/3 = 1, which degrades to <code>O(n log n)</code>. 5 is the smallest that works; 7 and 9 also work.'],
+      ['直接调用两次 + 一次 O(n) 扫描（离中位数最近的 k 个）：注意距离相等的 tie-break。','Two unmodified calls plus an O(n) scan (k closest to the median): handle ties at the cutoff distance.']]},
+ {id:'fm',cat:'c4',abbr:'FM',hn:['Karatsuba','black box'],name:'Fast Multiply',c:'--red',rt:'O(n^log₂3)',cap:['13 × 11 · n = 4 位','13 × 11 · n = 4 bits'],
+  in:['两个 n-bit <span class="warn">整数</span>，n = 2^k','Two n-bit <span class="warn">integers</span>, n = 2^k'],out:['乘积 x · y','The product x · y'],
+  req:['Common modifications：<span class="warn">None</span>，只能直接调用','Common modifications: <span class="warn">None</span>; call it unmodified'],
+  mods:['无','none'],
+  sim:()=>simFM(13,11,4),
+  tk:[['3T(n/2)+O(n)：b^d = 2 &lt; 3 → 叶重 → <code>O(n^log₂3) ≈ O(n^1.585)</code>。','3T(n/2)+O(n): b^d = 2 &lt; 3 → leaf-heavy → <code>O(n^log₂3) ≈ O(n^1.585)</code>.'],
+      ['(b) 要验证输入约束：整数、等长、长度是 2 的幂。x² 有 2n 位，2n 仍是 2 的幂。','(b) must check the input constraints: integers, equal length, length a power of 2. x² has 2n bits, and 2n is still a power of 2.'],
+      ['Merge Sort 比 Fast Multiply 快：<code>n log n / n^1.585 → 0</code>。','Merge Sort is faster than Fast Multiply: <code>n log n / n^1.585 → 0</code>.'],
+      ['可能考手算（DPV 2.1）：二进制 ↔ 十进制要熟。FFT 不在 Exam 2 白名单。','Hand computation may be asked (DPV 2.1): be fluent in binary ↔ decimal. FFT is not on the Exam 2 list.']]},
+];
+
+/* ============================== rendering ============================== */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let A=null, STEPS=[], cur=0, timer=null, VIEW='bs';
+const LEG={bs:[['hot','m（本轮中点）','m (midpoint)'],['n','仍在区间内','in range'],['dim','已丢弃','discarded'],['ok','答案','answer']],
+  rot:[['hot','m','m'],['b','A[R]（比较对象）','A[R] (compared against)'],['dim','已丢弃','discarded'],['ok','最小值','minimum']],
+  ms:[['p','待排序','not yet sorted'],['ok','已有序','sorted'],['dim','已并入上一层','merged upward']],
+  inv:[['b','i（左队首）','i (left front)'],['p','j（右队首）','j (right front)'],['hot','本次取走的 y','y taken now'],['r','本次计入的左半剩余','left elements counted now'],['dim','已取走','taken']],
+  fs:[['hot','组中位数','group median'],['ok','pivot','pivot'],['t','≤ pivot','≤ pivot'],['b','lows','lows'],['r','highs','highs'],['dim','被丢弃','discarded']],
+  fm:[['b','高位 l','high half l'],['p','低位 r','low half r']]};
+function mk(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; }
+
+function applyStatic(){
+  document.documentElement.lang=LANG==='en'?'en':'zh-CN';
+  $('t-h1').textContent=tr('D&C 总复习','Divide & Conquer Review');
+  document.title=$('t-h1').textContent;
+  $('t-sub').textContent=tr('CS-6515 Exam 2 · 4 个 black box + 2 个修改范例，每步状态由真实运行算法生成','CS-6515 Exam 2 · 4 black boxes + 2 worked modifications');
+  $('t-keys').innerHTML=tr('<kbd>←</kbd> <kbd>→</kbd> 单步 · <kbd>Space</kbd> 播放 · <kbd>[</kbd> <kbd>]</kbd> 换算法','<kbd>←</kbd> <kbd>→</kbd> step · <kbd>Space</kbd> play · <kbd>[</kbd> <kbd>]</kbd> switch algorithm');
+  $('lang').textContent=LANG==='en'?'中文':'English';
+  $('lang').setAttribute('aria-label',tr('切换到英文','Switch to Chinese'));
+  $('nav').setAttribute('aria-label',tr('算法索引','Algorithm index'));
+  $('k-req').textContent=tr('要求 / 注意','Requirements / notes');
+  $('tk-h').textContent=tr('考点 · 陷阱','Exam points · traps');
+  $('g').setAttribute('aria-label',tr('算法演示','Algorithm animation'));
+}
+function buildNav(){
+  const nav=$('nav'); nav.innerHTML='';
+  const g0=document.createElement('div'); g0.className='grp'; g0.innerHTML=`<div class="grp-l">${tr('总览','Overview')}</div>`;
+  [['ov',tr('一览表','Cheat sheet'),tr('4 个 black box','the 4 black boxes')],['ops',tr('修改插槽','Mod slots'),tr('(a) 怎么写','how to write (a)')],['pre',tr('递推速查','MT table'),tr('Master Theorem 矩阵','recurrences')]].forEach(([id,ab,hn])=>{
+    const b=document.createElement('button'); b.type='button'; b.className='nb'; b.dataset.id=id; b.style.setProperty('--c','var(--text)');
+    b.innerHTML=`<span class="ab">${ab}</span><span class="hn">${hn}</span>`; b.onclick=()=>select(id); g0.appendChild(b); });
+  nav.appendChild(g0);
+  Object.keys(CATS).forEach(cat=>{ const gr=document.createElement('div'); gr.className='grp'; gr.innerHTML=`<div class="grp-l">${L2(CATS[cat])}</div>`;
+    ALGOS.filter(a=>a.cat===cat).forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='nb'; b.dataset.id=a.id; b.style.setProperty('--c',`var(${a.c})`);
+      b.innerHTML=`<span class="ab">${a.abbr}</span><span class="hn">${L2(a.hn)}</span>`; b.onclick=()=>select(a.id); gr.appendChild(b); });
+    nav.appendChild(gr); });
+}
+function buildOverview(){
+  let h=`<h2>${tr('Black box 一览','The black boxes at a glance')}</h2><p>${tr('Exam 2 只能用这 4 个当 black box（Ed #148）。带 ′ 的两行是修改范例。点名字跳到逐步演示。','Only these 4 may be used as black boxes on Exam 2 (Ed #148). The two rows marked ′ are worked modifications. Click a name for its walkthrough.')}</p><div class="card tw"><table class="ovt"><thead><tr><th>${tr('算法','Algorithm')}</th><th>Input</th><th>Output</th><th>Runtime</th><th>${tr('可修改的地方（common modifications）','Common modifications')}</th></tr></thead><tbody>`;
+  Object.keys(CATS).forEach(cat=>{ h+=`<tr class="cat"><td colspan="5">${L2(CATS[cat])}</td></tr>`;
+    ALGOS.filter(a=>a.cat===cat).forEach(a=>{ h+=`<tr><td><button type="button" class="go" style="color:var(${a.c})" data-go="${a.id}">${a.abbr}</button><br><span style="color:var(--muted);font-size:11.5px">${a.name.split(' · ')[0]}</span></td><td>${L2(a.in)}<br><span style="color:var(--muted);font-size:12px">${L2(a.req)}</span></td><td>${L2(a.out)}</td><td class="m">${a.rt}</td><td>${L2(a.mods)}</td></tr>`; }); });
+  h+='</tbody></table></div><div class="rule">'+
+   tr('<div><b>白名单只有 4 个</b>Binary Search、Merge Sort、Fast Select、Fast Multiply。<code>merge</code> 单独不算；FFT、随机 Quickselect、Strassen 用了会被罚。不用 black box、自己设计 D&C 是允许的。</div>','<div><b>Only 4 are allowed</b>Binary Search, Merge Sort, Fast Select, Fast Multiply. <code>merge</code> alone does not count; FFT, randomized Quickselect and Strassen are penalized. Designing your own D&C with no black box is allowed.</div>')+
+   tr('<div><b>(a) 叙述体</b>禁止 pseudocode，包括逐行翻译成文字；嵌套 bullet 多了也会被判。必须写 base case 和最后 return 什么。</div>','<div><b>(a) is prose</b>No pseudocode, including line-by-line translation into words; heavily nested bullets count too. Include the base case and what you return.</div>')+
+   tr('<div><b>(b) 必须独立成段</b>(a) 里顺带解释的不算。3–5 句、informal 即可：black box 为什么可用、每轮为什么往这边走、改动为什么对。</div>','<div><b>(b) stands on its own</b>Explanations inside (a) do not count. 3–5 informal sentences: why the black box applies, why each step goes this way, why the change is correct.</div>')+
+   tr('<div><b>(c) runtime</b>未修改的 black box 直接引用。改过的必须论证影响，影响为零也要写一句。写出 a、b、d 各对应哪一步，化简到底。</div>','<div><b>(c) runtime</b>Cite unmodified black boxes directly. For a modified one, justify the impact, even when it is zero. Say which step gives a, b and d, and simplify fully.</div>')+
+   tr('<div><b>硬性红线</b>必须是 D&C；每层子问题必须更小；必须打败 brute force，在 (c) 里点一句「beats O(X)」。</div>','<div><b>Hard rules</b>It must be D&C; every recursive call must be smaller; it must beat brute force. Say "beats O(X)" in (c).</div>')+
+   tr('<div><b>先读题干限制</b>「只能判等、不能比大小」直接废掉 BS / MS / FS（2.23 Majority）。限制往往就是出题点。</div>','<div><b>Read the constraints first</b>"Equality tests only, no ordering" rules out BS / MS / FS (2.23 Majority). The constraint is often the point of the problem.</div>')+
+   '</div>';
+  $('ov').innerHTML=h; $('ov').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>select(b.dataset.go));
+}
+
+/* modification slots: [slot, zh, en, example zh, example en, (b) zh, (b) en, (c) zh, (c) en] */
+const SLOTS=[
+ ['Binary Search','Binary Search',[
+  ['S1 搜索空间','S1 search space','搜值域 1..M / rank，而不是数组下标','Search a value range 1..M or a rank, not array indices','Koko、两数组第 k 小','Koko, k-th of two arrays','新空间满足单调；答案一定在初始区间内','The new space is monotone; the answer lies in the initial range','log n 换成 log M 或 log k','log n becomes log M or log k'],
+  ['S2 判定','S2 test','固定 target → 动态比较或可行性检查','Fixed target → a dynamic comparison or feasibility check','<code>A[m]</code> vs <code>m</code>；<code>A[m]</code> vs <code>A[R]</code>','<code>A[m]</code> vs <code>m</code>; <code>A[m]</code> vs <code>A[R]</code>','新判定算的就是要的量','The new test computes the quantity you need','<span class="warn">唯一常改 runtime 的插槽</span>：O(n) 检查 → d = 1','<span class="warn">The one slot that often changes runtime</span>: an O(n) check → d = 1'],
+  ['S3 分支','S3 branch','决定丢哪一半','Which half to discard','保留 m：R = m','Keep m: R = m','<span class="warn">单调性</span>：被丢的一侧不可能含答案','<span class="warn">Monotonicity</span>: the discarded side cannot contain the answer','一句「常数时间比较」','"constant-time comparison"'],
+  ['S4 终止','S4 stop','停在 L &gt; R 还是 L = R','Stop at L &gt; R or at L = R','最左 / 最右匹配','leftmost / rightmost match','不会提前停、不漏候选；base case 为何对','No early stop, no lost candidate; why the base case is right','一句带过','one line'],
+  ['S5 返回值','S5 return','下标 → bool / 值 / 区间','index → bool / value / range','2.17 返回 bool','2.17 returns a bool','返回的确实是题目要的','What you return is what was asked','一句带过','one line'],
+  ['S6 外挂前后处理','S6 pre / post','先框出区间，或还原结果','Bound the range first, or map the result back','2.16 倍增定界','2.16 doubling to find a bound','这一步不破坏 black box 前提','This step keeps the black box\'s preconditions','单列一行，再和主体相加','its own line, then add to the main part']]],
+ ['Merge Sort','Merge Sort',[
+  ['M1 merge 时统计','M1 count during merge','合并时加计数器 / 额外统计','Add a counter or statistic inside the merge','逆序对、右侧更小元素个数','inversions, smaller-to-the-right','三类（左 / 右 / 跨越）不重叠且穷尽；跨越的每对恰好数一次','The three classes (left / right / across) are disjoint and complete; each cross pair counted once','每元素 O(1) → 仍 2T(n/2)+O(n) = O(n log n)，<span class="warn">要写递推式</span>','O(1) per element → still 2T(n/2)+O(n) = O(n log n); <span class="warn">give the recurrence</span>'],
+  ['M2 返回值','M2 return','每次调用多返回一个量','Each call returns an extra value','（排好的数组, 计数）','(sorted array, count)','base case 的返回值正确','The base case returns the right value','O(1) 额外工作','O(1) extra'],
+  ['M3 降序','M3 descending','common modification','common modification','—','—','声明即可','Just declare it','无影响','no impact']]],
+ ['Fast Select','Fast Select',[
+  ['F1 第 k 大','F1 k-th largest','common modification','common modification','LC 215','LC 215','声明即可（等价于第 n−k+1 小）','Declare it (same as the (n−k+1)-th smallest)','无影响，O(n)','no impact, O(n)'],
+  ['F2 不改，外面加工','F2 unmodified + pre/post','直接调用，前后加 O(n) 扫描','Call it as is, add O(n) scans before or after','离中位数最近的 k 个','k closest to the median','<span class="warn">输入的什么性质让它能用</span>；tie-break','<span class="warn">Which property of the input lets it apply</span>; tie-breaking','直接断言 O(n)，各阶段相加','assert O(n), add the phases']]],
+ ['Fast Multiply','Fast Multiply',[
+  ['—','—','<span class="warn">Common modifications: None</span>，不要改','<span class="warn">Common modifications: None</span>; do not modify it','x⁴ = (x²)²，补前导 0','x⁴ = (x²)², pad with zeros','验证输入约束：整数、等长、n = 2^k','Check the constraints: integers, equal length, n = 2^k','2n 位的调用：O((2n)^1.585) = O(n^1.585)','a 2n-bit call: O((2n)^1.585) = O(n^1.585)']]]
+];
+const AFORM=[
+ ['Black box used','Binary Search, modified.','"I use binary search"（没说改过）','"I use binary search" (no mention of changes)'],
+ ['Input','the array <code>A[1..n]</code>, searched over its index range','只写 A，不说搜的是下标、值域还是 rank','Just "A", without saying whether it searches indices, values or ranks'],
+ ['Output','the minimum element of <code>A</code>','"the index"（实际返回的是值）','"the index" (when a value is returned)'],
+ ['Modification','compare <code>A[m]</code> with <code>A[R]</code> instead of a target; keep <code>m</code> on the left branch; return the value','"modified slightly"（没逐条列）','"modified slightly" (no list of what changed)'],
+ ['Pre-process','none','漏写：评分员找不到就当没有','Leaving it out: graders treat missing as absent'],
+ ['Post-process','none','同上','Same'],
+ ['Steps',['2–3 句叙述，含 base case 和 return','2–3 sentences of prose, including the base case and the return'],'<code>if A[m] &gt; A[R] then L = m+1</code>（行级伪码）','<code>if A[m] &gt; A[R] then L = m+1</code> (line-level pseudocode)']];
+function buildOps(){
+  let h=`<h2>${tr('修改插槽 + (a) 写法','Modification slots + how to write (a)')}</h2><p>${tr('改了 black box 就有三项义务：在 (a) 声明改了什么、在 (b) 论证改动正确、在 (c) 分析 runtime 影响（为零也要写）。','Modifying a black box brings three obligations: declare the change in (a), justify it in (b), and state its runtime impact in (c), even when it is zero.')}</p>`;
+  h+='<div class="tpl">'+
+   tr('<div><b>Black box used</b>名字 + 是否 modified。没声明就改 = 扣分。</div>','<div><b>Black box used</b>Name + whether it is modified. Changing it without saying so loses points.</div>')+
+   tr('<div><b>Input / Output</b>搜的是什么（下标？值域？rank？）、返回什么。和 black box 的官方 spec 对照。</div>','<div><b>Input / Output</b>What is searched (indices? values? ranks?) and what is returned. Compare with the official spec.</div>')+
+   tr('<div><b>Modification</b>逐条列动过的插槽。这是评分员找 (b)(c) 对应项的索引。</div>','<div><b>Modification</b>List each slot you changed. Graders use it to find the matching parts of (b) and (c).</div>')+
+   tr('<div><b>Pre / Post-process</b>有就写，没有写 none。runtime 单独一行，再和主体相加。</div>','<div><b>Pre / Post-process</b>Write it, or write "none". Its runtime gets its own line, added to the main part.</div>')+
+   tr('<div><b>Steps</b>2–3 句叙述，含 base case 和 return。段落内的 1. 2. 3. 小步骤可以。</div>','<div><b>Steps</b>2–3 sentences of prose, including the base case and the return. Numbered steps inside a paragraph are fine.</div>')+
+   tr('<div><b>(b) 逐项对应</b>每个 (a) 条目在 (b) 里都有一句：为什么能用、改动为什么对、base case 为什么对。</div>','<div><b>(b) item by item</b>Each item in (a) gets a sentence in (b): why it applies, why the change is right, why the base case holds.</div>')+
+   '</div>';
+  h+=`<div class="card tw"><table class="ovt"><thead><tr><th>${tr('插槽','Slot')}</th><th>${tr('改什么','What changes')}</th><th>${tr('例子','Example')}</th><th>${tr('(b) 必须论证','(b) must argue')}</th><th>${tr('(c) 必须写','(c) must state')}</th></tr></thead><tbody>`;
+  SLOTS.forEach(([gz,ge,rows])=>{ h+=`<tr class="cat"><td colspan="5">${tr(gz,ge)}</td></tr>`;
+    rows.forEach(r=>{ h+=`<tr><td class="op">${tr(r[0],r[1])}</td><td class="how">${tr(r[2],r[3])}</td><td>${tr(r[4],r[5])}</td><td class="how">${tr(r[6],r[7])}</td><td>${tr(r[8],r[9])}</td></tr>`; }); });
+  h+='</tbody></table></div>';
+  h+=`<h3 class="sub2">${tr('(a) 逐项写法 · 以 BS′ 旋转数组最小值为例','(a) item by item · using BS′, the rotated-array minimum')}</h3>`;
+  h+=`<div class="card tw"><table class="ovt"><thead><tr><th>${tr('条目','Item')}</th><th>✓ ${tr('这样写','Write this')}</th><th>✗ ${tr('别这样写','Not this')}</th></tr></thead><tbody>`;
+  AFORM.forEach(([k,ok,bz,be])=>{ h+=`<tr><td class="op m">${k}</td><td class="yes">${L2(ok)}</td><td class="nope">${tr(bz,be)}</td></tr>`; });
+  h+='</tbody></table></div><div class="rule" style="margin-top:14px">'+
+   tr('<div><b>(c) 修改为常数时间</b>"Our modifications change only the comparison and the retained endpoint. Both remain constant time, so there is no impact to the original O(log n) runtime."</div>','<div><b>(c) for constant-time changes</b>"Our modifications change only the comparison and the retained endpoint. Both remain constant time, so there is no impact to the original O(log n) runtime."</div>')+
+   tr('<div><b>(c) 套 Master Theorem</b>"we split the work into two halves (b=2), operate on both halves (a=2), and perform O(n) (d=1) work merging and counting at each level."</div>','<div><b>(c) with the Master Theorem</b>"we split the work into two halves (b=2), operate on both halves (a=2), and perform O(n) (d=1) work merging and counting at each level."</div>')+
+   tr('<div><b>(b) 开头句式</b>"Our input is [性质], which allows us to take advantage of [black box]."</div>','<div><b>(b) opening sentence</b>"Our input is [property], which allows us to take advantage of [black box]."</div>')+
+   tr('<div><b>(c) 多阶段</b>先留常数再化简："3 * O(n) = O(n)"；"O(log n) + O(log n) = O(log n)"。</div>','<div><b>(c) several phases</b>Keep constants, then simplify: "3 * O(n) = O(n)"; "O(log n) + O(log n) = O(log n)".</div>')+
+   '</div>';
+  $('ops').innerHTML=h;
+}
+
+/* recurrence matrix: [T, a,b,d, b^d vs a, mtLevel, mtText zh/en, shapeLevel, shape zh/en, answer, source zh/en] */
+const RECS=[
+ ['Black box','Black boxes',[
+  ['T(n/2) + O(1)','1, 2, 0','1 = 1','any','MT','req',['等重','balanced'],'O(log n)',['Binary Search','Binary Search']],
+  ['2T(n/2) + O(n)','2, 2, 1','2 = 2','any','MT','req',['等重','balanced'],'O(n log n)',['Merge Sort','Merge Sort']],
+  ['3T(n/2) + O(n)','3, 2, 1','2 < 3','any','MT','no',['叶重','leaf-heavy'],'O(n^log₂3)',['Fast Multiply','Fast Multiply']],
+  ['T(n/5) + T(7n/10) + O(n)','—','—','no',['分数和 9/10','sum 9/10'],'any',['根重','root-heavy'],'O(n)',['Fast Select','Fast Select']]]],
+ ['自己设计时常见','Common in your own designs',[
+  ['T(n/2) + O(n)','1, 2, 1','2 > 1','any','MT','any',['根重','root-heavy'],'O(n)',['减半淘汰（2.23b）','halving elimination (2.23b)']],
+  ['2T(n/2) + O(1)','2, 2, 0','1 < 2','any','MT','no',['叶重','leaf-heavy'],'O(n)',['纯分治遍历','plain D&C traversal']],
+  ['4T(n/2) + O(n)','4, 2, 1','2 < 4','any','MT','no',['叶重','leaf-heavy'],'O(n²)',['朴素大整数乘法','naive multiplication']],
+  ['T(M/2) + O(n)','1, 2, —','—','req',['变量是 M','variable is M'],'na',['log M 轮 × O(n)','log M rounds × O(n)'],'O(n log M)',['答案空间二分（Koko）','search on the answer (Koko)']],
+  ['T(n/3) + T(2n/3) + O(n)','—','—','no',['分数和 = 1','sum = 1'],'req',['等重','balanced'],'O(n log n)',['FS 用 3 个一组','FS with groups of 3']]]],
+ ['DPV 2.5','DPV 2.5',[
+  ['2T(n/3) + 1','2, 3, 0','1 < 2','any','MT','no',['叶重','leaf-heavy'],'O(n^log₃2)',['(a)','(a)']],
+  ['5T(n/4) + n','5, 4, 1','4 < 5','any','MT','no',['叶重','leaf-heavy'],'O(n^log₄5)',['(b)','(b)']],
+  ['7T(n/7) + n','7, 7, 1','7 = 7','any','MT','req',['等重','balanced'],'O(n log n)',['(c)','(c)']],
+  ['9T(n/3) + n²','9, 3, 2','9 = 9','any','MT','req',['等重','balanced'],'O(n² log n)',['(d)','(d)']],
+  ['8T(n/2) + n³','8, 2, 3','8 = 8','any','MT','req',['等重','balanced'],'O(n³ log n)',['(e)','(e)']],
+  ['49T(n/25) + n^1.5 log n','49, 25, —','125 > 49','no',['比值法 49/125','ratio 49/125'],'any',['根重','root-heavy'],'O(n^1.5 log n)',['(f)','(f)']],
+  ['T(n−1) + 2','—','—','no',['展开','unroll'],'na',['n 层，均匀','n levels, even'],'O(n)',['(g)','(g)']],
+  ['T(n−1) + n^c','—','—','no',['展开','unroll'],'na',['n^c 重复 n 次','n^c repeated n times'],'O(n^(c+1))',['(h)','(h)']],
+  ['T(n−1) + c^n','—','—','no',['展开','unroll'],'na',['末项主导','last term dominates'],'O(c^n)',['(i)','(i)']],
+  ['2T(n−1) + 1','—','—','no',['展开','unroll'],'na',['Σ 2^i','Σ 2^i'],'O(2^n)',['(j)','(j)']],
+  ['T(√n) + 1','—','—','no',['代换 n = 2^m','substitute n = 2^m'],'na',['m 每层减半','m halves each level'],'O(log log n)',['(k)','(k)']]]]
+];
+function buildPre(){
+  const lv=(l,t)=>`<span class="lv ${l}">${t}</span>`;
+  let h=`<h2>${tr('Master Theorem + 递推速查','Master Theorem + recurrence lookup')}</h2><p>${tr('先看 T(…) 的形状再选方法。问 Θ 一律答 big-O；log 底数可以丢，指数里的不能丢。','Check the shape of T(…) before choosing a method. When asked for Θ, answer in big-O; drop log bases, except inside an exponent.')}</p>`;
+  h+='<div class="rule" style="margin:0 0 14px">'+
+   `<div><b>T(n) = a·T(n/b) + O(n^d)</b>${tr('第 i 层工作 = n^d · (a/b^d)^i：公比 r = a/b^d 的几何级数。比 <code>b^d</code> 和 <code>a</code>。','Level i does n^d · (a/b^d)^i work: a geometric series with ratio r = a/b^d. Compare <code>b^d</code> with <code>a</code>.')}</div>`+
+   `<div><b>${tr('b^d > a · 根重','b^d > a · root-heavy')}</b>${lv('any','O(n^d)')} ${tr('合并代价主导，往下每层变轻。','The combine cost dominates; levels get lighter going down.')}</div>`+
+   `<div><b>${tr('b^d = a · 等重','b^d = a · balanced')}</b>${lv('req','O(n^d log n)')} ${tr('每层一样重，共 log n 层。','Every level weighs the same, across log n levels.')}</div>`+
+   `<div><b>${tr('b^d < a · 叶重','b^d < a · leaf-heavy')}</b>${lv('no','O(n^(log_b a))')} ${tr('递归分裂主导，叶子数 = a^(log_b n)。','Splitting dominates; there are a^(log_b n) leaves.')}</div>`+
+   '</div>';
+  h+=`<div class="pkey">${tr('MT 列：','MT column: ')}${lv('any',tr('直接套 MT','apply MT'))}${lv('req',tr('能用但要小心','usable with care'))}${lv('no',tr('不能套，换方法','does not apply; use another method'))} &nbsp; ${tr('树形列：','Shape column: ')}${lv('any',tr('根重','root-heavy'))}${lv('req',tr('等重','balanced'))}${lv('no',tr('叶重','leaf-heavy'))}${lv('na',tr('非除法型','not a division recurrence'))}</div>`;
+  h+=`<div class="card tw"><table class="ovt pm"><thead><tr><th>${tr('递推式','Recurrence')}</th><th>a, b, d</th><th>b^d vs a</th><th>${tr('方法','Method')}</th><th>${tr('树形','Shape')}</th><th>${tr('答案','Answer')}</th><th>${tr('出处','Source')}</th></tr></thead><tbody>`;
+  RECS.forEach(([gz,ge,rows])=>{ h+=`<tr class="cat"><td colspan="7">${tr(gz,ge)}</td></tr>`;
+    rows.forEach(([t,abd,cmp,ml,mt,sl,sh,ans,src])=>{ h+=`<tr><td class="m">${t}</td><td class="m">${abd}</td><td class="m">${cmp}</td><td>${lv(ml,L2(mt))}</td><td>${lv(sl,L2(sh))}</td><td class="m" style="color:var(--amber)">${ans}</td><td>${L2(src)}</td></tr>`; }); });
+  h+='</tbody></table></div><div class="rule" style="margin-top:14px">'+
+   tr('<div><b>T(n−1) ≠ T(n/2)</b>减 1 展开成 n 层，除以 2 只有 log n 层，差一个指数。</div>','<div><b>T(n−1) ≠ T(n/2)</b>Subtracting 1 unrolls into n levels; halving gives log n levels. That is an exponential gap.</div>')+
+   tr('<div><b>一边 vs 两边</b><code>T(n/2)+O(n) = O(n)</code>，<code>2T(n/2)+O(n) = O(n log n)</code>。a 数的是实际执行的调用，互斥分支算 1 个。</div>','<div><b>One side vs both</b><code>T(n/2)+O(n) = O(n)</code>, <code>2T(n/2)+O(n) = O(n log n)</code>. a counts calls that actually run; mutually exclusive branches count as 1.</div>')+
+   tr('<div><b>不平衡切分</b><code>T(αn)+T(βn)+O(n)</code>：α+β &lt; 1 → O(n)；= 1 → O(n log n)。硬套 MT 会被扣。</div>','<div><b>Unequal splits</b><code>T(αn)+T(βn)+O(n)</code>: α+β &lt; 1 → O(n); = 1 → O(n log n). Forcing MT loses points.</div>')+
+   tr('<div><b>余项带 log</b>算 r = a·f(n/b)/f(n)：&lt;1 → O(f(n))；=1 → O(f(n) log n)；&gt;1 → O(n^(log_b a))。</div>','<div><b>A log in the tail</b>Compute r = a·f(n/b)/f(n): &lt;1 → O(f(n)); =1 → O(f(n) log n); &gt;1 → O(n^(log_b a)).</div>')+
+   tr('<div><b>d 是每层总工作</b>扫一遍 → d=1；一次比较 → d=0。前后处理不进递推式，单独加：Overall = pre + T(n) + post。</div>','<div><b>d is the total work per level</b>One scan → d=1; one comparison → d=0. Pre/post-processing stays out of the recurrence: Overall = pre + T(n) + post.</div>')+
+   tr('<div><b>答题写法</b>"For a=1, b=2, d=1, this is O(n) via Master Theorem." a、b、d 显式写出。</div>','<div><b>How to write it</b>"For a=1, b=2, d=1, this is O(n) via Master Theorem." Write a, b and d explicitly.</div>')+
+   '</div>';
+  $('pre').innerHTML=h;
+}
+
+const STATIC=['ov','ops','pre'];
+function select(id, keep){
+  stop(); VIEW=id;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  try{ history.replaceState(null,'','#'+id); }catch(e){}
+  if(STATIC.includes(id)){ $('algo').hidden=true; STATIC.forEach(x=>$(x).hidden=x!==id); A=null; if(!keep) window.scrollTo({top:0}); return; }
+  $('algo').hidden=false; STATIC.forEach(x=>$(x).hidden=true);
+  A=ALGOS.find(a=>a.id===id); if(!A.steps) A.steps=A.sim(); STEPS=A.steps;
+  cur=keep?Math.min(cur,STEPS.length-1):0;
+  document.documentElement.style.setProperty('--ac',`var(${A.c})`);
+  $('a-abbr').textContent=A.abbr; $('a-name').textContent=A.name; $('a-rt').textContent=A.rt;
+  $('s-in').innerHTML=L2(A.in); $('s-out').innerHTML=L2(A.out); $('s-req').innerHTML=L2(A.req);
+  $('g-cap').textContent=L2(A.cap); $('tk').innerHTML=A.tk.map(t=>`<li>${L2(t)}</li>`).join('');
+  $('legend').innerHTML=(LEG[A.id]||[]).map(([k,zh,en])=>{ const c=CS[k]; return `<span><b class="sw" style="background:${c[0]};border-color:${c[1]}"></b>${tr(zh,en)}</span>`; }).join('');
+  render();
+}
+function draw(svg,p){
+  if(p.k==='cell'){ const c=CS[p.st]||CS.n; mk('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:4,fill:c[0],stroke:c[1],'stroke-width':1.6},svg);
+    if(p.v!=='') { const t=mk('text',{x:p.x+p.w/2,y:p.y+p.h/2+1,'text-anchor':'middle','dominant-baseline':'middle','font-size':p.fs||13,'font-weight':600,fill:c[2]},svg); t.textContent=p.v; } }
+  else if(p.k==='txt'){ if(p.s==='') return; const t=mk('text',{x:p.x,y:p.y,'text-anchor':p.a||'middle','dominant-baseline':'middle','font-size':p.fs||12,'font-weight':p.w||400,fill:COL[p.c]||p.c||COL.muted},svg); t.textContent=p.s; }
+  else if(p.k==='rect'){ mk('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:p.r??6,fill:p.f||'none',stroke:p.s==='none'?'none':(COL[p.s]||p.s||COL.line),'stroke-width':p.sw||1.5,'stroke-dasharray':p.d||'none',opacity:p.o??1},svg); }
+  else if(p.k==='line'){ mk('line',{x1:p.x1,y1:p.y1,x2:p.x2,y2:p.y2,stroke:COL[p.s]||p.s||COL.line,'stroke-width':p.w||1.4,'stroke-dasharray':p.d||'none'},svg); }
+}
+function render(){
+  const s=STEPS[cur], svg=$('g'); svg.innerHTML='';
+  (s.S||[]).forEach(p=>draw(svg,p));
+  $('g-badge').textContent=`step ${cur}`;
+  $('s-lbl').textContent=`STEP ${cur} / ${STEPS.length-1}`; $('s-title').textContent=s.t; $('s-desc').textContent=s.d;
+  const ins=$('s-ins'); ins.hidden=!s.ins||s.it==='hide'; ins.className='ins '+(s.it||'info'); ins.textContent=s.ins||'';
+  $('panels').innerHTML=(s.P||[]).map(panel).join('');
+  $('b-prev').disabled=cur===0; $('b-next').disabled=cur===STEPS.length-1;
+  $('prog').style.width=(STEPS.length>1?cur/(STEPS.length-1)*100:0)+'%'; $('ctr').textContent=`${cur} / ${STEPS.length-1}`;
+}
+function panel(p){
+  const head=`<h3>${esc(p.title)}${p.sub?` <small>${esc(p.sub)}</small>`:''}</h3>`;
+  if(p.k==='chips') return `<div class="card pnl">${head}<div class="chips">${p.items.map(i=>`<span class="chip ${i.c||''}">${esc(i.x)}</span>`).join('')}</div></div>`;
+  if(p.k==='note') return `<div class="card pnl">${head}<div style="font-family:var(--f-mono);font-size:17px;color:var(--ac)">${esc(p.text)}</div></div>`;
+  const hi=new Set(p.hi||[]), rh=new Set(p.rowhi||[]);
+  return `<div class="card pnl">${head}<div class="tw"><table class="dt"><thead><tr>${p.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
+    p.rows.map((r,i)=>`<tr class="${rh.has(i)?'rh':''}">${r.map((c,j)=>`<td class="${hi.has(i+','+j)?'hi':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+`</tbody></table></div></div>`;
+}
+function stop(){ if(timer){clearInterval(timer);timer=null;} $('b-play').textContent='▶ Play'; }
+function go(d){ if(!A) return; const n=cur+d; if(n<0||n>STEPS.length-1) return; cur=n; render(); }
+function setLang(l){
+  LANG=l;
+  ALGOS.forEach(a=>a.steps=null);
+  applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre(); select(VIEW,true);
+}
+$('lang').onclick=()=>setLang(LANG==='en'?'zh':'en');
+$('b-prev').onclick=()=>{stop();go(-1);}; $('b-next').onclick=()=>{stop();go(1);};
+$('b-play').onclick=()=>{ if(timer){stop();return;} if(cur===STEPS.length-1){cur=0;render();}
+  $('b-play').textContent='⏸ Pause'; timer=setInterval(()=>{ if(cur<STEPS.length-1){cur++;render();} else stop(); },2200); };
+document.addEventListener('keydown',e=>{ if(e.target.closest&&e.target.closest('input,textarea,button')&&e.key===' ') return;
+  if(e.key==='ArrowRight'){stop();go(1);} else if(e.key==='ArrowLeft'){stop();go(-1);}
+  else if(e.key===' '&&A){e.preventDefault();$('b-play').click();}
+  else if(e.key===']'||e.key==='['){ const ids=[...STATIC,...ALGOS.map(a=>a.id)]; const i=ids.indexOf(VIEW); const j=(i+(e.key===']'?1:-1)+ids.length)%ids.length; select(ids[j]); } });
+
+applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre();
+const h0=(location.hash||'').slice(1);
+select([...STATIC,...ALGOS.map(a=>a.id)].includes(h0)?h0:'bs');
+</script>
+
+</body></html>

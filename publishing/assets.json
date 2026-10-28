@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "assets": [
+    "Pasted image 20250424140022.png",
+    "img/WeChat_bar_code.pdf",
+    "img/butterfly_option.png",
+    "img/deep_learning_draft.png",
+    "img/discretization_application_1.png",
+    "img/hedge_fund_architecture.png",
+    "img/how_to_build_your_workstation_1.png",
+    "img/option_chain_aapl.png",
+    "img/postgre_admin_screenshot.png",
+    "img/simple_buy_call_option.png",
+    "img/simple_buy_put_option.png",
+    "img/simple_write_call_option.png",
+    "img/simple_write_put_option.png",
+    "img/人生坐标.jpg",
+    "img/投资坐标图.jpeg"
+  ],
+  "html_pages": [
+    {
+      "path": "interactive/cs6515/graph-algorithms.html",
+      "publish": true
+    },
+    {
+      "path": "interactive/cs6515/divide-and-conquer.html",
+      "publish": true
+    },
+    {
+      "path": "interactive/cs6515/dynamic-programming.html",
+      "publish": true
+    }
+  ],
+  "ignored_files": [
+    "Untitled.base"
+  ]
+}

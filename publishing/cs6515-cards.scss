@@ -1,0 +1,53 @@
+// Scoped to the three CS6515 module links; inherit the site's light/dark theme.
+.cs6515-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0 2rem;
+}
+
+a.cs6515-card {
+  --module-color: #3c74a6;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 1.2rem;
+  border: 1px solid var(--lightgray);
+  border-top: 3px solid var(--module-color);
+  border-radius: 6px;
+  background: var(--light);
+  color: var(--darkgray);
+  text-decoration: none;
+  font-weight: 400;
+  line-height: 1.6;
+
+  &.cs6515-dc { --module-color: #806098; }
+  &.cs6515-graph { --module-color: #357f70; }
+  &:hover { border-color: var(--module-color); background: var(--highlight); }
+  &:focus-visible { outline: 3px solid var(--secondary); outline-offset: 4px; }
+  & .external-icon { display: none; }
+  & svg { width: 100%; height: 68px; color: var(--module-color); margin-bottom: .8rem; }
+  & strong { display: block; color: var(--dark); font-size: 1.35rem; font-family: var(--headerFont); }
+  & .cs6515-topics { margin: .65rem 0 1rem; font-size: .85rem; line-height: 1.7; }
+  & .cs6515-open { margin-top: auto; font-weight: 600; color: var(--secondary); }
+}
+
+:root[saved-theme="dark"] a.cs6515-card {
+  --module-color: #9ec5e5;
+  &.cs6515-dc { --module-color: #c4add6; }
+  &.cs6515-graph { --module-color: #9bd2bc; }
+}
+
+@media (max-width: 900px) {
+  .cs6515-cards { grid-template-columns: 1fr; }
+  a.cs6515-card svg { height: 52px; }
+}
+
+// Native radio controls keep the course article bilingual without extra scripts.
+.cs6515-bilingual {
+  & > .cs6515-language-option { accent-color: var(--secondary); }
+  & > label { margin-right: 1rem; cursor: pointer; }
+  & > .cs6515-locale-zh { display: none; }
+  & > #cs6515-chinese:checked ~ .cs6515-locale-en { display: none; }
+  & > #cs6515-chinese:checked ~ .cs6515-locale-zh { display: block; }
+}

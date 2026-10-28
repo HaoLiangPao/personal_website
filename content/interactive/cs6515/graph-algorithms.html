@@ -1,0 +1,945 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Graph Algorithms Black Box Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar · left algorithm index · main workspace (graph + controls | step & state panels) · takeaways.
+   Deliberately single dark theme, continuing the look of the March per-algorithm pages. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0d12; --surface:#12151c; --surface2:#181c25; --line:#232836; --line2:#2e3446;
+  --text:#e3e7f0; --muted:#8189a0; --faint:#4a5268;
+  --blue:#4f8ef7; --green:#34c98a; --red:#f05252; --amber:#f5a623; --teal:#2ec4b6; --purple:#9d7ef7;
+  --ac:var(--blue);
+  --f-body:'DM Sans','PingFang SC','Noto Sans SC','Microsoft YaHei',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --f-disp:'Instrument Serif','Songti SC','Noto Serif SC',Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:var(--f-body);font-size:14px;line-height:1.6;font-weight:400}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(11,13,18,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar h1{margin:0;font-family:var(--f-disp);font-weight:400;font-size:22px;letter-spacing:.01em}
+.topbar .sub{color:var(--muted);font-size:12px}
+.topbar .keys{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.lang{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;font-weight:600;padding:4px 12px;border-radius:5px;border:1px solid var(--line2);color:var(--text);background:var(--surface2)}
+.lang:hover{border-color:var(--muted)}
+.lang:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+kbd{font-family:var(--f-mono);font-size:10px;border:1px solid var(--line2);border-radius:3px;padding:0 4px;color:var(--muted)}
+
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;
+  padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1440px;margin:0 auto}
+nav.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);align-self:start;display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:2px}
+.grp-l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 8px 3px}
+.nb{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:5px 8px;border-radius:5px;color:var(--muted)}
+.nb .ab{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--text);min-width:64px}
+.nb .hn{font-size:11.5px}
+.nb:hover{background:var(--surface)}
+.nb:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.nb.on{background:var(--surface2)}
+.nb.on .ab{color:var(--c)}
+
+main{min-width:0;display:flex;flex-direction:column;gap:14px}
+.ahead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.ahead .abbr{font-family:var(--f-mono);font-size:26px;font-weight:600;color:var(--ac)}
+.ahead .nm{color:var(--muted);font-size:14px}
+.rt{margin-left:auto;font-family:var(--f-mono);font-size:12.5px;color:var(--amber);border:1px solid rgba(245,166,35,.3);background:rgba(245,166,35,.08);padding:2px 10px;border-radius:4px}
+.spec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.spec>div{background:var(--surface);padding:9px 12px;min-width:0}
+.spec .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:2px}
+.spec .v{font-size:12.5px}
+.spec code,.tk code,.desc code,.ovt code,.rule code{font-family:var(--f-mono);font-size:.92em;color:#c9d3ea}
+.warn{color:var(--amber)}
+
+.work{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.gcard .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.badge{font-family:var(--f-mono);font-size:11px;color:var(--ac);border:1px solid var(--line2);border-radius:4px;padding:1px 8px;white-space:nowrap}
+svg#g{display:block;width:100%;height:auto}
+.controls{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;padding:5px 12px;border:1px solid var(--line2);border-radius:5px;color:var(--text)}
+.btn:hover:not([disabled]){border-color:var(--muted)}
+.btn:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.btn[disabled]{opacity:.35;cursor:default}
+.btn.play{background:var(--ac);border-color:var(--ac);color:#0b0d12;font-weight:600}
+.prog{flex:1;min-width:80px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .25s}
+.ctr{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 14px 12px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend b{display:inline-block;width:16px;height:3px;border-radius:2px}
+
+.right{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stepbox{padding:12px 14px}
+.slbl{font-family:var(--f-mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em}
+.stitle{font-family:var(--f-disp);font-style:italic;font-size:20px;line-height:1.3;margin:2px 0 8px;text-wrap:balance}
+.desc{white-space:pre-line;font-size:13px;color:#c7cddb}
+.ins{margin-top:10px;font-size:12.5px;border-radius:6px;padding:8px 10px;border:1px solid}
+.ins.info{color:var(--ac);border-color:color-mix(in srgb,var(--ac) 30%,transparent);background:color-mix(in srgb,var(--ac) 8%,transparent)}
+.ins.relax{color:var(--blue);border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.07)}
+.ins.warn{color:#ff8a8a;border-color:rgba(240,82,82,.35);background:rgba(240,82,82,.07)}
+.ins.ok{color:var(--green);border-color:rgba(52,201,138,.3);background:rgba(52,201,138,.07)}
+.ins.done{color:var(--purple);border-color:rgba(157,126,247,.35);background:rgba(157,126,247,.08)}
+.pnl{padding:10px 14px}
+.pnl h3{margin:0 0 7px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pnl h3 small{font-weight:400;letter-spacing:0;text-transform:none;color:var(--faint);font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--line2);background:var(--surface2)}
+.chip.hot{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,.08)}
+.chip.ok{border-color:rgba(52,201,138,.5);color:var(--green)}
+.chip.bad{border-color:rgba(240,82,82,.45);color:#ff8a8a;text-decoration:line-through}
+.chip.mute{color:var(--faint);border-style:dashed}
+.chip.p{border-color:rgba(157,126,247,.5);color:var(--purple)}
+.chip.t{border-color:rgba(46,196,182,.5);color:var(--teal)}
+.chip.b{border-color:rgba(79,142,247,.5);color:#7fb0ff}
+.tw{overflow-x:auto}
+table.dt{border-collapse:collapse;width:100%;font-family:var(--f-mono);font-size:11.5px;font-variant-numeric:tabular-nums}
+.dt th{color:var(--faint);font-weight:400;text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+.dt td{padding:3px 6px;border-bottom:1px solid #1a1e28;white-space:nowrap}
+.dt td.hi{color:var(--amber);background:rgba(245,166,35,.1)}
+.dt tr.rh td{background:rgba(255,255,255,.03)}
+.dt td.inf{color:var(--faint)}
+
+.tk{padding:12px 16px}
+.tk h2{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tk ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px;max-width:90ch}
+.tk li::marker{color:var(--ac)}
+
+#ov h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ov p{color:var(--muted);margin:0 0 12px;font-size:13px}
+.ovt{border-collapse:collapse;width:100%;font-size:12.5px;min-width:720px}
+.ovt th{text-align:left;font-weight:500;color:var(--faint);font-size:11px;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid var(--line2)}
+.ovt td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.ovt td.m{font-family:var(--f-mono);font-size:12px}
+.ovt tr.cat td{color:var(--faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding-top:14px;border-bottom:none}
+.ovt .go{all:unset;cursor:pointer;font-family:var(--f-mono);font-weight:600}
+.ovt .go:hover{text-decoration:underline}
+.rule{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.rule div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px}
+.rule b{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:3px}
+#ops h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ops>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#ops .rule{margin:0 0 14px}
+.ovt td.how{color:#c7cddb;max-width:62ch}
+.ovt td.op{font-weight:500;white-space:nowrap}
+#pre h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#pre>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#pre .rule{margin-top:14px}
+.ovt.pm{min-width:980px}
+.ovt.pm td{vertical-align:middle}
+.lv{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11.5px;line-height:1.45;border:1px solid}
+.lv.any{color:var(--green);border-color:rgba(52,201,138,.35);background:rgba(52,201,138,.07)}
+.lv.req{color:var(--amber);border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.08)}
+.lv.no{color:#ff8a8a;border-color:rgba(240,82,82,.4);background:rgba(240,82,82,.08)}
+.lv.na{color:var(--faint);border-color:var(--line2);border-style:dashed}
+.pkey{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 0 12px;font-size:12px;color:var(--muted);align-items:center}
+
+svg text{font-family:var(--f-mono)}
+.el{paint-order:stroke;stroke:#0b0d12;stroke-width:4px;stroke-linejoin:round}
+
+@media (max-width:1100px){.work{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav.index{position:static;flex-direction:row;overflow-x:auto;gap:10px;padding-bottom:4px}
+  .grp{flex-direction:row;align-items:center;flex:none}
+  .grp-l{display:none}
+  .nb .hn{display:none}
+  .nb .ab{min-width:0}
+  .spec{grid-template-columns:minmax(0,1fr)}
+  .topbar .keys{display:none}
+  .lang{margin-left:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="topbar">
+  <h1 id="t-h1"></h1>
+  <span class="sub" id="t-sub"></span>
+  <span class="keys" id="t-keys"></span>
+  <button class="lang" id="lang" type="button"></button>
+</div>
+
+<div class="shell">
+  <nav class="index" id="nav"></nav>
+  <main id="main">
+    <section id="algo">
+      <div class="ahead"><span class="abbr" id="a-abbr"></span><span class="nm" id="a-name"></span><span class="rt" id="a-rt"></span></div>
+      <div class="spec" style="margin-top:10px">
+        <div><div class="k">Input</div><div class="v" id="s-in"></div></div>
+        <div><div class="k">Output</div><div class="v" id="s-out"></div></div>
+        <div><div class="k" id="k-req"></div><div class="v" id="s-req"></div></div>
+      </div>
+      <div class="work" style="margin-top:14px">
+        <div class="card gcard">
+          <div class="hd"><span id="g-cap"></span><span class="badge" id="g-badge"></span></div>
+          <svg id="g" viewBox="0 0 560 380" role="img"></svg>
+          <div class="controls">
+            <button class="btn" id="b-prev" type="button">← Prev</button>
+            <button class="btn play" id="b-play" type="button">▶ Play</button>
+            <button class="btn" id="b-next" type="button">Next →</button>
+            <div class="prog"><i id="prog"></i></div>
+            <span class="ctr" id="ctr"></span>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="right">
+          <div class="card stepbox">
+            <div class="slbl" id="s-lbl"></div>
+            <div class="stitle" id="s-title"></div>
+            <div class="desc" id="s-desc"></div>
+            <div class="ins" id="s-ins"></div>
+          </div>
+          <div id="panels" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+      </div>
+      <div class="card tk" style="margin-top:14px"><h2 id="tk-h"></h2><ul id="tk"></ul></div>
+    </section>
+    <section id="ov" hidden></section>
+    <section id="ops" hidden></section>
+    <section id="pre" hidden></section>
+  </main>
+</div>
+
+<script>
+/* ============================== language ============================== */
+let LANG='en';
+const tr=(zh,en)=>LANG==='en'?en:zh;
+const L2=x=>Array.isArray(x)?(LANG==='en'?x[1]:x[0]):x;
+const SEP=()=>tr('、',', ');
+
+/* ============================== helpers ============================== */
+const R = 26;
+const fmt = x => x === null || x === undefined ? '∞' : String(x);
+const clone = o => JSON.parse(JSON.stringify(o));
+function rec(){ const L=[]; return { L, add(o){ L.push(clone(o)); } }; }
+function G(nodes, edges, directed){
+  const g = { directed, nodes: nodes.map(([id,x,y])=>({id,x,y})), edges: edges.map(([u,v,w])=>({u,v,w,key: directed? u+'>'+v : u+'-'+v})) };
+  g.pos = Object.fromEntries(g.nodes.map(n=>[n.id,n]));
+  g.ids = g.nodes.map(n=>n.id);
+  g.keyOf = (a,b)=>{ if(directed) return a+'>'+b; return g.edges.find(e=>(e.u===a&&e.v===b)||(e.u===b&&e.v===a)).key; };
+  g.w = (a,b)=> g.edges.find(e=> e.key===g.keyOf(a,b)).w;
+  g.adj = {}; g.ids.forEach(v=>g.adj[v]=[]);
+  g.edges.forEach(e=>{ g.adj[e.u].push(e.v); if(!directed) g.adj[e.v].push(e.u); });
+  if(!directed) g.ids.forEach(v=>g.adj[v].sort());
+  return g;
+}
+const tbl = (title, head, rows, hi=[], sub='', rowhi=[]) => ({k:'table', title, head, rows, hi, sub, rowhi});
+const chips = (title, items, sub='') => ({k:'chips', title, items, sub});
+const note = (title, text) => ({k:'note', title, text});
+const EMPTY=()=>[{x:tr('空','empty'),c:'mute'}];
+
+/* ============================== BFS ============================== */
+function simBFS(g){
+  const Rc=rec(), ids=g.ids, dist={}, prev={}, ns={}, es={}, bd={};
+  ids.forEach(v=>{dist[v]=null;prev[v]=null;});
+  const P=Q=>[chips('Queue',Q.length?Q.map((v,i)=>({x:v,c:i===0?'hot':''})):EMPTY(),tr('FIFO · 队首 → 队尾','FIFO · front → back')),
+    tbl('dist[] / prev[]',['v','dist','prev'],ids.map(v=>[v,fmt(dist[v]),prev[v]??'nil']))];
+  let Q=['S']; dist.S=0; ns.S=3; bd.S='d=0';
+  Rc.add({t:tr('初始化','Initialize'),d:tr('dist[S]=0，其余 dist=∞，prev 全为 nil。\nS 入队。','dist[S]=0, every other dist=∞, every prev = nil.\nEnqueue S.'),
+    ins:tr('BFS 的起点必须给出；dist[] 数的是边数，只对无权图是最短路。','BFS needs a start vertex. dist[] counts edges, so it gives shortest paths only in unweighted graphs.'),it:'info',ns,es,bd,P:P(Q)});
+  while(Q.length){
+    const v=Q.shift(); ns[v]=1; const f=[], s=[];
+    for(const u of g.adj[v]){ const k=g.keyOf(v,u);
+      if(dist[u]===null){ dist[u]=dist[v]+1; prev[u]=v; Q.push(u); ns[u]=3; es[k]='tree'; bd[u]='d='+dist[u]; f.push(u); }
+      else if(!es[k]){ es[k]='dim'; s.push(u); } }
+    const d = (f.length? tr('扫描 '+v+' 的邻居：\n','Scan the neighbors of '+v+':\n')+f.map(u=>tr(`▸ ${u} 未访问 → dist[${u}] = ${dist[v]}+1 = ${dist[u]}，prev[${u}]=${v}，入队`,`▸ ${u} unvisited → dist[${u}] = ${dist[v]}+1 = ${dist[u]}, prev[${u}]=${v}, enqueue`)).join('\n')
+              : tr(v+' 的邻居都已访问。','All neighbors of '+v+' are already visited.'))
+            + (s.length? tr(`\n▸ ${s.join('、')} 已访问，跳过（非树边变暗）`,`\n▸ ${s.join(', ')} already visited, skip (non-tree edges dimmed)`):'');
+    Rc.add({t:tr(`出队 ${v}（dist=${dist[v]}）`,`Dequeue ${v} (dist=${dist[v]})`),d,
+      ins:f.length?tr('一个点第一次被发现时的 dist 就是最终值：队列严格按层推进。','The dist a vertex gets when first discovered is final, because the queue advances strictly layer by layer.')
+                  :tr('每个点只入队一次、每条边看常数次 → O(n+m)。','Each vertex is enqueued once and each edge is checked a constant number of times → O(n+m).'),it:f.length?'relax':'info',ns,es,bd,P:P(Q)});
+    ns[v]=2;
+  }
+  Rc.add({t:tr('队列为空，结束','Queue empty, done'),d:tr('蓝色树边 = BFS 树；沿 prev[] 回溯即得最短（边数）路径。\n例：E ← C ← A ← S，dist[E]=3。','Blue tree edges = the BFS tree. Follow prev[] back to get a fewest-edge path.\nExample: E ← C ← A ← S, dist[E]=3.'),
+    ins:tr('有边权就不能用 BFS；但所有边权相同时用 BFS 比 Dijkstra 少一个 log。','BFS does not handle edge weights. But when all weights are equal, BFS beats Dijkstra by a log factor.'),it:'done',ns,es,bd,P:P([])});
+  return Rc.L;
+}
+
+/* ============================== DFS ============================== */
+function simDFS(g){
+  const Rc=rec(), ids=g.ids, pre={}, post={}, prev={}, cc={}, ns={}, es={}, bd={}, st=[]; let clock=1, c=0;
+  const lab=v=>`[${pre[v]},${post[v]??'·'}]`;
+  const P=()=>[chips(tr('调用栈 Explore()','Call stack Explore()'),st.length?st.map((v,i)=>({x:v,c:i===st.length-1?'hot':'p'})):EMPTY(),tr('底 → 顶','bottom → top')),
+    tbl('pre / post / prev / ccnum',['v','pre','post','prev','ccnum'],ids.map(v=>[v,pre[v]??'–',post[v]??'–',prev[v]??'nil',cc[v]??'–']))];
+  Rc.add({t:tr('初始化','Initialize'),d:tr('clock = 1，所有点 unvisited。\n按字母序挑起点：A。','clock = 1, every vertex unvisited.\nStart vertices are picked in alphabetical order: A.'),
+    ins:tr('DFS 起点可选；跑完整张图，所以 ccnum[] 给每个点都编号。','The start vertex is optional. DFS covers the whole graph, so ccnum[] numbers every vertex.'),it:'info',ns,es,bd,P:P()});
+  const NAME={back:'back edge',fwd:'forward edge',cross:'cross edge'};
+  function explore(v){
+    pre[v]=clock++; cc[v]=c; st.push(v); ns[v]=1; bd[v]=lab(v);
+    const outs=g.adj[v].map(u=>v+'→'+u).join(SEP())||tr('无','none');
+    Rc.add({t:tr(`进入 ${v}：pre[${v}] = ${pre[v]}`,`Enter ${v}: pre[${v}] = ${pre[v]}`),d:tr(`${v} 标记 visited，入栈，ccnum[${v}] = ${c}。\n${v} 的出边：${outs}`,`Mark ${v} visited, push it, ccnum[${v}] = ${c}.\nOut-edges of ${v}: ${outs}`),
+      ins:prev[v]?tr(`${prev[v]}→${v} 是 tree edge（经它第一次发现 ${v}）。`,`${prev[v]}→${v} is a tree edge (it is how ${v} was discovered).`):tr('新一棵 DFS 树的根。','Root of a new DFS tree.'),it:'relax',ns,es,bd,P:P()});
+    for(const u of g.adj[v]){ const k=v+'>'+u;
+      if(pre[u]===undefined){ prev[u]=v; es[k]='tree'; ns[v]=4; explore(u); ns[v]=1;
+        Rc.add({ret:true,t:tr(`回到 ${v}`,`Back to ${v}`),d:tr(`${u} 已完成，继续看 ${v} 的下一条出边。`,`${u} is finished. Continue with the next out-edge of ${v}.`),ins:'',it:'hide',ns,es,bd,P:P()}); }
+      else { const ty = post[u]===undefined?'back':(pre[u]>pre[v]?'fwd':'cross'); es[k]=ty;
+        const why = ty==='back' ? tr(`${u} 还在栈上（有 pre、没 post）→ ${u} 是 ${v} 的祖先。\n判据：post[${v}] < post[${u}]（${u} 一定更晚结束）。`,`${u} is still on the stack (has pre, no post) → ${u} is an ancestor of ${v}.\nTest: post[${v}] < post[${u}] (${u} finishes later).`)
+                  : ty==='fwd' ? tr(`${u} 已结束且 pre[${u}]=${pre[u]} > pre[${v}]=${pre[v]} → ${u} 是 ${v} 的后代，但不是经这条边发现的。`,`${u} is finished and pre[${u}]=${pre[u]} > pre[${v}]=${pre[v]} → ${u} is a descendant of ${v}, but was not discovered through this edge.`)
+                  : tr(`${u} 已结束，且区间 ${lab(u)} 完全在 ${v} 之前，不是后代 → 横跨两棵子树。`,`${u} is finished and its interval ${lab(u)} lies entirely before ${v}'s. Not a descendant → the edge crosses between subtrees.`);
+        Rc.add({t:tr(`边 ${v}→${u}：${NAME[ty]}`,`Edge ${v}→${u}: ${NAME[ty]}`),d:why,
+          ins:ty==='back'?tr('有向图有 back edge ⟺ 有环。','A directed graph has a back edge ⟺ it has a cycle.')
+             :ty==='fwd'?tr('forward 和 tree 都满足 post[u]>post[v]；只靠 pre/post 分不开，要看 prev[]。','Forward and tree edges both satisfy post[u] > post[v]. pre/post alone cannot tell them apart; check prev[].')
+             :tr('cross edge 永远从「后发现」指向「先完成」：post[v] > post[u]。','A cross edge always points from a later-discovered vertex to an already-finished one: post[v] > post[u].'),it:ty==='back'?'warn':'info',ns,es,bd,P:P()}); }
+    }
+    post[v]=clock++; st.pop(); ns[v]=2; bd[v]=lab(v);
+    Rc.add({leave:true,t:tr(`离开 ${v}：post[${v}] = ${post[v]}`,`Leave ${v}: post[${v}] = ${post[v]}`),d:tr(`${v} 的出边都处理完，出栈。区间 ${lab(v)}。`,`All out-edges of ${v} are done; pop it. Interval ${lab(v)}.`),
+      ins:tr('区间嵌套 ⟺ 祖先/后代关系。','Nested intervals ⟺ ancestor/descendant.'),it:'info',ns,es,bd,P:P()});
+  }
+  for(const v of ids) if(pre[v]===undefined){ c++; if(c>1) Rc.add({t:tr(`新一轮 Explore(${v})，ccnum = ${c}`,`New Explore(${v}), ccnum = ${c}`),d:tr(`从 A 出发能到的点都已访问。主循环找到下一个 unvisited 点 ${v}。`,`Everything reachable from A is visited. The main loop picks the next unvisited vertex, ${v}.`),
+      ins:tr('ccnum[v]=1 ⟺ v 从第一个起点可达（有向图上也成立）。','ccnum[v]=1 ⟺ v is reachable from the first start vertex (also true for directed graphs).'),it:'info',ns,es,bd,P:P()}); explore(v); }
+  const L=Rc.L.filter((s,i)=>!(s.ret&&Rc.L[i+1]&&Rc.L[i+1].leave));
+  L.push(clone({t:tr('DFS 完成','DFS done'),d:tr('蓝 = tree，红虚 = back，青点线 = forward，紫虚 = cross。\n有 back edge C→A ⇒ 图中有环 A→B→C→A。','Blue = tree, red dashed = back, teal dotted = forward, purple dashed = cross.\nBack edge C→A ⇒ cycle A→B→C→A.'),
+    ins:tr('无向图只有 tree 和 back 两种边。','Undirected graphs have only tree and back edges.'),it:'done',ns,es,bd,P:P()}));
+  return L;
+}
+
+/* ============================== Topological sort ============================== */
+function simTopo(g){
+  const Rc=rec(), ids=g.ids, pre={}, post={}, ns={}, es={}, bd={}, order=[]; let clock=1;
+  const P=()=>[chips(tr('拓扑序（结束时插到最前）','Topological order (insert at front on finish)'),order.length?order.map((v,i)=>({x:v,c:i===0?'hot':'p'})):EMPTY(),'source → sink'),
+    tbl('pre / post',['v','pre','post'],ids.map(v=>[v,pre[v]??'–',post[v]??'–']))];
+  Rc.add({t:tr('初始化','Initialize'),d:tr('对 DAG 跑 DFS，只关心每个点何时结束（post）。\n规则：谁先结束，谁排在越后面。','Run DFS on the DAG; only finish times (post) matter.\nRule: the earlier a vertex finishes, the later it goes.'),
+    ins:tr('输入必须是 DAG；不是 DAG 先跑 SCC 缩点。','The input must be a DAG. If it is not, collapse it with SCC first.'),it:'info',ns,es,bd,P:P()});
+  function ex(v){ pre[v]=clock++; ns[v]=4; bd[v]='pre '+pre[v];
+    for(const u of g.adj[v]){ if(pre[u]===undefined){ es[v+'>'+u]='tree'; ex(u);} else es[v+'>'+u]='dim'; }
+    post[v]=clock++; ns[v]=2; bd[v]='post '+post[v]; order.unshift(v);
+    Rc.add({t:tr(`${v} 结束：post[${v}] = ${post[v]}`,`${v} finishes: post[${v}] = ${post[v]}`),d:tr(`${v} 的所有后代都已结束，所以 ${v} 可以放在它们前面。\n把 ${v} 插到拓扑序最前：${order.join(' → ')}`,`Every descendant of ${v} is finished, so ${v} can go before all of them.\nInsert ${v} at the front: ${order.join(' → ')}`),
+      ins:tr('DAG 里每条边 u→v 都有 post[u] > post[v]。','In a DAG, every edge u→v has post[u] > post[v].'),it:'relax',ns,es,bd,P:P()}); }
+  for(const v of ids) if(pre[v]===undefined) ex(v);
+  ids.forEach(v=>{ bd[v]='#'+(order.indexOf(v)+1); ns[v]=5; });
+  Rc.add({t:tr('按 post 从大到小读出','Read off by decreasing post'),d:`order[] = ${order.join(', ')}\n`+tr('检查每条边都从左指向右：','Every edge points left to right: ')+g.edges.map(e=>`${e.u}(#${order.indexOf(e.u)+1})→${e.v}(#${order.indexOf(e.v)+1})`).join(SEP()),
+    ins:tr('order[] 按「序号」索引（order[1] 是第一个点），和其他 black box 按 vertex 索引不同。','order[] is indexed by position (order[1] is the first vertex), unlike the other black boxes, which index by vertex.'),it:'done',ns,es,bd,P:P()});
+  return Rc.L;
+}
+
+/* ============================== SCC (DPV: DFS on G^R, then by decreasing post on G) ============================== */
+function simSCC(g){
+  const Rc=rec(), ids=g.ids, post={}, pre={}, cc={}, ns={}, es={}, bd={}; let clock=1;
+  const radj={}; ids.forEach(v=>radj[v]=[]); g.edges.forEach(e=>radj[e.v].push(e.u));
+  const COL=[3,5,4,2,6];
+  let order=[], sccs=[], visited2={};
+  const P=()=>{ const p=[tbl('post (G^R) / ccnum',['v','post','ccnum'],ids.map(v=>[v,post[v]??'–',cc[v]??'–']))];
+    if(order.length) p.unshift(chips(tr('第 2 遍处理顺序（post 降序）','Pass 2 order (decreasing post)'),order.map(v=>({x:`${v}:${post[v]}`,c:visited2[v]?'mute':''}))));
+    if(sccs.length) p.unshift(chips(tr('找到的 SCC（sink → source）','SCCs found (sink → source)'),sccs.map((s,i)=>({x:`#${i+1} {${s.join(',')}}`,c:['b','t','p'][i%3]}))));
+    return p; };
+  Rc.add({t:tr('原图 G','Original graph G'),d:tr('目标：找出所有强连通分量。\n直接在 G 上 DFS 找不到 sink SCC 的起点，所以先在反向图上找。','Goal: find every strongly connected component.\nA DFS on G cannot tell us where a sink SCC is, so we look at the reversed graph first.'),
+    ins:tr('最大 post 的点一定在 source SCC 里。','The vertex with the largest post is always in a source SCC.'),it:'info',ns,es,bd,rev:false,P:P()});
+  Rc.add({t:tr('第 1 遍：构造 G^R（所有边反向）','Pass 1: build G^R (reverse every edge)'),d:tr('G^R 的 source SCC = G 的 sink SCC。\n在 G^R 上跑 DFS，记录 post[]。','A source SCC of G^R is a sink SCC of G.\nRun DFS on G^R and record post[].'),ins:'',it:'hide',ns,es,bd,rev:true,P:P()});
+  function ex(v){ pre[v]=clock++; ns[v]=4; for(const u of radj[v]) if(pre[u]===undefined) ex(u);
+    post[v]=clock++; ns[v]=0; bd[v]='post '+post[v];
+    const outs=radj[v].map(u=>v+'→'+u).join(SEP())||tr('无','none');
+    Rc.add({t:tr(`G^R 上 ${v} 结束：post = ${post[v]}`,`${v} finishes on G^R: post = ${post[v]}`),d:tr(`在 G^R 中 ${v} 的出边：${outs}`,`Out-edges of ${v} in G^R: ${outs}`),ins:'',it:'hide',ns,es,bd,rev:true,P:P()}); }
+  for(const v of ids) if(pre[v]===undefined) ex(v);
+  order=[...ids].sort((a,b)=>post[b]-post[a]);
+  const ordTxt=order.map(v=>v+'('+post[v]+')').join(' > ');
+  Rc.add({t:tr('按 post 从大到小排序','Sort by decreasing post'),d:tr(`处理顺序：${ordTxt}\n${order[0]} 的 post 最大 → 它在 G^R 的 source SCC = G 的 sink SCC。`,`Processing order: ${ordTxt}\n${order[0]} has the largest post → it is in a source SCC of G^R, which is a sink SCC of G.`),
+    ins:tr('从 sink SCC 里的点在 G 上 Explore，只会走遍这一个 SCC，跑不出去。','Exploring G from a vertex in a sink SCC visits exactly that SCC and cannot leave it.'),it:'info',ns,es,bd,rev:false,P:P()});
+  let c=0;
+  for(const v of order){ if(visited2[v]) continue; c++; const comp=[];
+    (function e2(x){ visited2[x]=true; comp.push(x); cc[x]=c; for(const u of g.adj[x]){ if(!visited2[u]) { es[x+'>'+u]='tree'; e2(u);} else if(cc[u]===c) es[x+'>'+u]='tree'; else es[x+'>'+u]='cross'; } })(v);
+    comp.forEach(x=>{ ns[x]=COL[(c-1)%COL.length]; bd[x]='SCC '+c; }); sccs.push(comp);
+    const blocked = comp.flatMap(x=>g.adj[x].filter(u=>cc[u]!==c).map(u=>x+'→'+u));
+    Rc.add({t:tr(`第 2 遍：Explore(${v}) → SCC #${c} = {${comp.join(',')}}`,`Pass 2: Explore(${v}) → SCC #${c} = {${comp.join(',')}}`),
+      d:tr(`在原图 G 上从 ${v} 出发，能到的未访问点：${comp.join('、')}。`,`On G, starting at ${v}, the unvisited vertices reached: ${comp.join(', ')}.`)
+        +(blocked.length?tr(`\n${blocked.join('、')} 指向已标记的 SCC，不会被重复计入。`,`\n${blocked.join(', ')} lead into SCCs already found, so they are not counted again.`):tr('\n没有出边离开它 → 这是 sink SCC。','\nNo edge leaves it → this is a sink SCC.')),
+      ins:c===1?tr('第一个找到的永远是 sink SCC。','The first SCC found is always a sink SCC.'):'',it:c===1?'warn':'info',ns,es,bd,rev:false,P:P()});
+  }
+  const mg=sccs.map((s,i)=>'#'+(i+1)+'{'+s.join(',')+'}').join(' → ');
+  Rc.add({t:tr('完成：metagraph G_SCC','Done: metagraph G_SCC'),d:tr(`G_SCC 的顶点顺序：${mg}\n即 sink → source（reverse topological order）。紫色虚线 = SCC 之间的边。`,`Vertex order of G_SCC: ${mg}\nThat is sink → source (reverse topological order). Purple dashed = edges between SCCs.`),
+    ins:tr('G_SCC 一定是 DAG；它的顶点顺序和 TopSort 相反。','G_SCC is always a DAG, and its vertex order is the reverse of TopSort.'),it:'done',ns,es,bd,rev:false,P:P()});
+  return Rc.L;
+}
+
+/* ============================== Dijkstra ============================== */
+function simDijkstra(g){
+  const Rc=rec(), ids=g.ids, dist={}, prev={}, fin={}, ns={}, bd={}; let es={};
+  ids.forEach(v=>{dist[v]=null;prev[v]=null;}); dist.S=0;
+  const paint=act=>{ es={}; ids.forEach(u=>{ if(prev[u]) es[prev[u]+'>'+u]='sp'; }); Object.assign(es,act); };
+  const pq=()=>ids.filter(v=>!fin[v]&&dist[v]!==null).sort((a,b)=>dist[a]-dist[b]);
+  const P=()=>[chips('Priority queue',pq().length?pq().map((v,i)=>({x:`${v}:${dist[v]}`,c:i===0?'hot':''})):EMPTY(),'min-heap by dist'),
+    tbl('dist[] / prev[]',['v','dist','prev','final'],ids.map(v=>[v,fmt(dist[v]),prev[v]??'nil',fin[v]?'✓':'']))];
+  ids.forEach(v=>bd[v]='d='+fmt(dist[v])); ns.S=3;
+  Rc.add({t:tr('初始化','Initialize'),d:tr('dist[S]=0，其余 ∞。\n每次从队列取 dist 最小的未确定点，确定它，再松弛它的出边。','dist[S]=0, all others ∞.\nEach round: take the unfinalized vertex with the smallest dist, finalize it, then relax its out-edges.'),
+    ins:tr('所有边权非负 ⇒ 被取出的点不可能再被更短的路径改善。','All weights are non-negative ⇒ a vertex taken from the queue can never be improved later.'),it:'info',ns,es,bd,P:P()});
+  while(pq().length){
+    const v=pq()[0]; ns[v]=1; const lines=[], act={}; let dec=false;
+    for(const u of g.adj[v]){ const w=g.w(v,u), nd=dist[v]+w, k=v+'>'+u;
+      if(fin[u]){ lines.push(tr(`▸ ${v}→${u}：${u} 已确定，跳过`,`▸ ${v}→${u}: ${u} already final, skip`)); act[k]='dim'; continue; }
+      if(dist[u]===null||nd<dist[u]){ if(dist[u]!==null) dec=true; lines.push(tr(`▸ ${v}→${u}：${dist[v]}+${w} = ${nd} < ${fmt(dist[u])} → 更新`,`▸ ${v}→${u}: ${dist[v]}+${w} = ${nd} < ${fmt(dist[u])} → update`)); dist[u]=nd; prev[u]=v; bd[u]='d='+nd; if(ns[u]!==2) ns[u]=3; act[k]='act'; }
+      else { lines.push(tr(`▸ ${v}→${u}：${dist[v]}+${w} = ${nd} ≥ ${dist[u]}，不变`,`▸ ${v}→${u}: ${dist[v]}+${w} = ${nd} ≥ ${dist[u]}, no change`)); act[k]='dim'; } }
+    fin[v]=true; paint(act);
+    Rc.add({t:tr(`取出 ${v}（dist=${dist[v]}），确定`,`Extract ${v} (dist=${dist[v]}) and finalize`),d:(lines.join('\n')||tr(`${v} 没有出边。`,`${v} has no out-edges.`)),
+      ins:dec?tr('已有 dist 也可能被改小（decrease-key），只要那个点还没被确定。','An existing dist can still decrease (decrease-key) as long as that vertex is not finalized.'):tr('松弛：dist[v]+w(v,u) < dist[u] 就更新。','Relaxation: if dist[v]+w(v,u) < dist[u], update.'),it:'relax',ns,es,bd,P:P()});
+    ns[v]=2;
+  }
+  paint({});
+  Rc.add({t:tr('队列空，结束','Queue empty, done'),d:tr('绿色边 = 最短路径树（由 prev[] 给出）。\n','Green edges = the shortest-path tree (from prev[]).\n')+ids.filter(v=>v!=='S').map(v=>{ let p=[],x=v; while(x){p.unshift(x);x=prev[x];} return `${v}: ${p.join('→')} = ${dist[v]}`; }).join('\n'),
+    ins:tr('有负权边就必须换 Bellman-Ford；给所有边加同一个常数也不行（边数多的路径被加得更多）。','With negative edges, switch to Bellman-Ford. Adding the same constant to every edge does not fix it: paths with more edges get penalized more.'),it:'done',ns,es,bd,P:P()});
+  return Rc.L;
+}
+
+/* ============================== Bellman-Ford ============================== */
+function simBF(g){
+  const Rc=rec(), ids=g.ids, n=ids.length, prev={}, ns={}, bd={}; let es={};
+  const row0={}; ids.forEach(v=>{row0[v]=null;prev[v]=null;}); row0.S=0;
+  const iter=[row0];
+  const paint=act=>{ es={}; ids.forEach(u=>{ if(prev[u]) es[prev[u]+'>'+u]='sp'; }); Object.assign(es,act); };
+  const P=(hi)=>[tbl('iter[i][v]',['i',...ids],iter.map((r,i)=>[i,...ids.map(v=>fmt(r[v]))]),hi,tr('第 i 轮 = 最多 i 条边','row i = at most i edges'),[iter.length-1]),
+    tbl('dist[] / prev[]',['v','dist','prev'],ids.map(v=>[v,fmt(iter[Math.min(iter.length-1,n-1)][v]),prev[v]??'nil']))];
+  ids.forEach(v=>bd[v]='d='+fmt(row0[v])); ns.S=3;
+  Rc.add({t:tr('第 0 轮：初始化','Round 0: initialize'),d:tr('iter[0][S]=0，其余 ∞。\n每一轮：对每条边 (u,v)，用上一行的值算 iter[i-1][u] + w，取最小。','iter[0][S]=0, all others ∞.\nEach round: for every edge (u,v), compute iter[i-1][u] + w from the previous row and keep the minimum.'),
+    ins:tr('D(0,S)=0 是 BF 的初始化；注意它和 FW 课程实现里的对角线不同。','BF starts with D(0,S)=0. This differs from the diagonal in the course FW implementation.'),it:'info',ns,es,bd,P:P([])});
+  for(let i=1;i<=n;i++){
+    const last=iter[i-1], row=clone(last), lines=[], act={}, hi=[]; let negUsed=false;
+    for(const e of g.edges){ if(last[e.u]===null) continue; const nd=last[e.u]+e.w;
+      if(row[e.v]===null||nd<row[e.v]){ row[e.v]=nd; if(i<n) prev[e.v]=e.u; act[e.key]='act'; if(e.w<0) negUsed=true; lines.push(`▸ ${e.u}→${e.v}: ${last[e.u]}+(${e.w}) = ${nd}`); } }
+    iter.push(row);
+    ids.forEach((v,j)=>{ if(row[v]!==last[v]) hi.push(`${i},${j+1}`); });
+    if(i<n){ ids.forEach(v=>{ bd[v]='d='+fmt(row[v]); ns[v]=row[v]!==last[v]?1:(row[v]!==null?3:0); }); ns.S=3; paint(act);
+      Rc.add({t:tr(`第 ${i} 轮`,`Round ${i}`),d:lines.length?tr('本轮改善：\n','Improvements this round:\n')+lines.join('\n'):tr('本轮没有任何改善。','No improvements this round.'),
+        ins:i===1?tr('iter[1][v] = 最多用 1 条边到 v 的最短距离。','iter[1][v] = shortest distance to v using at most 1 edge.')
+           :negUsed?tr('负权边在这里起作用：Dijkstra 会在这种地方出错。','Negative edges matter here. This is where Dijkstra would go wrong.')
+           :tr('信息每轮最多往前传一条边，所以要跑 n−1 轮。','Information moves forward at most one edge per round, which is why n−1 rounds are needed.'),it:'relax',ns,es,bd,P:P(hi)}); }
+    else { paint({}); ids.forEach(v=>ns[v]=2);
+      Rc.add({t:tr(`第 n = ${n} 轮：负环检测`,`Round n = ${n}: negative-cycle check`),
+        d:lines.length?tr(`仍有改善：\n${lines.join('\n')}\n⇒ 存在从 S 可达的负环。`,`Still improving:\n${lines.join('\n')}\n⇒ a negative cycle is reachable from S.`)
+                      :tr(`第 ${n} 行与第 ${n-1} 行逐列比较：完全相同。\n⇒ 没有从 S 可达的负环，dist[] = 第 n−1 行。`,`Rows ${n} and ${n-1} match in every column.\n⇒ No negative cycle is reachable from S, and dist[] = row n−1.`),
+        ins:tr('检测要比较整行：iter[n][·] ≠ iter[n−1][·]，不是只看某一个点。','Compare whole rows, iter[n][·] ≠ iter[n−1][·], not a single entry.'),it:lines.length?'warn':'done',ns,es,bd,P:P(hi)}); }
+  }
+  return Rc.L;
+}
+
+/* ============================== Floyd-Warshall ============================== */
+function simFW(g){
+  const Rc=rec(), ids=g.ids, n=ids.length, ns={}, bd={}; let es={};
+  let D=ids.map(a=>ids.map(b=>{ const e=g.edges.find(e=>e.u===a&&e.v===b); return e?e.w:null; }));
+  const P=(hi)=>[tbl(tr('dist[i][j]（行 = 起点，列 = 终点）','dist[i][j] (row = from, column = to)'),['',...ids],D.map((r,i)=>[ids[i],...r.map(fmt)]),hi)];
+  Rc.add({t:tr('k = 0：只用直连边','k = 0: direct edges only'),d:tr('D(0,i,j) = w(i,j)，没有边记 ∞。\n按课程实现，对角线 D(0,i,i) 也是 ∞。','D(0,i,j) = w(i,j), or ∞ where there is no edge.\nIn the course implementation the diagonal D(0,i,i) is also ∞.'),
+    ins:tr('k 轮后：只允许经过 {1..k} 作中间点时的最短距离。','After round k: shortest distances using only {1..k} as intermediate vertices.'),it:'info',ns,es,bd,P:P([])});
+  for(let k=0;k<n;k++){
+    const N=clone(D), lines=[], hi=[];
+    for(let i=0;i<n;i++) for(let j=0;j<n;j++){ const a=D[i][k], b=D[k][j]; if(a===null||b===null) continue;
+      if(N[i][j]===null||a+b<N[i][j]){ lines.push(`▸ D[${ids[i]}][${ids[j]}] = min(${fmt(D[i][j])}, ${a}+${b}) = ${a+b}`); N[i][j]=a+b; hi.push(`${i},${j+1}`); } }
+    D=N; ids.forEach((v,i)=>ns[v]=i===k?1:0); es={}; g.edges.forEach(e=>{ if(e.u===ids[k]||e.v===ids[k]) es[e.key]='act'; });
+    Rc.add({t:tr(`k = ${ids[k]}：允许经过 ${ids[k]}`,`k = ${ids[k]}: allow ${ids[k]} as an intermediate`),d:lines.length?lines.join('\n'):tr('没有任何一对能通过 '+ids[k]+' 变短。','No pair gets shorter by going through '+ids[k]+'.'),
+      ins:tr('递推：D(k,i,j) = min{ D(k−1,i,j), D(k−1,i,k) + D(k−1,k,j) }。','Recurrence: D(k,i,j) = min{ D(k−1,i,j), D(k−1,i,k) + D(k−1,k,j) }.'),it:'relax',ns,es,bd,P:P(hi)});
+  }
+  ids.forEach((v,i)=>{ ns[v]=2; bd[v]=tr('环 ','cyc ')+fmt(D[i][i]); }); es={};
+  const neg=ids.filter((v,i)=>D[i][i]!==null&&D[i][i]<0);
+  const mn=Math.min(...D.map((r,i)=>r[i]).filter(x=>x!==null));
+  Rc.add({t:tr('完成：读对角线','Done: read the diagonal'),d:tr('dist[v][v] = 经过 v 的最短环长度：\n','dist[v][v] = length of the shortest cycle through v:\n')+ids.map((v,i)=>`${v}: ${fmt(D[i][i])}`).join(SEP())+tr(`\n最短环 = ${mn}`,`\nShortest cycle = ${mn}`)
+      +(neg.length?tr(`\n${neg.join(',')} 的对角线 < 0 ⇒ 有负环`,`\nDiagonal of ${neg.join(',')} < 0 ⇒ negative cycle`):tr('\n没有负对角线 ⇒ 无负环。','\nNo negative diagonal ⇒ no negative cycle.')),
+    ins:tr('负环检测：存在 dist[v][v] < 0。全源，不需要起点。','Negative-cycle check: some dist[v][v] < 0. All-pairs, so no start vertex is needed.'),it:'done',ns,es,bd,P:P([])});
+  return Rc.L;
+}
+
+/* ============================== Kruskal ============================== */
+function simKruskal(g){
+  const Rc=rec(), ids=g.ids, par={}, ns={}, es={}, bd={}, mst=[];
+  ids.forEach(v=>par[v]=v); const find=x=>par[x]===x?x:(par[x]=find(par[x]));
+  const sorted=[...g.edges].sort((a,b)=>a.w-b.w); const status={};
+  const comps=()=>{ const m={}; ids.forEach(v=>{ const r=find(v); (m[r]=m[r]||[]).push(v); }); return Object.values(m); };
+  const P=cur=>[chips(tr('按权排序的边','Edges sorted by weight'),sorted.map(e=>({x:`${e.u}–${e.v}:${e.w}`,c:e.key===cur?'hot':status[e.key]==='ok'?'ok':status[e.key]==='bad'?'bad':''}))),
+    chips(tr('Union-Find 连通块','Union-Find components'),comps().map(c=>({x:'{'+c.join(',')+'}',c:c.length>1?'t':'mute'}))),
+    tbl('MST edges[]',['#','edge','w'],mst.map((e,i)=>[i+1,e.u+'–'+e.v,e.w]).concat([['','total',mst.reduce((s,e)=>s+e.w,0)]]))];
+  Rc.add({t:tr('初始化','Initialize'),d:tr('每个点自成一块。\n把所有边按权从小到大排序，依次考虑。','Each vertex starts as its own component.\nSort all edges by weight and consider them in that order.'),
+    ins:tr('Kruskal 不维护「一棵树」，中途可以是好几片森林。','Kruskal does not grow a single tree; midway it can be a forest of several pieces.'),it:'info',ns,es,bd,P:P(null)});
+  for(const e of sorted){ if(mst.length===ids.length-1) break;
+    const a=find(e.u), b=find(e.v);
+    if(a!==b){ par[a]=b; mst.push(e); status[e.key]='ok'; es[e.key]='mst'; ns[e.u]=5; ns[e.v]=5;
+      Rc.add({t:tr(`取 ${e.u}–${e.v}（w=${e.w}）：接受`,`Take ${e.u}–${e.v} (w=${e.w}): accept`),d:tr(`${e.u} 和 ${e.v} 在不同的块 → 加入，合并两块。`,`${e.u} and ${e.v} are in different components → add the edge and merge them.`),
+        ins:tr(`Cut property：这是离开 ${e.u} 所在块的最轻边。`,`Cut property: this is the lightest edge leaving ${e.u}'s component.`),it:'ok',ns,es,bd,P:P(e.key)}); }
+    else { status[e.key]='bad'; es[e.key]='reject';
+      Rc.add({t:tr(`取 ${e.u}–${e.v}（w=${e.w}）：拒绝`,`Take ${e.u}–${e.v} (w=${e.w}): reject`),d:tr(`${e.u} 和 ${e.v} 已经在同一块 → 加入会成环，跳过。`,`${e.u} and ${e.v} are already connected → adding it would make a cycle; skip.`),
+        ins:tr('Cycle property：（权值互不相同时）环上最重的边不在 MST 里。','Cycle property (distinct weights): the heaviest edge on a cycle is not in the MST.'),it:'warn',ns,es,bd,P:P(e.key)}); }
+  }
+  const left=sorted.filter(e=>!status[e.key]), tot=mst.reduce((s,e)=>s+e.w,0);
+  Rc.add({t:tr(`已有 n−1 = ${ids.length-1} 条边，结束`,`n−1 = ${ids.length-1} edges chosen, done`),d:tr(`MST 总权 = ${tot}。`,`MST total weight = ${tot}.`)+(left.length?tr(`\n剩余的边（${left.map(e=>e.u+'–'+e.v).join('、')}）不用再看。`,`\nRemaining edges (${left.map(e=>e.u+'–'+e.v).join(', ')}) need not be checked.`):''),
+    ins:tr('输出是边列表 edges[]；想要父指针结构就用 Prim。','The output is the edge list edges[]. For parent pointers, use Prim.'),it:'done',ns,es,bd,P:P(null)});
+  return Rc.L;
+}
+
+/* ============================== Prim ============================== */
+function simPrim(g){
+  const Rc=rec(), ids=g.ids, key={}, prev={}, inT={}, ns={}, bd={}; let es={};
+  ids.forEach(v=>{key[v]=null;prev[v]=null;}); key.A=0;
+  const pq=()=>ids.filter(v=>!inT[v]&&key[v]!==null).sort((a,b)=>key[a]-key[b]);
+  const paint=()=>{ es={}; ids.forEach(u=>{ if(prev[u]) es[g.keyOf(prev[u],u)]=inT[u]?'mst':'cand'; }); };
+  const tot=()=>ids.filter(v=>inT[v]&&prev[v]).reduce((s,v)=>s+key[v],0);
+  const P=()=>[chips(tr('Priority queue（key = 到树的最近距离）','Priority queue (key = cheapest edge to the tree)'),pq().length?pq().map((v,i)=>({x:`${v}:${key[v]} via ${prev[v]??'–'}`,c:i===0?'hot':''})):EMPTY()),
+    tbl('key[] / prev[]',['v','key','prev','in tree'],ids.map(v=>[v,fmt(key[v]),prev[v]??'nil',inT[v]?'✓':''])),
+    note(tr('MST 总权（已入树）','MST weight so far'),String(tot()))];
+  ids.forEach(v=>bd[v]='key '+fmt(key[v]));
+  Rc.add({t:tr('初始化：任选起点 A','Initialize: pick any start vertex, A'),d:tr('key[A]=0，其余 ∞。\n每次把「离当前树最近」的树外点接进来。','key[A]=0, all others ∞.\nEach round, attach the outside vertex closest to the current tree.'),
+    ins:tr('Prim 始终只有一棵连通的树，一点点往外长。','Prim always keeps one connected tree and grows it outward.'),it:'info',ns,es,bd,P:P()});
+  while(pq().length){ const v=pq()[0]; inT[v]=true; ns[v]=1; const lines=[];
+    for(const u of g.adj[v]){ if(inT[u]) continue; const w=g.w(v,u);
+      if(key[u]===null||w<key[u]){ lines.push(tr(`▸ ${u}：key ${fmt(key[u])} → ${w}（via ${v}）`,`▸ ${u}: key ${fmt(key[u])} → ${w} (via ${v})`)); key[u]=w; prev[u]=v; bd[u]='key '+w; }
+      else lines.push(tr(`▸ ${u}：${w} ≥ key ${key[u]}，不变`,`▸ ${u}: ${w} ≥ key ${key[u]}, no change`)); }
+    paint();
+    Rc.add({t:prev[v]?tr(`接入 ${v}（via ${prev[v]}，w=${key[v]}）`,`Attach ${v} (via ${prev[v]}, w=${key[v]})`):tr(`接入起点 ${v}`,`Attach start vertex ${v}`),
+      d:(prev[v]?tr(`边 ${prev[v]}–${v} 进 MST。\n`,`Edge ${prev[v]}–${v} joins the MST.\n`):'')+tr('更新树外邻居的 key：\n','Update keys of outside neighbors:\n')+(lines.join('\n')||tr('（无）','(none)')),
+      ins:prev[v]?tr('被选中的边是「树 vs 树外」这个 cut 上的最轻边。','The chosen edge is the lightest edge across the cut between the tree and the rest.'):'',it:prev[v]?'ok':'hide',ns,es,bd,P:P()});
+    ns[v]=5; }
+  paint();
+  Rc.add({t:tr('所有点入树，结束','Every vertex is in the tree, done'),d:'prev[] = '+ids.map(v=>`${v}:${prev[v]??'nil'}`).join('  ')+tr(`\n总权 = ${tot()}（和 Kruskal 相同）`,`\nTotal weight = ${tot()} (same as Kruskal)`),
+    ins:tr('输出是 prev[]（每点的父亲）。MST 不是最短路径树。','The output is prev[] (each vertex\'s parent). An MST is not a shortest-path tree.'),it:'done',ns,es,bd,P:P()});
+  return Rc.L;
+}
+
+/* ============================== Max flow (FF = DFS, EK = BFS) ============================== */
+function simFlow(g, mode){
+  const Rc=rec(), ids=g.ids, f={}, ns={}, bd={}; let es={};
+  g.edges.forEach(e=>f[e.key]=0);
+  const res=(u)=>{ const out=[]; g.edges.forEach(e=>{ if(e.u===u&&e.w-f[e.key]>0) out.push({to:e.v,e,dir:1,r:e.w-f[e.key]}); });
+                               g.edges.forEach(e=>{ if(e.v===u&&f[e.key]>0) out.push({to:e.u,e,dir:-1,r:f[e.key]}); }); return out; };
+  const el={}; const lab=()=>{ g.edges.forEach(e=>el[e.key]=`${f[e.key]}/${e.w}`); };
+  const paint=act=>{ es={}; g.edges.forEach(e=>{ es[e.key]=f[e.key]===e.w?'sat':f[e.key]>0?'flow':'normal'; }); Object.assign(es,act||{}); };
+  const log=[]; let C=0;
+  const P=()=>[tbl(tr('增广路径记录','Augmenting paths'),['#','path',tr('边数','edges'),tr('瓶颈','bottleneck')],log.map((l,i)=>[i+1,l.p,l.len,l.b]),[],'',[log.length-1]),
+    tbl(tr('flow[] / 残余','flow[] / residual'),['edge','f/c',tr('剩余','left')],g.edges.map(e=>[e.u+'→'+e.v,`${f[e.key]}/${e.w}`,e.w-f[e.key]])),note(tr('当前总流量 C','Current flow C'),String(C))];
+  lab(); paint();
+  Rc.add({t:tr('初始化：所有 flow = 0','Initialize: all flow = 0'),
+    d:tr(`每条边标 f/c。\n每轮在残余图里${mode==='dfs'?'用 DFS 找任意一条':'用 BFS 找边数最少的一条'} S→T 路径，推瓶颈流量。`,`Each edge is labeled f/c.\nEach round, find ${mode==='dfs'?'any S→T path with DFS':'an S→T path with the fewest edges using BFS'} in the residual graph and push its bottleneck.`),
+    ins:tr('残余图：正向剩余 c−f，外加反向边（容量 f，表示可以撤回）。','Residual graph: forward capacity c−f, plus a backward edge of capacity f (flow that can be undone).'),it:'info',ns,es,bd,el,P:P()});
+  function findDFS(){ const seen={S:true}; const path=[];
+    const go=u=>{ if(u==='T') return true; for(const x of res(u)){ if(seen[x.to]) continue; seen[x.to]=true; path.push(x); if(go(x.to)) return true; path.pop(); } return false; };
+    return go('S')?{path,lv:null}:null; }
+  function findBFS(){ const par={S:null}, lv={S:0}, Q=['S']; while(Q.length){ const u=Q.shift(); for(const x of res(u)){ if(x.to in par) continue; par[x.to]={...x,from:u}; lv[x.to]=lv[u]+1; Q.push(x.to); } }
+    if(!('T' in par)) return null; const path=[]; let v='T'; while(v!=='S'){ path.unshift(par[v]); v=par[v].from; } return {path,lv}; }
+  while(true){ const fd = mode==='dfs'?findDFS():findBFS(); if(!fd) break;
+    const {path,lv}=fd; const b=Math.min(...path.map(x=>x.r));
+    const ptxt=['S'].concat(path.map(x=>(x.dir<0?'⇠':'→')+x.to)).join('');
+    const act={}; path.forEach(x=>act[x.e.key]=x.dir>0?'act':'actr');
+    const back=path.filter(x=>x.dir<0);
+    ids.forEach(v=>{ ns[v]=0; bd[v]=''; }); ['S',...path.map(x=>x.to)].forEach(v=>ns[v]=1);
+    if(lv) ids.forEach(v=>{ if(v in lv) bd[v]='L'+lv[v]; });
+    paint(act);
+    const caps=path.map(x=>(x.dir>0?x.e.u+'→'+x.e.v:x.e.v+'⇠'+x.e.u+tr('(反向)','(backward)'))+' '+x.r).join(SEP());
+    Rc.add({t:tr(`找到增广路径 ${ptxt}`,`Augmenting path ${ptxt}`),
+      d:tr(`路径上的剩余容量：${caps}\n瓶颈 = ${b}`,`Residual capacities on the path: ${caps}\nBottleneck = ${b}`)
+        +(back.length?tr(`\n${back.map(x=>x.e.u+'→'+x.e.v).join('、')} 被反向使用：撤回 ${b} 单位，改走别处。`,`\n${back.map(x=>x.e.u+'→'+x.e.v).join(', ')} used backward: undo ${b} units and reroute them.`):''),
+      ins: back.length?tr('反向边让算法能纠正之前的错误选择，手算时最容易漏。','Backward edges let the algorithm undo an earlier bad choice. They are the easiest thing to miss by hand.')
+          :(mode==='dfs'?(path.length>2?tr('DFS 不管长短，先钻到底：这次拿到的是一条长路径。','DFS dives as deep as it can regardless of length, so this time it found a long path.'):tr('DFS 找到的是任意一条路径。','DFS finds an arbitrary path.'))
+          :tr('BFS 保证这是当前残余图里边数最少的路径（节点上标的是 BFS 层数）。','BFS guarantees a fewest-edge path in the current residual graph (nodes show BFS levels).')),it:back.length?'warn':'relax',ns,es,bd,el,P:P()});
+    path.forEach(x=>{ f[x.e.key]+= x.dir*b; }); C+=b; log.push({p:ptxt,len:path.length,b}); lab();
+    ids.forEach(v=>{ ns[v]=0; bd[v]=''; }); paint();
+    Rc.add({t:tr(`推送 ${b}，C = ${C}`,`Push ${b}, C = ${C}`),d:tr(`更新 flow：`,`Updated flow: `)+path.map(x=>x.e.u+'→'+x.e.v+' = '+f[x.e.key]+'/'+x.e.w).join(SEP())+tr('\n红色 = 已饱和（f = c）。','\nRed = saturated (f = c).'),ins:'',it:'hide',ns,es,bd,el,P:P()});
+  }
+  // min cut
+  const reach={S:true}, Q=['S']; while(Q.length){ const u=Q.shift(); for(const x of res(u)) if(!reach[x.to]){ reach[x.to]=true; Q.push(x.to);} }
+  ids.forEach(v=>{ ns[v]=reach[v]?5:6; bd[v]=reach[v]?tr('S 侧','S side'):tr('T 侧','T side'); });
+  const cut=g.edges.filter(e=>reach[e.u]&&!reach[e.v]); paint(); cut.forEach(e=>es[e.key]='cut');
+  const satNC=g.edges.filter(e=>f[e.key]===e.w&&!(reach[e.u]&&!reach[e.v])).map(e=>e.u+'→'+e.v);
+  const Sset=ids.filter(v=>reach[v]).join(','), cutTxt=cut.map(e=>`${e.u}→${e.v}(${e.w})`).join(' + ')+' = '+cut.reduce((s,e)=>s+e.w,0);
+  Rc.add({t:tr(`找不到增广路径：max flow C = ${C}`,`No augmenting path left: max flow C = ${C}`),
+    d:tr(`残余图中从 S 能到的点：{${Sset}}\n最小割的边（黄虚线）：${cutTxt}\n共 ${log.length} 次增广，路径边数：${log.map(l=>l.len).join(', ')}`,`Vertices reachable from S in the residual graph: {${Sset}}\nMin-cut edges (amber dashed): ${cutTxt}\n${log.length} augmentations, path lengths: ${log.map(l=>l.len).join(', ')}`)
+      +(satNC.length?tr(`\n注意：${satNC.join('、')} 也饱和了（红），但两端都在 S 侧，不跨越割，不是割边。`,`\nNote: ${satNC.join(', ')} is also saturated (red), but both ends are on the S side, so it does not cross the cut.`):''),
+    ins:mode==='dfs'?tr('FF：容量必须是正整数，O(mC)——C 是最大流的值（伪多项式）。','FF: capacities must be positive integers. O(mC), where C is the max-flow value (pseudo-polynomial).')
+                    :tr('EK：路径边数单调不减，O(nm²)，与容量大小无关；容量可以不是整数。','EK: path lengths never decrease. O(nm²), independent of capacity size; capacities need not be integers.'),it:'done',ns,es,bd,el,P:P()});
+  return Rc.L;
+}
+
+/* ============================== 2-SAT ============================== */
+function simTwoSAT(g, clauses){
+  const Rc=rec(), ids=g.ids, ns={}, bd={}, es={}; const neg=l=>l.startsWith('¬')?l.slice(1):'¬'+l;
+  g.edges.forEach(e=>es[e.key]='hide');
+  const imps=[]; let curC=-1; const asg={}; let sccs=[];
+  const VARS=['x1','x2','x3'];
+  const P=()=>[chips(tr('子句（CNF）','Clauses (CNF)'),clauses.map((c,i)=>({x:'('+c.join(' ∨ ')+')',c:i===curC?'hot':i<curC||curC===-2?'t':''}))),
+    chips(tr('蕴含边','Implication edges'),imps.length?imps.map(x=>({x})):[{x:tr('还没有','none yet'),c:'mute'}]),
+    ...(sccs.length?[chips(tr('SCC（sink → source）','SCCs (sink → source)'),sccs.map((s,i)=>({x:'#'+(i+1)+' {'+s.join(',')+'}',c:['b','p','t'][i%3]})))]:[]),
+    tbl('assignments[]',['var',tr('值','value')],VARS.map(v=>[v,asg[v]===undefined?'–':asg[v]?'T':'F']))];
+  Rc.add({t:tr('输入：2-CNF 公式','Input: a 2-CNF formula'),d:clauses.map(c=>'('+c.join(' ∨ ')+')').join(' ∧ ')+tr('\n每个文字是一个顶点：x1..x3 和 ¬x1..¬x3，共 2n 个。','\nEach literal is a vertex: x1..x3 and ¬x1..¬x3, 2n in total.'),
+    ins:tr('每个子句最多 2 个 literal；3 个就是 3-SAT（NP-complete），不能用。','At most 2 literals per clause. With 3 it becomes 3-SAT (NP-complete), and this method does not apply.'),it:'info',ns,es,bd,P:P()});
+  clauses.forEach((c,i)=>{ curC=i; const [a,b]=c; const e1=neg(a)+'>'+b, e2=neg(b)+'>'+a; es[e1]='act'; es[e2]='act';
+    imps.push(neg(a)+'⇒'+b, neg(b)+'⇒'+a);
+    Rc.add({t:tr(`子句 (${a} ∨ ${b}) → 两条蕴含边`,`Clause (${a} ∨ ${b}) → two implication edges`),
+      d:tr(`若 ${a} 为假，${b} 必须为真：${neg(a)} ⇒ ${b}\n若 ${b} 为假，${a} 必须为真：${neg(b)} ⇒ ${a}`,`If ${a} is false, ${b} must be true: ${neg(a)} ⇒ ${b}\nIf ${b} is false, ${a} must be true: ${neg(b)} ⇒ ${a}`),
+      ins:tr('(a ∨ b) ≡ (¬a ⇒ b) ∧ (¬b ⇒ a)：这一步把逻辑变成了有向图。','(a ∨ b) ≡ (¬a ⇒ b) ∧ (¬b ⇒ a). This step turns the logic into a directed graph.'),it:'relax',ns,es,bd,P:P()});
+    es[e1]='normal'; es[e2]='normal'; });
+  curC=-2;
+  const radj={}, adj={}; ids.forEach(v=>{radj[v]=[];adj[v]=[];}); g.edges.forEach(e=>{adj[e.u].push(e.v); radj[e.v].push(e.u);});
+  const post={}, seen={}; let ck=1; const ex=v=>{ seen[v]=1; ck++; radj[v].forEach(u=>{ if(!seen[u]) ex(u); }); post[v]=ck++; };
+  ids.forEach(v=>{ if(!seen[v]) ex(v); });
+  const ord=[...ids].sort((a,b)=>post[b]-post[a]), cid={};
+  ord.forEach(v=>{ if(cid[v]!==undefined) return; const k=sccs.length, comp=[]; const e2=x=>{ cid[x]=k; comp.push(x); adj[x].forEach(u=>{ if(cid[u]===undefined) e2(u); }); }; e2(v); sccs.push(comp); });
+  const COL=[3,4,5,2,6];
+  ids.forEach(v=>{ ns[v]=COL[cid[v]%COL.length]; bd[v]='SCC '+(cid[v]+1); });
+  g.edges.forEach(e=>es[e.key]=cid[e.u]===cid[e.v]?'tree':'cross');
+  Rc.add({t:tr(`在蕴含图上跑 SCC：${sccs.length} 个分量`,`Run SCC on the implication graph: ${sccs.length} components`),
+    d:sccs.map((s,i)=>`#${i+1} {${s.join(', ')}}`).join('\n')+tr('\n顺序 sink → source（SCC black box 直接给出）。','\nOrdered sink → source (given directly by the SCC black box).'),
+    ins:tr('同一个 SCC 里的文字互相蕴含：必须同真同假。','Literals in the same SCC imply each other, so they are all true or all false.'),it:'info',ns,es,bd,P:P()});
+  const bad=VARS.filter(v=>cid[v]===cid[neg(v)]);
+  Rc.add({t:bad.length?tr('检查：有矛盾 → NO','Check: contradiction → NO'):tr('检查：没有 x 与 ¬x 同在一个 SCC','Check: no x shares an SCC with ¬x'),
+    d:VARS.map(v=>`${v} ∈ #${cid[v]+1}, ¬${v} ∈ #${cid[neg(v)]+1}`).join('\n'),
+    ins:bad.length?tr('x ⇒ ¬x 且 ¬x ⇒ x，无论怎么赋值都矛盾。','x ⇒ ¬x and ¬x ⇒ x, so every assignment is contradictory.'):tr('可满足 ⟺ 对每个变量，x 和 ¬x 不在同一个 SCC。','Satisfiable ⟺ for every variable, x and ¬x are in different SCCs.'),it:bad.length?'warn':'ok',ns,es,bd,P:P()});
+  if(!bad.length){
+    sccs.forEach((s,i)=>{ const set=[]; s.forEach(l=>{ const v=l.replace('¬',''); if(asg[v]===undefined){ asg[v]=!l.startsWith('¬'); set.push(l); } });
+      ids.forEach(l=>{ const v=l.replace('¬',''); if(asg[v]!==undefined) ns[l]=(asg[v]===!l.startsWith('¬'))?2:6; });
+      Rc.add({t:tr(`按 sink → source 取 SCC #${i+1}：设其中文字为真`,`Next in sink → source order: SCC #${i+1}, set its literals true`),
+        d:set.length?tr(`设为真：${set.join('、')}\n它们的否定 ${set.map(neg).join('、')} 自动为假。`,`Set true: ${set.join(', ')}\nTheir negations ${set.map(neg).join(', ')} become false.`):tr('其中文字的变量都已赋值，跳过。','Every variable in it is already assigned; skip.'),
+        ins:tr('把 sink SCC 设为真是安全的：它没有出边，不会推出别的东西。','Setting a sink SCC true is safe: it has no out-edges, so it forces nothing else.'),it:'ok',ns,es,bd,P:P()}); });
+    Rc.add({t:tr('完成：','Done: ')+VARS.map(v=>v+'='+(asg[v]?'T':'F')).join(', '),d:tr('代回检查：\n','Plug back in:\n')+clauses.map(c=>'('+c.join(' ∨ ')+') = '+(c.some(l=>asg[l.replace('¬','')]===!l.startsWith('¬'))?'T':'F')).join('\n'),
+      ins:tr('绿色 = 为真的文字，红色 = 为假的文字。运行时间 O(n+m)。','Green = true literals, red = false literals. Runtime O(n+m).'),it:'done',ns,es,bd,P:P()});
+  }
+  return Rc.L;
+}
+
+/* ============================== data ============================== */
+const gBFS=G([['S',80,180],['A',200,90],['B',200,270],['C',340,90],['D',340,270],['E',470,180]],[['S','A'],['S','B'],['A','B'],['A','C'],['B','D'],['C','D'],['C','E'],['D','E']],false);
+const gDFS=G([['A',100,90],['B',260,70],['C',430,150],['D',120,240],['E',340,280],['F',150,335]],[['A','B'],['A','C'],['B','C'],['B','E'],['C','A'],['E','C'],['D','E'],['D','F']],true);
+const gTopo=G([['A',80,180],['B',210,90],['C',210,270],['D',350,90],['E',350,270],['F',480,180]],[['A','B'],['A','C'],['B','D'],['C','D'],['C','E'],['D','F'],['E','F']],true);
+const gSCC=G([['A',80,90],['B',190,70],['C',130,220],['D',290,180],['E',370,290],['F',450,130],['G',490,270]],[['A','B'],['B','C'],['C','A'],['C','D'],['D','E'],['E','D'],['E','F'],['F','G'],['G','F'],['B','F']],true);
+const gDij=G([['S',80,180],['A',210,90],['B',210,270],['C',360,90],['D',360,270],['T',490,180]],[['S','A',4],['S','B',1],['B','A',2],['A','C',1],['B','D',5],['C','D',1],['C','T',6],['D','T',2]],true);
+const gBF=G([['S',80,180],['A',230,80],['B',230,280],['C',400,80],['D',400,280]],[['S','A',6],['S','B',7],['A','C',5],['A','B',8],['A','D',-4],['C','A',-2],['B','C',-3],['B','D',9],['D','S',2],['D','C',7]],true);
+const gFW=G([['1',110,180],['2',280,70],['3',450,180],['4',280,290]],[['1','2',3],['2','1',8],['1','4',7],['2','3',2],['3','1',5],['3','4',1],['4','1',2]],true);
+const gMST=()=>G([['A',150,80],['B',410,80],['C',500,200],['D',410,310],['E',150,310],['F',280,195]],[['A','B',4],['A','F',2],['B','C',6],['B','F',5],['C','D',3],['C','F',1],['D','E',2],['E','F',3],['A','E',7]],false);
+const gFlow=()=>G([['S',70,180],['A',250,80],['B',300,180],['C',250,290],['T',490,180]],[['S','A',10],['S','C',10],['A','B',4],['B','C',4],['A','T',8],['C','T',10]],true);
+const CLAUSES=[['x1','x2'],['¬x1','x3'],['¬x2','¬x3'],['x2','x3']];
+const g2SAT=(()=>{ const neg=l=>l.startsWith('¬')?l.slice(1):'¬'+l; const E=[]; const seen=new Set();
+  CLAUSES.forEach(([a,b])=>[[neg(a),b],[neg(b),a]].forEach(([u,v])=>{ const k=u+'>'+v; if(!seen.has(k)){seen.add(k);E.push([u,v]);} }));
+  return G([['x1',110,90],['x2',280,90],['x3',450,90],['¬x1',110,280],['¬x2',280,280],['¬x3',450,280]],E,true); })();
+
+const CATS={c1:['遍历 / 连通','Traversal / connectivity'],c2:['最短路','Shortest paths'],c3:['最小生成树','Minimum spanning tree'],c4:['最大流','Max flow'],c5:['归约','Reduction']};
+const ALGOS=[
+ {id:'bfs',cat:'c1',abbr:'BFS',hn:['广度优先','breadth-first'],name:'Breadth-First Search',c:'--blue',rt:'O(n+m)',g:gBFS,cap:['无向图 · 起点 S','Undirected · start S'],
+  in:['图 G（有向/无向）+ 起点 <code>s</code>','Graph G (directed or undirected) + start <code>s</code>'],out:['<code>dist[]</code>、<code>prev[]</code>','<code>dist[]</code>, <code>prev[]</code>'],
+  req:['<span class="warn">起点必需</span>；dist 只计边数（无权）','<span class="warn">Start vertex required</span>; dist counts edges (unweighted)'],
+  sim:()=>simBFS(gBFS),
+  tk:[['不可达的点 <code>dist = inf</code>，可直接当可达性判断。','Unreachable vertices have <code>dist = inf</code>, so dist doubles as a reachability test.'],
+      ['边权全相等时用 BFS，比 Dijkstra 快一个 log。','When all edge weights are equal, use BFS; it is a log factor faster than Dijkstra.'],
+      ['有权图别用 BFS 求最短路。','Do not use BFS for shortest paths in weighted graphs.']]},
+ {id:'dfs',cat:'c1',abbr:'DFS',hn:['深度优先','depth-first'],name:'Depth-First Search',c:'--purple',rt:'O(n+m)',g:gDFS,cap:['有向图 · 字母序遍历','Directed · alphabetical order'],
+  in:['图 G（起点可选）','Graph G (start vertex optional)'],out:['<code>prev[]</code>、<code>pre[]</code>、<code>post[]</code>、<code>ccnum[]</code>','<code>prev[]</code>, <code>pre[]</code>, <code>post[]</code>, <code>ccnum[]</code>'],
+  req:['跑遍整张图；<code>visited[]</code> 是内部变量，拿不到','Covers the whole graph; <code>visited[]</code> is internal and not available'],
+  sim:()=>simDFS(gDFS),
+  tk:[['back：<code>post[u] &lt; post[v]</code>（有环的判据）。','back: <code>post[u] &lt; post[v]</code> (the cycle test).'],
+      ['forward/tree：<code>pre[u] &lt; pre[v] &lt; post[v] &lt; post[u]</code>，区分要看 <code>prev[v]==u</code>。','forward/tree: <code>pre[u] &lt; pre[v] &lt; post[v] &lt; post[u]</code>; tell them apart with <code>prev[v]==u</code>.'],
+      ['cross：<code>pre[v] &lt; post[v] &lt; pre[u] &lt; post[u]</code>。','cross: <code>pre[v] &lt; post[v] &lt; pre[u] &lt; post[u]</code>.'],
+      ['用 pre/post 后处理分类边是合法的，不算修改 black box。','Classifying edges from pre/post afterwards is legal post-processing, not a modification of the black box.'],
+      ['最大 post 的点在 source SCC；反向图上最大 post 在 sink SCC。','The largest post is in a source SCC; on the reversed graph, the largest post is in a sink SCC.']]},
+ {id:'topo',cat:'c1',abbr:'TopSort',hn:['拓扑排序','topological sort'],name:'Topological Sort',c:'--purple',rt:'O(n+m)',g:gTopo,cap:['DAG','DAG'],
+  in:['<span class="warn">DAG</span>','<span class="warn">DAG</span>'],out:['<code>order[]</code>（按序号索引）','<code>order[]</code> (indexed by position)'],
+  req:['顺序 source → sink；不是 DAG 先 SCC 缩点','Order is source → sink; if not a DAG, collapse with SCC first'],
+  sim:()=>simTopo(gTopo),
+  tk:[['拓扑序 = post 从大到小读，DFS 的 <code>post[]</code> 已经包含全部信息。','Topological order = decreasing post; DFS\'s <code>post[]</code> already holds all the information.'],
+      ['多个 source 也能跑，结果不唯一；只保证 <code>order[1]</code> 是 source、<code>order[n]</code> 是 sink。要找所有 source 就算入度。','Multiple sources are fine and the order is not unique. Only <code>order[1]</code> is guaranteed a source and <code>order[n]</code> a sink. To find all sources, compute in-degrees.'],
+      ['<code>order[]</code> 按位置索引，和其他输出按 vertex 索引相反。','<code>order[]</code> is indexed by position, unlike other outputs, which are indexed by vertex.'],
+      ['DAG 上的最长/最短路、路径计数：按拓扑序做 DP。','Longest/shortest paths and path counting on a DAG: DP in topological order.']]},
+ {id:'scc',cat:'c1',abbr:'SCC',hn:['强连通分量','strong components'],name:'Strongly Connected Components',c:'--teal',rt:'O(n+m)',g:gSCC,cap:['有向图 · 3 个 SCC','Directed · 3 SCCs'],
+  in:['有向图 G','Directed graph G'],out:['metagraph <code>G_SCC</code> + DFS 的输出（<code>ccnum[]</code> 标出所属 SCC）','metagraph <code>G_SCC</code> + DFS outputs (<code>ccnum[]</code> gives each vertex\'s SCC)'],
+  req:['<code>G_SCC</code> 顶点按 <span class="warn">sink → source</span> 排','<code>G_SCC</code> vertices are ordered <span class="warn">sink → source</span>'],
+  sim:()=>simSCC(gSCC),
+  tk:[['先在 G<sup>R</sup> 上 DFS，再按 post 降序在 G 上 Explore。','DFS on G<sup>R</sup> first, then Explore G in decreasing post order.'],
+      ['第一个找到的是 sink SCC；<code>V_SCC</code> 第一个 = ccnum 为 1 的那组点。','The first SCC found is a sink SCC; the first vertex of <code>V_SCC</code> = the vertices with ccnum 1.'],
+      ['整图强连通 ⟺ metagraph 只有 1 个顶点。','The graph is strongly connected ⟺ the metagraph has one vertex.'],
+      ['metagraph 顶点数 = n ⟺ 原图无环。','Metagraph has n vertices ⟺ the original graph is acyclic.']]},
+ {id:'dij',cat:'c2',abbr:'Dijkstra',hn:['非负权单源','non-negative, single source'],name:"Dijkstra's Algorithm",c:'--green',rt:'O((n+m) log n)',g:gDij,cap:['有向带权 · 起点 S','Directed, weighted · start S'],
+  in:['图 G + 边权 + 起点 <code>s</code>','Graph G + edge weights + start <code>s</code>'],out:['<code>dist[]</code>、<code>prev[]</code>','<code>dist[]</code>, <code>prev[]</code>'],
+  req:['<span class="warn">边权必须非负</span>','<span class="warn">Edge weights must be non-negative</span>'],
+  sim:()=>simDijkstra(gDij),
+  tk:[['有负权边 → 用 Bellman-Ford，Dijkstra 会静默给出错误答案。','Negative edges → use Bellman-Ford. Dijkstra silently gives wrong answers.'],
+      ['给所有边加常数不能修复负权（边数多的路径被加得更多）。','Adding a constant to every edge does not fix negative weights (paths with more edges get more added).'],
+      ['反向图上跑一次 = 所有点到某点的最短路。','One run on the reversed graph = shortest paths from every vertex to a fixed target.']]},
+ {id:'bf',cat:'c2',abbr:'BF',hn:['可负权单源','negative OK, single source'],name:'Bellman-Ford',c:'--amber',rt:'O(nm)',g:gBF,cap:['有向带权 · 含负权边','Directed, weighted · has negative edges'],
+  in:['图 G + 边权（可负）+ 起点 <code>s</code>','Graph G + weights (may be negative) + start <code>s</code>'],out:['<code>dist[]</code>、<code>prev[]</code>、<code>iter[][]</code>（第 0..n 轮）','<code>dist[]</code>, <code>prev[]</code>, <code>iter[][]</code> (rounds 0..n)'],
+  req:['初始化 <code>D(0,s)=0</code>','Initialized with <code>D(0,s)=0</code>'],
+  sim:()=>simBF(gBF),
+  tk:[['<code>iter[k][v]</code> = 最多用 k 条边的最短路，很多变体题从这里入手。','<code>iter[k][v]</code> = shortest path using at most k edges; many variant problems start here.'],
+      ['负环检测：比较整行 <code>iter[n][·]</code> 与 <code>iter[n−1][·]</code>。','Negative-cycle check: compare the whole rows <code>iter[n][·]</code> and <code>iter[n−1][·]</code>.'],
+      ['只能检测从 s 可达的负环；有负环时最短路无定义（−∞）。','It detects only negative cycles reachable from s. With a negative cycle, shortest paths are undefined (−∞).']]},
+ {id:'fw',cat:'c2',abbr:'FW',hn:['全源','all pairs'],name:'Floyd-Warshall',c:'--teal',rt:'O(n³)',g:gFW,cap:['有向带权 · 4 个点','Directed, weighted · 4 vertices'],
+  in:['图 G + 边权（可负）','Graph G + weights (may be negative)'],out:['<code>dist[][]</code>、<code>iter[][][]</code>','<code>dist[][]</code>, <code>iter[][][]</code>'],
+  req:['不需要起点','No start vertex needed'],
+  sim:()=>simFW(gFW),
+  tk:[['课程实现 <code>D(0,s,s)=∞</code>，所以 <code>dist[v][v]</code> = 经过 v 的最短环。','The course implementation sets <code>D(0,s,s)=∞</code>, so <code>dist[v][v]</code> = shortest cycle through v.'],
+      ['负环检测：存在 <code>dist[v][v] &lt; 0</code>。','Negative-cycle check: some <code>dist[v][v] &lt; 0</code>.'],
+      ['稠密图上比跑 n 次 BF（O(n²m)）快。','On dense graphs it beats running BF n times (O(n²m)).']]},
+ {id:'kru',cat:'c3',abbr:'Kruskal',hn:['按边贪心','greedy by edge'],name:"Kruskal's Algorithm",c:'--teal',rt:'O(m log n)',g:gMST(),cap:['无向带权 · 6 个点','Undirected, weighted · 6 vertices'],
+  in:['<span class="warn">连通、无向</span>带权图','<span class="warn">Connected, undirected</span> weighted graph'],out:['MST 的 <code>edges[]</code>','MST <code>edges[]</code>'],
+  req:['边权取负 → 最大生成树','Negate weights → maximum spanning tree'],
+  sim:()=>simKruskal(ALGOS_G.kru),
+  tk:[['Cut property：任一 cut 上的最轻边属于某棵 MST。','Cut property: the lightest edge across any cut belongs to some MST.'],
+      ['权值有相同时 MST 可能不唯一，但总权相同。','With tied weights the MST may not be unique, but the total weight is the same.'],
+      ['最大生成树上 s→t 的路径 = 最宽（bottleneck）路径。','The s→t path in a maximum spanning tree is a widest (bottleneck) path.']]},
+ {id:'prim',cat:'c3',abbr:'Prim',hn:['按点生长','grows from a vertex'],name:"Prim's Algorithm",c:'--purple',rt:'O(m log n)',g:gMST(),cap:['同一张图 · 起点 A','Same graph · start A'],
+  in:['<span class="warn">连通、无向</span>带权图','<span class="warn">Connected, undirected</span> weighted graph'],out:['<code>prev[]</code>（父指针）','<code>prev[]</code> (parent pointers)'],
+  req:['起点任意，其 prev 为 nil','Any start vertex; its prev is nil'],
+  sim:()=>simPrim(ALGOS_G.prim),
+  tk:[['和 Kruskal 运行时间相同；选哪个看你需要 edges[] 还是 prev[]。','Same runtime as Kruskal; choose by whether you need edges[] or prev[].'],
+      ['MST ≠ 最短路径树：最小化的是全树总权。','MST ≠ shortest-path tree: it minimizes the total weight of the tree.'],
+      ['只对无向图定义。','Defined only for undirected graphs.']]},
+ {id:'ff',cat:'c4',abbr:'FF',hn:['DFS 增广','DFS augmenting'],name:'Ford-Fulkerson',c:'--amber',rt:'O(mC)',g:gFlow(),cap:['流网络 · 边标 f/c','Flow network · edges labeled f/c'],
+  in:['有向图 + <span class="warn">正整数</span>容量 + <code>s</code>、<code>t</code>','Directed graph + <span class="warn">positive integer</span> capacities + <code>s</code>, <code>t</code>'],out:['<code>flow[]</code>、<code>C</code>','<code>flow[]</code>, <code>C</code>'],
+  req:['C 是最大流的值 → 伪多项式','C is the max-flow value → pseudo-polynomial'],
+  sim:()=>simFlow(ALGOS_G.ff,'dfs'),
+  tk:[['max-flow = min-cut；最后残余图里 s 能到的点就是割的 s 侧。','max-flow = min-cut. The vertices s can reach in the final residual graph form the s side of the cut.'],
+      ['饱和边 ≠ 割边：割边是从 s 侧指向 t 侧的边。FF 和 EK 的 flow[] 可以不同，C 和这里的最小割相同。','Saturated ≠ cut edge: cut edges go from the s side to the t side. FF and EK can give different flow[], but the same C and, here, the same min cut.'],
+      ['整数容量 ⇒ 存在整数最大流（二部图匹配靠这个）。','Integer capacities ⇒ an integer max flow exists (bipartite matching relies on this).'],
+      ['难点在建模：拆点处理点容量、超级源/汇处理多源多汇。','The hard part is modeling: split vertices for vertex capacities, add a super source/sink for multiple sources/sinks.']]},
+ {id:'ek',cat:'c4',abbr:'EK',hn:['BFS 增广','BFS augmenting'],name:'Edmonds-Karp',c:'--green',rt:'O(nm²)',g:gFlow(),cap:['同一个流网络','Same flow network'],
+  in:['有向图 + 正容量（不必整数）+ <code>s</code>、<code>t</code>','Directed graph + positive capacities (need not be integers) + <code>s</code>, <code>t</code>'],out:['<code>flow[]</code>、<code>C</code>','<code>flow[]</code>, <code>C</code>'],
+  req:['容量很大或非整数时必须选它','Required when capacities are huge or non-integer'],
+  sim:()=>simFlow(ALGOS_G.ek,'bfs'),
+  tk:[['和 FF 唯一区别：用 BFS 找边数最少的增广路。','The only difference from FF: BFS finds a fewest-edge augmenting path.'],
+      ['运行时间与容量无关；题目给大容量或非整数 → 选 EK。','Runtime does not depend on capacities; large or non-integer capacities → choose EK.'],
+      ['和 FF 比：这里饱和的是 S→C，FF 饱和的是 S→A，但割边都是 A→T、C→T。','Compared with FF: here S→C is saturated while FF saturates S→A, yet the cut edges are A→T and C→T in both.']]},
+ {id:'sat',cat:'c5',abbr:'2-SAT',hn:['蕴含图 + SCC','implication graph + SCC'],name:'2-SAT',c:'--red',rt:'O(n+m)',g:g2SAT,cap:['蕴含图 · 上 x，下 ¬x','Implication graph · x on top, ¬x below'],
+  in:['CNF，<span class="warn">每个子句 ≤ 2 个 literal</span>','CNF with <span class="warn">≤ 2 literals per clause</span>'],out:['<code>assignments[]</code> 或 <code>"NO"</code>，外加 SCC 的全部输出','<code>assignments[]</code> or <code>"NO"</code>, plus all SCC outputs'],
+  req:['n 个变量、m 个子句','n variables, m clauses'],
+  sim:()=>simTwoSAT(g2SAT,CLAUSES),
+  tk:[['(a ∨ b) → ¬a⇒b 和 ¬b⇒a。','(a ∨ b) → ¬a⇒b and ¬b⇒a.'],
+      ['无解 ⟺ 某个 x 和 ¬x 在同一个 SCC。','Unsatisfiable ⟺ some x and ¬x are in the same SCC.'],
+      ['看到「每样东西二选一 + 两两约束」就想 2-SAT。','"Each item picks one of two options + pairwise constraints" → think 2-SAT.']]},
+];
+const ALGOS_G={}; ALGOS.forEach(a=>ALGOS_G[a.id]=a.g);
+
+/* ============================== rendering ============================== */
+const NC=[
+  {f:'#141820',s:'#2d3344',t:'#9aa3b8'}, {f:'#3d2a00',s:'#f5a623',t:'#f5a623'}, {f:'#0d3326',s:'#34c98a',t:'#34c98a'},
+  {f:'#0f2140',s:'#4f8ef7',t:'#8fb8ff'}, {f:'#1a1040',s:'#9d7ef7',t:'#bba5ff'}, {f:'#082828',s:'#2ec4b6',t:'#2ec4b6'}, {f:'#3a1010',s:'#f05252',t:'#ff8a8a'}];
+const EC={normal:{s:'#353c50',w:1.8},dim:{s:'#232836',w:1.5},tree:{s:'#4f8ef7',w:3},sp:{s:'#34c98a',w:3},back:{s:'#f05252',w:2.5,d:'7 4'},
+  fwd:{s:'#2ec4b6',w:2.5,d:'2 4'},cross:{s:'#9d7ef7',w:2.2,d:'7 4'},mst:{s:'#34c98a',w:3.6},reject:{s:'#f05252',w:1.8,d:'3 4',o:.55},
+  act:{s:'#f5a623',w:3.2},actr:{s:'#f5a623',w:3.2,d:'6 3'},cand:{s:'#4f8ef7',w:2,d:'6 3'},flow:{s:'#34c98a',w:2.8},sat:{s:'#f05252',w:2.8},cut:{s:'#f5a623',w:3.2,d:'8 4'},hide:{s:'#000',w:1,o:0}};
+const LEG={bfs:[['tree','BFS 树边','BFS tree edge'],['dim','非树边','non-tree edge']],dfs:[['tree','tree','tree'],['back','back','back'],['fwd','forward','forward'],['cross','cross','cross']],topo:[['tree','DFS 树边','DFS tree edge']],
+  scc:[['tree','SCC 内部','inside an SCC'],['cross','SCC 之间','between SCCs']],dij:[['act','本步松弛成功','relaxed this step'],['sp','最短路径树','shortest-path tree'],['dim','未改善','no improvement']],bf:[['act','本轮改善','improved this round'],['sp','prev 树','prev tree']],
+  fw:[['act','与 k 相连的边','edges touching k']],kru:[['mst','MST 边','MST edge'],['reject','拒绝（成环）','rejected (cycle)']],prim:[['mst','MST 边','MST edge'],['cand','候选（key 来源）','candidate (source of key)']],
+  ff:[['act','增广路径','augmenting path'],['actr','反向使用','used backward'],['flow','有流','carries flow'],['sat','饱和','saturated'],['cut','最小割','min cut']],ek:[['act','增广路径','augmenting path'],['flow','有流','carries flow'],['sat','饱和','saturated'],['cut','最小割','min cut']],
+  sat:[['act','新加的蕴含边','new implication edge'],['tree','SCC 内部','inside an SCC'],['cross','SCC 之间','between SCCs']]};
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let A=null, STEPS=[], cur=0, timer=null, EL={}, VIEW='bfs';
+
+function geo(a,b,off,dir){
+  const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy), nx=-dy/L, ny=dx/L;
+  const cx=(a.x+b.x)/2+nx*off, cy=(a.y+b.y)/2+ny*off;
+  let sx=cx-a.x, sy=cy-a.y, sl=Math.hypot(sx,sy); const p1={x:a.x+sx/sl*R, y:a.y+sy/sl*R};
+  let ex=b.x-cx, ey=b.y-cy, el=Math.hypot(ex,ey); const ux=ex/el, uy=ey/el;
+  const tip={x:b.x-ux*(R+1), y:b.y-uy*(R+1)}, base=dir?{x:tip.x-ux*11,y:tip.y-uy*11}:tip;
+  const lx=.25*a.x+.5*cx+.25*b.x+nx*13, ly=.25*a.y+.5*cy+.25*b.y+ny*13;
+  return {d:`M${p1.x.toFixed(1)} ${p1.y.toFixed(1)} Q${cx.toFixed(1)} ${cy.toFixed(1)} ${base.x.toFixed(1)} ${base.y.toFixed(1)}`,
+    poly:dir?`${tip.x.toFixed(1)},${tip.y.toFixed(1)} ${(base.x+uy*5.5).toFixed(1)},${(base.y-ux*5.5).toFixed(1)} ${(base.x-uy*5.5).toFixed(1)},${(base.y+ux*5.5).toFixed(1)}`:'', lx, ly};
+}
+function mk(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; }
+
+function applyStatic(){
+  document.documentElement.lang=LANG==='en'?'en':'zh-CN';
+  $('t-h1').textContent=tr('图算法 Black Box 总复习','Graph Algorithm Black Boxes');
+  document.title=$('t-h1').textContent;
+  $('t-sub').textContent=tr('CS-6515 · 12 个 black box，每步状态由真实运行算法生成','CS-6515 · 12 black boxes, every step computed by actually running the algorithm');
+  $('t-keys').innerHTML=tr('<kbd>←</kbd> <kbd>→</kbd> 单步 · <kbd>Space</kbd> 播放 · <kbd>[</kbd> <kbd>]</kbd> 换算法','<kbd>←</kbd> <kbd>→</kbd> step · <kbd>Space</kbd> play · <kbd>[</kbd> <kbd>]</kbd> switch algorithm');
+  $('lang').textContent=LANG==='en'?'中文':'English';
+  $('lang').setAttribute('aria-label',tr('切换到英文','Switch to Chinese'));
+  $('nav').setAttribute('aria-label',tr('算法索引','Algorithm index'));
+  $('k-req').textContent=tr('要求 / 注意','Requirements / notes');
+  $('tk-h').textContent=tr('考点 · 陷阱','Exam points · traps');
+  $('g').setAttribute('aria-label',tr('示例图','Example graph'));
+}
+function buildNav(){
+  const nav=$('nav'); nav.innerHTML='';
+  const g0=document.createElement('div'); g0.className='grp';
+  g0.innerHTML=`<div class="grp-l">${tr('总览','Overview')}</div>`; const b0=document.createElement('button'); b0.type='button'; b0.className='nb'; b0.dataset.id='ov'; b0.style.setProperty('--c','var(--text)');
+  b0.innerHTML=`<span class="ab">${tr('选型表','Cheat sheet')}</span><span class="hn">${tr('12 个一页看完','all 12 on one page')}</span>`; b0.onclick=()=>select('ov'); g0.appendChild(b0);
+  const b1=document.createElement('button'); b1.type='button'; b1.className='nb'; b1.dataset.id='ops'; b1.style.setProperty('--c','var(--text)');
+  b1.innerHTML=`<span class="ab">${tr('图操作','Graph ops')}</span><span class="hn">${tr('常见处理 + runtime','common steps + runtime')}</span>`; b1.onclick=()=>select('ops'); g0.appendChild(b1);
+  const b2=document.createElement('button'); b2.type='button'; b2.className='nb'; b2.dataset.id='pre'; b2.style.setProperty('--c','var(--text)');
+  b2.innerHTML=`<span class="ab">${tr('前置条件','Preconditions')}</span><span class="hn">${tr('输入图要满足什么','what the input must satisfy')}</span>`; b2.onclick=()=>select('pre'); g0.appendChild(b2); nav.appendChild(g0);
+  Object.keys(CATS).forEach(cat=>{ const gr=document.createElement('div'); gr.className='grp'; gr.innerHTML=`<div class="grp-l">${L2(CATS[cat])}</div>`;
+    ALGOS.filter(a=>a.cat===cat).forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='nb'; b.dataset.id=a.id; b.style.setProperty('--c',`var(${a.c})`);
+      b.innerHTML=`<span class="ab">${a.abbr}</span><span class="hn">${L2(a.hn)}</span>`; b.onclick=()=>select(a.id); gr.appendChild(b); });
+    nav.appendChild(gr); });
+}
+function buildOverview(){
+  let h=`<h2>${tr('12 个 black box 一页看完','All 12 black boxes on one page')}</h2><p>${tr('点算法名跳到它的逐步演示。','Click an algorithm to jump to its step-by-step walkthrough.')}</p><div class="card tw"><table class="ovt"><thead><tr><th>${tr('算法','Algorithm')}</th><th>${tr('Input 要求','Input requirements')}</th><th>Output</th><th>Runtime</th></tr></thead><tbody>`;
+  Object.keys(CATS).forEach(cat=>{ h+=`<tr class="cat"><td colspan="4">${L2(CATS[cat])}</td></tr>`;
+    ALGOS.filter(a=>a.cat===cat).forEach(a=>{ h+=`<tr><td><button type="button" class="go" style="color:var(${a.c})" data-go="${a.id}">${a.abbr}</button></td><td>${L2(a.in)}<br><span style="color:var(--muted);font-size:12px">${L2(a.req)}</span></td><td>${L2(a.out)}</td><td class="m">${a.rt}</td></tr>`; }); });
+  h+='</tbody></table></div><div class="rule">'+
+   tr('<div><b>最短路怎么选</b>无权 → BFS；非负权 → Dijkstra；有负权或要查负环 → BF；所有点对 → FW。</div>','<div><b>Choosing a shortest-path algorithm</b>Unweighted → BFS. Non-negative → Dijkstra. Negative weights or a negative-cycle check → BF. All pairs → FW.</div>')+
+   tr('<div><b>MST 怎么选</b>都 O(m log n)。要边集合用 Kruskal 的 edges[]，要父指针用 Prim 的 prev[]。</div>','<div><b>Choosing an MST algorithm</b>Both O(m log n). Need the edge set → Kruskal\'s edges[]. Need parent pointers → Prim\'s prev[].</div>')+
+   tr('<div><b>最大流怎么选</b>容量小整数 → FF O(mC)；容量大或非整数 → EK O(nm²)。</div>','<div><b>Choosing a max-flow algorithm</b>Small integer capacities → FF O(mC). Large or non-integer capacities → EK O(nm²).</div>')+
+   tr('<div><b>Black box 规则</b>只能调用、不能改内部。在外面建新图、改权重（预处理）或扫描输出（后处理）都合法。</div>','<div><b>Black-box rules</b>Call it, never change its internals. Building a new graph or changing weights beforehand (pre-processing), or scanning its outputs afterwards (post-processing), is legal.</div>')+
+   '</div>';
+  $('ov').innerHTML=h; $('ov').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>select(b.dataset.go));
+}
+
+const OPS=[
+ ['基础量与表示','Basics and representation',[
+  ['入度（所有点）','In-degree (all vertices)','建数组 <code>in[v]=0</code>；扫一遍所有邻接表，每条边 u→v 做 <code>in[v]++</code>。','Array <code>in[v]=0</code>; scan every adjacency list and do <code>in[v]++</code> for each edge u→v.','O(n+m)'],
+  ['出度','Out-degree','<code>out[v]</code> = <code>adj[v]</code> 的长度。所有点一起算 = 扫一遍邻接表。','<code>out[v]</code> = length of <code>adj[v]</code>. For all vertices, scan the lists once.','单点 O(deg v)，全部 O(n+m)|One vertex O(deg v), all O(n+m)'],
+  ['无向图的度','Degree (undirected)','<code>deg(v)</code> = <code>adj[v]</code> 的长度；Σ deg = 2m。','<code>deg(v)</code> = length of <code>adj[v]</code>; Σ deg = 2m.','O(n+m)'],
+  ['反转图 G<sup>R</sup>','Reverse the graph G<sup>R</sup>','新建 n 个空表；每条边 u→v，把 u 加进 G<sup>R</sup> 的 <code>adj[v]</code>。','Create n empty lists; for each edge u→v, append u to <code>adj[v]</code> of G<sup>R</sup>.','O(n+m)'],
+  ['无向 → 有向','Undirected → directed','每条边 {u,v} 换成 u→v 和 v→u，边数变 2m。','Replace each edge {u,v} with u→v and v→u; the edge count becomes 2m.','O(n+m)'],
+  ['邻接矩阵 ↔ 邻接表','Matrix ↔ adjacency list','扫一遍 n×n 矩阵。','Scan the n×n matrix once.','O(n²)'],
+  ['改边权','Transform edge weights','扫一遍所有边。取负 → 最长路 / 最大生成树；<code>−log w</code> → 最大乘积路径变成最短路。加常数会改变最短路，但不改变 MST。','One pass over the edges. Negate → longest path / max spanning tree; <code>−log w</code> → max-product path becomes shortest path. Adding a constant changes shortest paths but not the MST.','O(m)']]],
+ ['增删点和边','Adding and removing','',[]],
+ ['可达与连通','Reachability and connectivity','',[]],
+ ['环、DAG、source / sink','Cycles, DAGs, sources / sinks','',[]],
+ ['路径与建模技巧','Paths and modeling tricks','',[]]
+];
+OPS[1][2]=[
+  ['加边 u→v','Add edge u→v','追加到 <code>adj[u]</code>（无向图两边都加）。','Append to <code>adj[u]</code> (both lists if undirected).','O(1)'],
+  ['删边 u→v','Remove edge u→v','在 <code>adj[u]</code> 里找到并删除。','Find it in <code>adj[u]</code> and delete it.','O(deg u) ≤ O(n)'],
+  ['加点','Add a vertex','新建一个空邻接表。','Create one empty adjacency list.','O(1)'],
+  ['删点 v','Remove vertex v','删掉 <code>adj[v]</code>，再扫所有表删掉指向 v 的边。','Delete <code>adj[v]</code>, then scan all lists to remove edges into v.','O(n+m)'],
+  ['取子图','Induced subgraph / filter','扫一遍点和边，只复制满足条件的（比如只留黑色点、只留权 ≤ k 的边）。','One pass over vertices and edges, copying those that satisfy the condition (e.g. only black vertices, only edges of weight ≤ k).','O(n+m)']];
+OPS[2][2]=[
+  ['s 能否到 t','Can s reach t?','从 s 跑 BFS 看 <code>dist[t] ≠ ∞</code>；或以 s 为起点跑 DFS 看 <code>ccnum[t] = 1</code>。','BFS from s and check <code>dist[t] ≠ ∞</code>, or DFS starting at s and check <code>ccnum[t] = 1</code>.','O(n+m)'],
+  ['哪些点能到 t','Which vertices reach t?','在 G<sup>R</sup> 上从 t 跑 BFS / DFS。','BFS / DFS from t on G<sup>R</sup>.','O(n+m)'],
+  ['在某条 s→t 路径上的点','Vertices on some s→t path','G 上从 s 可达 ∩ G<sup>R</sup> 上从 t 可达。','Reachable from s in G ∩ reachable from t in G<sup>R</sup>.','O(n+m)'],
+  ['无向图连通分量','Connected components (undirected)','跑 DFS，分量个数 = 最大的 <code>ccnum</code>。','Run DFS; the number of components = the largest <code>ccnum</code>.','O(n+m)'],
+  ['是否强连通','Strongly connected?','跑 SCC，看 metagraph 是否只有 1 个点。也可以：任选 v，在 G 和 G<sup>R</sup> 上各跑一次 DFS，都能到达所有点。','Run SCC and check the metagraph has one vertex. Or pick any v and DFS from it on both G and G<sup>R</sup>; both must reach every vertex.','O(n+m)'],
+  ['边 u→v 是否在某个环上','Is edge u→v on a cycle?','u 和 v 在同一个 SCC（<code>ccnum</code> 相同）。','u and v are in the same SCC (equal <code>ccnum</code>).','O(n+m)'],
+  ['二部图检测','Bipartite check','BFS 按 <code>dist</code> 奇偶染色，再扫所有边，检查两端颜色都不同（对每个连通分量都要做）。','BFS, color by parity of <code>dist</code>, then check every edge joins two different colors (repeat per component).','O(n+m)']];
+OPS[3][2]=[
+  ['有向图有没有环','Cycle in a directed graph?','跑 DFS 后扫所有边：存在 <code>post[u] &lt; post[v]</code> 的边（back edge）就有环。或者跑 SCC：metagraph 点数 &lt; n 就有环（自环单独查）。','DFS, then scan every edge: any edge with <code>post[u] &lt; post[v]</code> (a back edge) means a cycle. Or run SCC: fewer than n metagraph vertices means a cycle (check self-loops separately).','O(n+m)'],
+  ['无向图有没有环','Cycle in an undirected graph?','跑 DFS，有不是 tree edge 的边（back edge）就有环。连通无向图里：m ≥ n ⟺ 有环。','DFS; any non-tree edge (back edge) means a cycle. For a connected undirected graph: m ≥ n ⟺ there is a cycle.','O(n+m)'],
+  ['是否 DAG','Is it a DAG?','等价于有向图无环（见上一行）。','Same as "no cycle" for a directed graph (row above).','O(n+m)'],
+  ['找所有 source','All sources','算入度，取 <code>in[v] = 0</code> 的点。','Compute in-degrees; take the vertices with <code>in[v] = 0</code>.','O(n+m)'],
+  ['找所有 sink','All sinks','出度为 0：<code>adj[v]</code> 为空。','Out-degree 0: <code>adj[v]</code> is empty.','O(n)'],
+  ['DAG 里找一个 source / sink','One source / sink of a DAG','TopSort：<code>order[1]</code> 是 source，<code>order[n]</code> 是 sink。中间的点不保证。','TopSort: <code>order[1]</code> is a source, <code>order[n]</code> is a sink. Nothing is guaranteed about the middle.','O(n+m)'],
+  ['source SCC 里的一个点','A vertex in a source SCC','跑 DFS，取 <code>post</code> 最大的点。','DFS; take the vertex with the largest <code>post</code>.','O(n+m)'],
+  ['sink SCC 里的一个点','A vertex in a sink SCC','在 G<sup>R</sup> 上跑 DFS 取 <code>post</code> 最大的点；或者取 SCC 输出的第一个 metagraph 顶点。','DFS on G<sup>R</sup> and take the largest <code>post</code>; or take the first metagraph vertex from SCC.','O(n+m)']];
+OPS[4][2]=[
+  ['所有点到 t 的最短路','Shortest paths from every vertex to t','反转图，从 t 跑一次 Dijkstra / BF / BFS。','Reverse the graph and run Dijkstra / BF / BFS once from t.','O(n+m) + 所用算法|O(n+m) + that algorithm'],
+  ['必须经过 v 的 s→t 最短路','Shortest s→t path through v','从 s 跑一次得 dist(s,v)，从 v 跑一次得 dist(v,t)，两者相加。','Run once from s for dist(s,v) and once from v for dist(v,t); add them.','2 × 所用算法|2 × that algorithm'],
+  ['边 (u,v) 在某条 s→t 最短路上','Is edge (u,v) on some shortest s→t path?','G 上从 s 跑一次、G<sup>R</sup> 上从 t 跑一次，检查 <code>d_s(u) + w(u,v) + d_t(v) = d_s(t)</code>。','Run once from s on G and once from t on G<sup>R</sup>; check <code>d_s(u) + w(u,v) + d_t(v) = d_s(t)</code>.','2 次 + O(m)|2 runs + O(m)'],
+  ['DAG 最长路 / 路径计数','Longest path / path count in a DAG','TopSort，然后按 <code>order</code> 做 DP：<code>L(v) = max(L(u) + w(u,v))</code>，<code>cnt(v) = Σ cnt(u)</code>。','TopSort, then DP in <code>order</code>: <code>L(v) = max(L(u) + w(u,v))</code>, <code>cnt(v) = Σ cnt(u)</code>.','O(n+m)'],
+  ['超级源 / 超级汇','Super source / super sink','新建点 s*，连到所有起点（边权 0 或容量 ∞）。多源最短路、多源多汇最大流都用这招。','Add a vertex s* with edges to every start vertex (weight 0 or capacity ∞). Used for multi-source shortest paths and multi-source/sink max flow.','O(n)'],
+  ['拆点（点权 / 点容量）','Vertex splitting (vertex weights / capacities)','v 拆成 v<sub>in</sub> → v<sub>out</sub>，这条边的权或容量 = 点的值；进 v 的边接到 v<sub>in</sub>，出 v 的边从 v<sub>out</sub> 出发。得到 2n 个点、n+m 条边。','Split v into v<sub>in</sub> → v<sub>out</sub> with weight/capacity = the vertex value; edges into v go to v<sub>in</sub>, edges out of v leave from v<sub>out</sub>. Result: 2n vertices, n+m edges.','O(n+m)'],
+  ['分层图（状态图）','Layered (state) graph','把图复制 k 层。比如「最多用 k 条红边」：普通边留在本层，红边从第 i 层连到第 i+1 层。','Copy the graph k times. E.g. "use at most k red edges": normal edges stay in their layer, red edges go from layer i to layer i+1.','O(k(n+m))']];
+const STATIC=['ov','ops','pre'];
+/* level: any = 不限制, req = 有要求, no = 不允许, na = 不适用 */
+const PRE_COLS=[['有向 / 无向','Directed / undirected'],['需要连通？','Must be connected?'],['边权','Edge weights'],['负权','Negative weights'],['环','Cycles'],['起点','Start vertex']];
+const PRE=[
+ ['bfs',[['any','都可以','Either'],['any','不要求，到不了的点 dist = ∞','No; unreachable vertices get dist = ∞'],['na','忽略，只数边数','Ignored; counts edges'],['na','不适用','N/A'],['any','可以有','Allowed'],['req','必须给 s','Required']]],
+ ['dfs',[['any','都可以','Either'],['any','不要求，会跑遍全图','No; covers the whole graph'],['na','忽略','Ignored'],['na','不适用','N/A'],['any','可以有，还能检测','Allowed; DFS detects them'],['any','可选','Optional']]],
+ ['topo',[['req','只能有向','Directed only'],['any','不要求','No'],['na','忽略','Ignored'],['na','不适用','N/A'],['no','必须无环（DAG）','Must be acyclic (DAG)'],['na','不需要','None']]],
+ ['scc',[['req','只能有向','Directed only'],['any','不要求','No'],['na','忽略','Ignored'],['na','不适用','N/A'],['any','可以有','Allowed'],['na','不需要','None']]],
+ ['dij',[['any','都可以','Either'],['any','不要求，到不了 = ∞','No; unreachable = ∞'],['req','必须 ≥ 0','Must be ≥ 0'],['no','不允许','Not allowed'],['any','可以有（权非负）','Allowed (non-negative)'],['req','必须给 s','Required']]],
+ ['bf',[['any','都可以，但无向负边 = 负环','Either, but an undirected negative edge = a negative cycle'],['any','不要求，到不了 = ∞','No; unreachable = ∞'],['any','任意实数','Any real'],['any','允许','Allowed'],['any','可以有；负环只能检测，不能求最短路','Allowed; negative cycles are only detected'],['req','必须给 s','Required']]],
+ ['fw',[['any','都可以，但无向负边 = 负环','Either, but an undirected negative edge = a negative cycle'],['any','不要求，到不了 = ∞','No; unreachable = ∞'],['any','任意实数','Any real'],['any','允许','Allowed'],['any','可以有；负环看 dist[v][v] < 0','Allowed; negative cycle if dist[v][v] < 0'],['na','不需要（全源）','None (all pairs)']]],
+ ['kru',[['req','只能无向','Undirected only'],['req','必须连通','Must be connected'],['req','需要边权','Required'],['any','允许','Allowed'],['any','可以有（会被跳过）','Allowed (skipped as they form)'],['na','不需要','None']]],
+ ['prim',[['req','只能无向','Undirected only'],['req','必须连通','Must be connected'],['req','需要边权','Required'],['any','允许','Allowed'],['any','可以有','Allowed'],['na','内部任选','Chosen internally']]],
+ ['ff',[['req','只能有向','Directed only'],['req','课程 spec 要求连通','Course spec: connected'],['req','正整数容量','Positive integer capacities'],['no','不允许','Not allowed'],['any','可以有','Allowed'],['req','必须给 s 和 t','Needs s and t']]],
+ ['ek',[['req','只能有向','Directed only'],['req','课程 spec 要求连通','Course spec: connected'],['req','正容量，可以不是整数','Positive capacities, need not be integers'],['no','不允许','Not allowed'],['any','可以有','Allowed'],['req','必须给 s 和 t','Needs s and t']]],
+];
+function buildPre(){
+  const lv=([l,zh,en])=>`<span class="lv ${l}">${tr(zh,en)}</span>`;
+  let h=`<h2>${tr('输入前置条件','Input preconditions')}</h2><p>${tr('调用 black box 前，输入必须满足对应格子里的要求；不满足就要先预处理（建新图、改权、缩点），否则会被扣分。','Before calling a black box, the input must meet every requirement in its row. If it does not, pre-process first (build a new graph, transform weights, collapse SCCs), or lose points.')}</p>`;
+  h+=`<div class="pkey">${lv(['any','不限制','No restriction'])}${lv(['req','有要求','Requirement'])}${lv(['no','不允许 / 必须没有','Not allowed / must be absent'])}${lv(['na','不适用','Not applicable'])}</div>`;
+  h+=`<div class="card tw"><table class="ovt pm"><thead><tr><th>${tr('算法','Algorithm')}</th>${PRE_COLS.map(c=>`<th>${tr(c[0],c[1])}</th>`).join('')}</tr></thead><tbody>`;
+  Object.keys(CATS).forEach(cat=>{ h+=`<tr class="cat"><td colspan="7">${L2(CATS[cat])}</td></tr>`;
+    ALGOS.filter(a=>a.cat===cat).forEach(a=>{ const row=PRE.find(r=>r[0]===a.id);
+      const go=`<button type="button" class="go" style="color:var(${a.c})" data-go="${a.id}">${a.abbr}</button>`;
+      if(row) h+=`<tr><td>${go}</td>${row[1].map(c=>`<td>${lv(c)}</td>`).join('')}</tr>`;
+      else h+=`<tr><td>${go}</td><td colspan="6">${lv(['req','输入是 CNF 公式，不是图：每个子句最多 2 个 literal','Input is a CNF formula, not a graph: at most 2 literals per clause'])} <span style="color:var(--muted);font-size:12px">${tr('内部自己建有向的蕴含图','It builds a directed implication graph internally')}</span></td></tr>`; }); });
+  h+='</tbody></table></div><div class="rule">'+
+   tr('<div><b>图不连通</b>最短路类（BFS、Dijkstra、BF、FW）照样能跑，到不了的点 dist = ∞。真正要求连通的是 MST，以及课程 spec 里的最大流。</div>','<div><b>Disconnected graph</b>Shortest-path algorithms (BFS, Dijkstra, BF, FW) still run; unreachable vertices get dist = ∞. Connectivity is required by MST, and by max flow in the course spec.</div>')+
+   tr('<div><b>无向图 + 负边</b>边 u–v 权 −1 就等于 u→v→u 一个长度 −2 的负环，BF / FW 会直接报负环。所以无向图的负权最短路不能直接套。</div>','<div><b>Undirected + negative edge</b>An edge u–v of weight −1 is the cycle u→v→u of length −2, so BF / FW report a negative cycle. Undirected negative-weight shortest paths cannot be solved this way.</div>')+
+   tr('<div><b>有负权、但图是 DAG</b>不用 BF：TopSort 后按拓扑序做 DP，负权也没问题，O(n+m)。</div>','<div><b>Negative weights on a DAG</b>No need for BF: TopSort, then DP in topological order. Negative weights are fine, O(n+m).</div>')+
+   tr('<div><b>有负环</b>最短路无定义（−∞）。BF 只能检测从 s 可达的负环，FW 看对角线；两者都不会给出「正确的最短路」。</div>','<div><b>Negative cycle</b>Shortest paths are undefined (−∞). BF detects only cycles reachable from s; FW checks the diagonal. Neither returns correct shortest paths.</div>')+
+   tr('<div><b>MST 与负权</b>MST 允许负权，给所有边加同一个常数也不改变 MST。最短路恰好相反：加常数会改变结果。</div>','<div><b>MST and negative weights</b>MST allows negative weights, and adding the same constant to every edge does not change it. Shortest paths are the opposite: adding a constant can change them.</div>')+
+   tr('<div><b>不是 DAG 却想排序</b>先跑 SCC 得到 metagraph（一定是 DAG），再在 metagraph 上排序或做 DP。</div>','<div><b>Need an order but not a DAG</b>Run SCC first; the metagraph is always a DAG. Sort or run DP on the metagraph.</div>')+
+   '</div>';
+  $('pre').innerHTML=h; $('pre').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>select(b.dataset.go));
+}
+function buildOps(){
+  const rt=x=>{ const p=x.split('|'); return p.length>1?tr(p[0],p[1]):x; };
+  let h=`<h2>${tr('常见图操作','Common graph operations')}</h2><p>${tr('都是 black box 外面的预处理 / 后处理，合法；写解答时 runtime 要逐步写出来再相加。','All of these are pre-/post-processing outside the black boxes, so they are legal. In a write-up, state each step\'s runtime and add them up.')}</p>`;
+  h+='<div class="rule">'+
+   tr('<div><b>n 和 m</b><code>n = |V|</code> 是顶点数，<code>m = |E|</code> 是边数。默认用邻接表存图。</div>','<div><b>n and m</b><code>n = |V|</code> is the number of vertices, <code>m = |E|</code> the number of edges. Graphs are stored as adjacency lists.</div>')+
+   tr('<div><b>为什么写 O(n+m)</b>要访问每个点一次（n）、每条边常数次（m）。两项都要写：图可能有很多孤立点（m &lt; n），也可能很稠密（m ≈ n²）。</div>','<div><b>Why O(n+m)</b>Every vertex is visited once (n) and every edge a constant number of times (m). Keep both terms: a graph can have many isolated vertices (m &lt; n) or be dense (m ≈ n²).</div>')+
+   tr('<div><b>常用关系</b><code>m ≤ n²</code> ⇒ <code>log m = O(log n)</code>。连通图 <code>m ≥ n−1</code> ⇒ <code>O(n+m) = O(m)</code>。</div>','<div><b>Useful facts</b><code>m ≤ n²</code> ⇒ <code>log m = O(log n)</code>. Connected ⇒ <code>m ≥ n−1</code> ⇒ <code>O(n+m) = O(m)</code>.</div>')+
+   '</div>';
+  h+=`<div class="card tw"><table class="ovt"><thead><tr><th>${tr('操作','Operation')}</th><th>${tr('做法','How')}</th><th>Runtime</th></tr></thead><tbody>`;
+  OPS.forEach(([gz,ge,rows])=>{ h+=`<tr class="cat"><td colspan="3">${tr(gz,ge)}</td></tr>`;
+    rows.forEach(([oz,oe,hz,he,r])=>{ h+=`<tr><td class="op">${tr(oz,oe)}</td><td class="how">${tr(hz,he)}</td><td class="m">${rt(r)}</td></tr>`; }); });
+  h+='</tbody></table></div>';
+  $('ops').innerHTML=h;
+}
+
+function select(id, keep){
+  stop(); VIEW=id;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  try{ history.replaceState(null,'','#'+id); }catch(e){}
+  if(STATIC.includes(id)){ $('algo').hidden=true; STATIC.forEach(x=>$(x).hidden=x!==id); A=null; if(!keep) window.scrollTo({top:0}); return; }
+  $('algo').hidden=false; STATIC.forEach(x=>$(x).hidden=true);
+  A=ALGOS.find(a=>a.id===id); if(!A.steps) A.steps=A.sim(); STEPS=A.steps;
+  cur=keep?Math.min(cur,STEPS.length-1):0;
+  document.documentElement.style.setProperty('--ac',`var(${A.c})`);
+  $('a-abbr').textContent=A.abbr; $('a-name').textContent=A.name; $('a-rt').textContent=A.rt;
+  $('s-in').innerHTML=L2(A.in); $('s-out').innerHTML=L2(A.out); $('s-req').innerHTML=L2(A.req);
+  $('g-cap').textContent=L2(A.cap); $('tk').innerHTML=A.tk.map(t=>`<li>${L2(t)}</li>`).join('');
+  $('legend').innerHTML=(LEG[A.id]||[]).map(([k,zh,en])=>{ const s=EC[k]; return `<span><b style="background:${s.s};${s.d?'background:repeating-linear-gradient(90deg,'+s.s+' 0 5px,transparent 5px 8px)':''}"></b>${tr(zh,en)}</span>`; }).join('');
+  buildSVG(); render();
+}
+function buildSVG(){
+  const svg=$('g'); svg.innerHTML=''; EL={e:{},n:{}}; const g=A.g;
+  const pair=new Set(g.edges.map(e=>e.u+'>'+e.v));
+  const ge=mk('g',{},svg), gn=mk('g',{},svg);
+  g.edges.forEach(e=>{ const curved=g.directed&&pair.has(e.v+'>'+e.u);
+    const p=mk('path',{fill:'none','stroke-linecap':'round'},ge); p.style.transition='stroke .3s, stroke-width .3s, opacity .3s';
+    const poly=g.directed?mk('polygon',{},ge):null; if(poly) poly.style.transition='fill .3s, opacity .3s';
+    const t=mk('text',{'text-anchor':'middle','dominant-baseline':'middle','font-size':12,class:'el'},ge);
+    EL.e[e.key]={p,poly,t,e,off:curved?22:0}; });
+  g.nodes.forEach(n=>{ const c=mk('circle',{cx:n.x,cy:n.y,r:R,'stroke-width':2.2},gn); c.style.transition='fill .3s, stroke .3s';
+    const t=mk('text',{x:n.x,y:n.y+1,'text-anchor':'middle','dominant-baseline':'middle','font-size':n.id.length>2?13:15,'font-weight':600},gn);
+    t.textContent=n.id;
+    const b=mk('text',{x:n.x,y:n.y+R+15,'text-anchor':'middle','dominant-baseline':'middle','font-size':11,class:'el'},gn);
+    EL.n[n.id]={c,t,b}; });
+}
+function render(){
+  const s=STEPS[cur], g=A.g, ns=s.ns||{}, es=s.es||{}, bd=s.bd||{}, el=s.el||{};
+  for(const k in EL.e){ const o=EL.e[k], e=o.e; const ty=es[k]||'normal', st=EC[ty]||EC.normal;
+    const a=g.pos[s.rev?e.v:e.u], b=g.pos[s.rev?e.u:e.v]; const G_=geo(a,b,o.off,g.directed);
+    o.p.setAttribute('d',G_.d); o.p.setAttribute('stroke',st.s); o.p.setAttribute('stroke-width',st.w);
+    o.p.setAttribute('stroke-dasharray',st.d||'none'); o.p.style.opacity=st.o??1;
+    if(o.poly){ o.poly.setAttribute('points',G_.poly); o.poly.setAttribute('fill',st.s); o.poly.style.opacity=st.o??1; }
+    const lbl=el[k]??(e.w??''); o.t.textContent=lbl; o.t.setAttribute('x',G_.lx.toFixed(1)); o.t.setAttribute('y',G_.ly.toFixed(1));
+    o.t.setAttribute('fill', typeof e.w==='number'&&e.w<0&&!el[k]?'#ff8a8a':(ty==='act'||ty==='actr'||ty==='cut'?'#f5a623':ty==='sat'?'#ff8a8a':'#9aa3b8')); o.t.style.opacity=ty==='hide'?0:1; }
+  for(const id in EL.n){ const o=EL.n[id], c=NC[ns[id]||0];
+    o.c.setAttribute('fill',c.f); o.c.setAttribute('stroke',c.s); o.c.style.filter=ns[id]===1?'drop-shadow(0 0 8px rgba(245,166,35,.55))':'none';
+    o.t.setAttribute('fill',c.t); o.b.textContent=bd[id]||''; o.b.setAttribute('fill',ns[id]?c.t:'#7a8299'); }
+  $('g-badge').textContent=s.rev?tr('显示 G^R（边已反向）','Showing G^R (edges reversed)'):`step ${cur}`;
+  $('s-lbl').textContent=`STEP ${cur} / ${STEPS.length-1}`; $('s-title').textContent=s.t; $('s-desc').textContent=s.d;
+  const ins=$('s-ins'); ins.hidden=!s.ins||s.it==='hide'; ins.className='ins '+(s.it||'info'); ins.textContent=s.ins||'';
+  $('panels').innerHTML=(s.P||[]).map(panel).join('');
+  $('b-prev').disabled=cur===0; $('b-next').disabled=cur===STEPS.length-1;
+  $('prog').style.width=(STEPS.length>1?cur/(STEPS.length-1)*100:0)+'%'; $('ctr').textContent=`${cur} / ${STEPS.length-1}`;
+}
+function panel(p){
+  const head=`<h3>${esc(p.title)}${p.sub?` <small>${esc(p.sub)}</small>`:''}</h3>`;
+  if(p.k==='chips') return `<div class="card pnl">${head}<div class="chips">${p.items.map(i=>`<span class="chip ${i.c||''}">${esc(i.x)}</span>`).join('')}</div></div>`;
+  if(p.k==='note') return `<div class="card pnl">${head}<div style="font-family:var(--f-mono);font-size:20px;color:var(--ac)">${esc(p.text)}</div></div>`;
+  const hi=new Set(p.hi||[]), rh=new Set(p.rowhi||[]);
+  return `<div class="card pnl">${head}<div class="tw"><table class="dt"><thead><tr>${p.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
+    p.rows.map((r,i)=>`<tr class="${rh.has(i)?'rh':''}">${r.map((c,j)=>`<td class="${hi.has(i+','+j)?'hi':''}${c==='∞'?' inf':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+`</tbody></table></div></div>`;
+}
+function stop(){ if(timer){clearInterval(timer);timer=null;} $('b-play').textContent='▶ Play'; }
+function go(d){ if(!A) return; const n=cur+d; if(n<0||n>STEPS.length-1) return; cur=n; render(); }
+function setLang(l){
+  LANG=l;
+  ALGOS.forEach(a=>a.steps=null);
+  applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre(); select(VIEW,true);
+}
+$('lang').onclick=()=>setLang(LANG==='en'?'zh':'en');
+$('b-prev').onclick=()=>{stop();go(-1);}; $('b-next').onclick=()=>{stop();go(1);};
+$('b-play').onclick=()=>{ if(timer){stop();return;} if(cur===STEPS.length-1){cur=0;render();}
+  $('b-play').textContent='⏸ Pause'; timer=setInterval(()=>{ if(cur<STEPS.length-1){cur++;render();} else stop(); },2200); };
+document.addEventListener('keydown',e=>{ if(e.target.closest&&e.target.closest('input,textarea,button')&&e.key===' ') return;
+  if(e.key==='ArrowRight'){stop();go(1);} else if(e.key==='ArrowLeft'){stop();go(-1);}
+  else if(e.key===' '&&A){e.preventDefault();$('b-play').click();}
+  else if(e.key===']'||e.key==='['){ const ids=[...STATIC,...ALGOS.map(a=>a.id)]; const i=ids.indexOf(VIEW); const j=(i+(e.key===']'?1:-1)+ids.length)%ids.length; select(ids[j]); } });
+
+applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre();
+const h=(location.hash||'').slice(1);
+select([...STATIC,...ALGOS.map(a=>a.id)].includes(h)?h:'bfs');
+</script>

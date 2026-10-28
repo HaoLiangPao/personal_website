@@ -1,0 +1,22 @@
+name: Validate Quartz 5 migration candidate
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      QUARTZ_LOCAL_PREVIEW: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run install-plugins
+      - run: node --import tsx --test publishing/check.test.mjs publishing/compatibility.test.ts
+      - run: node node_modules/typescript/bin/tsc --noEmit --incremental false
+      - run: node publishing/publish.mjs check --source content --site . --output public
