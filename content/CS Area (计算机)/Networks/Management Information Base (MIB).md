@@ -2,7 +2,7 @@
 title: Management Information Base (MIB)
 tags:
   - CS
-draft: false
+draft: true
 ---
 ## Definition 
 

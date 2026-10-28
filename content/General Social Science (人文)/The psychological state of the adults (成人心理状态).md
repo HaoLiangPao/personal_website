@@ -2,7 +2,7 @@
 title: The psychological state of the adults (成人心理状态)
 tags:
   - psychology
-draft: false
+draft: true
 ---
 在读[[Counselling for Toads -- 蛤蟆先生去看心理医生]]的时候最早了解到这个概念，进入我的知识体系之后慢慢地发现很多时候我自己都呈现出这个状态。
 
