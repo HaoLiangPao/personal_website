@@ -38,6 +38,10 @@ draft: false
 <span class="cs6515-open">Open the graph review</span>
 </a>
 </div>
+<aside class="cs6515-support" aria-label="Support these reviews">
+<p>If these reviews help you study, you can support future notes and interactive walkthroughs.</p>
+<a class="support-link" id="support-cs6515-en" href="https://buymeacoffee.com/chinahao?utm_source=personal_website&amp;utm_medium=referral&amp;utm_campaign=support&amp;utm_content=cs6515-en" target="_blank" rel="noopener" data-router-ignore>☕ Buy me a coffee</a>
+</aside>
 <h2>How I use these reviews</h2>
 <ol>
 <li>Check the input conditions and decide which algorithms can be used as black boxes.</li>
@@ -79,6 +83,10 @@ draft: false
 <span class="cs6515-open">打开图算法互动复习</span>
 </a>
 </div>
+<aside class="cs6515-support" aria-label="支持这些复习资料">
+<p>如果这些资料对你的学习有帮助，欢迎支持后续笔记和互动演示的制作。</p>
+<a class="support-link" id="support-cs6515-zh" href="https://buymeacoffee.com/chinahao?utm_source=personal_website&amp;utm_medium=referral&amp;utm_campaign=support&amp;utm_content=cs6515-zh" target="_blank" rel="noopener" data-router-ignore>☕ 请我喝杯咖啡</a>
+</aside>
 <h2>我会怎样使用这些资料</h2>
 <ol>
 <li>先看输入条件，判断哪些算法可以作为 black box 使用。</li>
