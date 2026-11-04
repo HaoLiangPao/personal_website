@@ -6,6 +6,9 @@
     "img/butterfly_option.png",
     "img/deep_learning_draft.png",
     "img/discretization_application_1.png",
+    "img/hao_profile.jpg",
+    "img/hao_avatar_ski.png",
+    "img/hao_avatar_daily.png",
     "img/hedge_fund_architecture.png",
     "img/how_to_build_your_workstation_1.png",
     "img/option_chain_aapl.png",
@@ -32,6 +35,8 @@
     }
   ],
   "ignored_files": [
-    "Untitled.base"
+    "Untitled.base",
+    "Admin/Liang Hao Resume AI-v3.docx.pdf",
+    "Hao Liang _ LinkedIn.pdf"
   ]
 }
