@@ -12,6 +12,9 @@ const commit = process.env.EXPECTED_COMMIT
 assert.match(commit ?? "", /^[0-9a-f]{40}$/, "Set EXPECTED_COMMIT to the deployed commit")
 const policy = JSON.parse(fs.readFileSync(path.join(site, "publishing/assets.json"), "utf8"))
 const plan = scan(path.join(site, "content"), policy, matter)
+const moved = JSON.parse(
+  fs.readFileSync(path.join(site, "publishing/moved-articles.json"), "utf8"),
+).articles
 const published = plan.articles.filter((a) => !a.draft)
 const hash = (bytes) => crypto.createHash("sha256").update(bytes).digest("hex")
 const retries = []
@@ -99,14 +102,28 @@ const articles = await parallel(plan.articles, async (article) => {
   const oldHtml = await get(article.legacySlug + ".html")
   const oldClean = await get(article.legacySlug === "index" ? "" : article.legacySlug)
   const expected = article.draft ? 404 : 200
-  assert.equal(oldHtml.status, expected, article.path + " old HTML")
-  assert.equal(oldClean.status, expected, article.path + " old clean URL")
   const current = await get(article.slug + ".html")
   let navigationOnly = false
   if (article.draft && current.status === 200) {
     assert.match(text(current), /<body[^>]*data-publication-kind="navigation"/, article.path)
     navigationOnly = true
   } else assert.equal(current.status, expected, article.path + " current URL")
+  const oldNavigation = navigationOnly && article.path.endsWith("/index.md")
+  assert.equal(oldHtml.status, oldNavigation ? 200 : expected, article.path + " old HTML")
+  assert.equal(oldClean.status, oldNavigation ? 200 : expected, article.path + " old clean URL")
+  if (oldNavigation && article.legacySlug !== article.slug) {
+    for (const response of [oldHtml, oldClean]) {
+      const href = text(response).match(/http-equiv="refresh" content="0; url=([^"\n]+)"/)?.[1]
+      assert(href && text(response).includes('name="robots" content="noindex"'))
+      assert.equal(
+        normalizeUrl(
+          new URL(decodeXml(href), new URL(encodeURI(article.legacySlug) + ".html", base)).href,
+        ),
+        canonical(article.slug),
+        article.path + " old navigation redirect",
+      )
+    }
+  }
   if (!article.draft) {
     const clean = await get(article.slug === "index" ? "" : article.slug)
     assert.equal(clean.status, 200, article.path + " current clean URL")
@@ -135,6 +152,21 @@ const articles = await parallel(plan.articles, async (article) => {
     current: current.status,
     navigationOnly,
   }
+})
+
+const movedRoutes = await parallel(moved, async (move) => {
+  for (const oldSlug of new Set([slug(move.from), v4Slug(move.from)])) {
+    const response = await get(oldSlug + ".html")
+    assert.equal(response.status, 200, move.from + " moved URL")
+    const href = text(response).match(/http-equiv="refresh" content="0; url=([^"\n]+)"/)?.[1]
+    assert(href && text(response).includes('name="robots" content="noindex"'))
+    assert.equal(
+      normalizeUrl(new URL(decodeXml(href), new URL(encodeURI(oldSlug) + ".html", base)).href),
+      canonical(slug(move.to)),
+      move.from + " moved redirect",
+    )
+  }
+  return move
 })
 
 const resources = await parallel([...plan.assets, ...plan.html], async (name) => {
@@ -196,6 +228,7 @@ const result = {
   rssApprovedOnly: true,
   cardPrefixCorrect: true,
   articles,
+  movedRoutes,
   resources,
   transientRetries: retries,
 }

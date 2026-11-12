@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "articles": [
+    {
+      "from": "CS Area (计算机)/Algorithm/CS6515 Graduate Algorithms.md",
+      "to": "CS Area (计算机)/Algorithms and Theory/CS6515 Graduate Algorithms.md"
+    },
+    {
+      "from": "CS Area (计算机)/Algorithm/Master Theorem.md",
+      "to": "CS Area (计算机)/Algorithms and Theory/Master Theorem.md"
+    },
+    {
+      "from": "CS Area (计算机)/Ansible.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/Ansible.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Convolutional Neural Network (CNN).md",
+      "to": "CS Area (计算机)/AI and ML/Convolutional Neural Network (CNN).md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Data Science/Data Aggregation.md",
+      "to": "CS Area (计算机)/AI and ML/Data Science/Data Aggregation.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Data Science/Data Normalization.md",
+      "to": "CS Area (计算机)/AI and ML/Data Science/Data Normalization.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Deep Learning.md",
+      "to": "CS Area (计算机)/AI and ML/Deep Learning.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Dyna-Q.md",
+      "to": "CS Area (计算机)/AI and ML/Dyna-Q.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Machine Learning For Trading.md",
+      "to": "CS Area (计算机)/AI and ML/Machine Learning For Trading.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Multi Agent Reinforcement Learning.md",
+      "to": "CS Area (计算机)/AI and ML/Multi Agent Reinforcement Learning.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Prompt Engineering.md",
+      "to": "CS Area (计算机)/LLM and Agents/Fundamentals/Prompt Engineering.md"
+    },
+    {
+      "from": "CS Area (计算机)/Artificial Intellegence/Q-Learning.md",
+      "to": "CS Area (计算机)/AI and ML/Q-Learning.md"
+    },
+    {
+      "from": "CS Area (计算机)/Build your own workstation.md",
+      "to": "CS Area (计算机)/Systems/Build your own workstation.md"
+    },
+    {
+      "from": "CS Area (计算机)/CRON.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/CRON.md"
+    },
+    {
+      "from": "CS Area (计算机)/DevOps/APAR.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/APAR.md"
+    },
+    {
+      "from": "CS Area (计算机)/DevOps/PTF.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/PTF.md"
+    },
+    {
+      "from": "CS Area (计算机)/DevOps/Prometheus.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/Prometheus.md"
+    },
+    {
+      "from": "CS Area (计算机)/DevOps/Python Environment.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/Python Environment.md"
+    },
+    {
+      "from": "CS Area (计算机)/Interesting Theories/Coin Flipping Casino.md",
+      "to": "CS Area (计算机)/AI and ML/Coin Flipping Casino.md"
+    },
+    {
+      "from": "CS Area (计算机)/Interesting Theories/Markov Decision Problem (MDP).md",
+      "to": "CS Area (计算机)/AI and ML/Markov Decision Problem (MDP).md"
+    },
+    {
+      "from": "CS Area (计算机)/Networks/SSH connections.md",
+      "to": "CS Area (计算机)/Systems/Networks/SSH connections.md"
+    },
+    {
+      "from": "CS Area (计算机)/Networks/Simple Network Management Protocol (SNMP).md",
+      "to": "CS Area (计算机)/Systems/Networks/Simple Network Management Protocol (SNMP).md"
+    },
+    {
+      "from": "CS Area (计算机)/Nodejs.md",
+      "to": "CS Area (计算机)/Software Engineering/Nodejs.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/Bash.md",
+      "to": "CS Area (计算机)/Systems/Bash.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/Containerization.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/Containerization.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/Database.md",
+      "to": "CS Area (计算机)/Software Engineering/Database.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/Linux.md",
+      "to": "CS Area (计算机)/Systems/Linux.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/Operating System.md",
+      "to": "CS Area (计算机)/Systems/Operating System.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/Symlink.md",
+      "to": "CS Area (计算机)/Systems/Symlink.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/zOS/STEPLIB.md",
+      "to": "CS Area (计算机)/Systems/zOS/STEPLIB.md"
+    },
+    {
+      "from": "CS Area (计算机)/Operating System/zOS/zOS.md",
+      "to": "CS Area (计算机)/Systems/zOS/zOS.md"
+    },
+    {
+      "from": "CS Area (计算机)/Software Engineering/Binary Exploriation.md",
+      "to": "CS Area (计算机)/Security/Binary Exploriation.md"
+    },
+    {
+      "from": "CS Area (计算机)/Software Engineering/Git.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/Git.md"
+    },
+    {
+      "from": "CS Area (计算机)/Software Engineering/Neo Vim.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/Neo Vim.md"
+    },
+    {
+      "from": "CS Area (计算机)/Software Engineering/Package Manager.md",
+      "to": "CS Area (计算机)/DevOps and Tooling/Package Manager.md"
+    },
+    {
+      "from": "CS Area (计算机)/Software Engineering/Return Oriented Programming (ROP).md",
+      "to": "CS Area (计算机)/Security/Return Oriented Programming (ROP).md"
+    }
+  ]
+}

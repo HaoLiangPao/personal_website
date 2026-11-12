@@ -244,7 +244,7 @@ export function verifyBuild(plan, output) {
       fail(`草稿或页面输出不符合设置：${article.path}`)
     if (article.legacySlug && article.legacySlug !== article.slug) {
       const legacyPath = path.join(output, article.legacySlug + ".html")
-      if (article.draft) {
+      if (article.draft && !(navigationOnly && article.path.endsWith("/index.md"))) {
         if (fs.existsSync(legacyPath)) fail(`草稿旧网址不应生成页面：${article.path}`)
       } else {
         if (!fs.existsSync(legacyPath)) fail(`缺少旧网址兼容页：${article.path}`)
@@ -268,6 +268,29 @@ export function verifyBuild(plan, output) {
         (article.slug === "index" && new URL(url).pathname.endsWith("/")),
     )
     if (inSitemap !== !article.draft) fail(`站点地图与发布设置不一致：${article.path}`)
+  }
+  for (const move of plan.moved ?? []) {
+    const target = slug(move.to)
+    for (const oldSlug of new Set([slug(move.from), v4Slug(move.from)])) {
+      if (oldSlug === target) continue
+      const oldPath = path.join(output, oldSlug + ".html")
+      if (!fs.existsSync(oldPath)) fail(`搬迁文章缺少旧网址：${move.from}`)
+      const oldHtml = fs.readFileSync(oldPath, "utf8")
+      const href = oldHtml.match(/http-equiv="refresh" content="0; url=([^"\n]+)"/)?.[1]
+      const resolved =
+        href &&
+        new URL(
+          href.replaceAll("&amp;", "&"),
+          "https://quartz.local/__quartz_project_site__/" + encodeURI(oldSlug) + ".html",
+        )
+      if (
+        !resolved ||
+        decodeURI(resolved.href) !==
+          "https://quartz.local/__quartz_project_site__/" + target + ".html" ||
+        !oldHtml.includes('name="robots" content="noindex"')
+      )
+        fail(`搬迁文章旧网址没有正确重定向：${move.from}`)
+    }
   }
   for (const name of [...plan.assets, ...plan.html]) {
     const generated = path.join(output, slug(name) + path.extname(name))
@@ -405,6 +428,29 @@ export function main(argv = process.argv.slice(2)) {
     : null
   const plan = scan(source, policy, matter)
   const current = tree(target)
+  const movedManifest = JSON.parse(
+    fs.readFileSync(path.join(site, "publishing/moved-articles.json"), "utf8"),
+  )
+  if (movedManifest.version !== 1 || !Array.isArray(movedManifest.articles))
+    fail("搬迁文章清单格式无效")
+  const published = new Set(
+    plan.articles.filter((article) => !article.draft).map((article) => article.path),
+  )
+  const moves = new Map()
+  for (const move of movedManifest.articles) {
+    safeRelative(move.from)
+    safeRelative(move.to)
+    if (!move.from.endsWith(".md") || !move.to.endsWith(".md") || moves.has(move.from))
+      fail(`搬迁文章清单路径无效或重复：${move.from}`)
+    if (!published.has(move.to)) fail(`搬迁文章目标未获准发布：${move.to}`)
+    moves.set(move.from, move.to)
+  }
+  for (const [name, file] of current) {
+    if (!name.endsWith(".md") || plan.articles.some((article) => article.path === name)) continue
+    if (matter(fs.readFileSync(file.full, "utf8")).data.draft !== false) continue
+    if (!moves.has(name)) fail(`已发布文章被移除但没有旧网址迁移记录：${name}`)
+  }
+  plan.moved = movedManifest.articles
   const fullTarget = fingerprints(tree(target, { includeHidden: true }))
   if (command === "sync") {
     checkOverwrite(site, current)
@@ -440,6 +486,7 @@ export function main(argv = process.argv.slice(2)) {
     drafts: plan.articles.filter((a) => a.draft).length,
     assetCount: plan.assets.length,
     htmlPages: plan.html.length,
+    movedArticles: plan.moved.length,
     ignored: plan.ignored,
     differences,
     preservedHiddenFiles: Object.keys(fullTarget).filter((name) =>

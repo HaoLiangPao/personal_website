@@ -105,3 +105,13 @@ Now the pgAdmin tree will show a sequence, a trigger function, the materialized 
 > **“Tables are the _nouns_, functions/procedures the _verbs_, views the _reports_, and everything else (casts, domains, triggers, etc.) are the _grammar_ that makes your database speak fluently.”**
 
 When you browse pgAdmin, you’re just seeing all those nouns, verbs, and bits of grammar neatly organised.
+
+## Related Distributed Systems Concepts
+
+- [[Consistency]]
+- [[Data Invariant]]
+- [[Concurrency Control]]
+- [[Atomic Operation]]
+- [[Optimistic Locking]]
+- [[Transaction Isolation]]
+- [[Amazon DynamoDB]]

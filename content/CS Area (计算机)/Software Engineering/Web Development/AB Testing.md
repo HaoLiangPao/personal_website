@@ -3,72 +3,34 @@ title: AB Testing
 tags:
   - CS
   - Web
+type: concept
+source: reading
+Status: growing
 draft: false
 ---
 
+## Definition
 
+A/B Testing 将用户随机分配到不同实验组，通过预先定义的产品或业务指标比较不同方案的效果。
 
-## **🐳 Containerisation & Orchestration Patterns**
+## Different From Canary Deployment
 
-  
+虽然两者都可能拆分流量，但目标不同：
 
-### **1. Single-Host Docker Compose (small projects)**
+| | A/B Testing | [[Canary Deployment]] |
+| --- | --- | --- |
+| 主要目标 | 评估产品或业务假设 | 降低新版本发布风险 |
+| 分组依据 | 实验设计和随机分配 | 发布阶段与风险控制 |
+| 主要指标 | 转化、留存、参与度 | 错误率、延迟、业务正确性 |
+| 结束方式 | 根据统计结果选择方案 | 扩大到 100% 或回滚 |
 
-```
-version: "3"
-services:
-  nginx:
-    image: nginx:1.27
-    ports: ["80:80", "443:443"]
-    volumes: ["./nginx.conf:/etc/nginx/nginx.conf:ro"]
+同一次流量路由可以同时支持实验和发布，但不应把两种决策过程混为一谈。
 
-  app:
-    image: myorg/checks-api:1.4.2
-    command: gunicorn -b 0.0.0.0:8000 app:app -w 4
-```
+## Connections
 
-- Compose network = a virtual bridge; **nginx** reaches **app:8000** via DNS.
+### Compared with
+- [[Canary Deployment]]
 
-### **2. Kubernetes: Ingress + Deployments**
-
-```
-user → Ingress (nginx-ingress controller) → Service → Pods (Gunicorn)
-```
-
-- **Blue/Green or Canary**
-    _Two_ Deployments (checks-api-v1, checks-api-v2) behind the same Service.
-    Change the weight in an Ingress object or a Service mesh (Istio, Linkerd) to shift 10 % of traffic to v2 for grey testing.
-
-```
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: checks-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/canary: "true"
-    nginx.ingress.kubernetes.io/canary-weight: "10"
-spec:
-  rules:
-  - host: checks.example.com
-    http:
-      paths:
-      - path: /
-        backend:
-          service:
-            name: checks-api-v2   # 10 %
-            port: { number: 8000 }
-      - path: /
-        backend:
-          service:
-            name: checks-api-v1   # 90 %
-            port: { number: 8000 }
-```
-
-### **3. Rolling Updates & Zero-Downtime**
-
-- **K8s RollingUpdate** — gradually spins up pods with the new image, waits for readiness probes, then retires old pods.
-- **Nginx keeps existing keep-alive connections** while new pods warm up; no dropped traffic.
-
-### **4. Nginx “Always-On” Gateway**
-
-Even when the app image is being rebuilt/redeployed, the **nginx sidecar / ingress controller** remains running, keeping TLS hand-shakes successful and buffering requests until at least one upstream pod is ready.
+### Related
+- [[Observability]]
+- [[Latency Percentiles]]

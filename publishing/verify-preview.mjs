@@ -11,6 +11,10 @@ const base = process.env.PREVIEW_BASE || "http://127.0.0.1:8885/personal_website
 if (new URL(base).hostname !== "127.0.0.1") throw new Error("Preview verification is local only")
 const policy = JSON.parse(fs.readFileSync(path.join(site, "publishing/assets.json"), "utf8"))
 const plan = scan(path.join(site, "content"), policy, matter)
+const moved = JSON.parse(
+  fs.readFileSync(path.join(site, "publishing/moved-articles.json"), "utf8"),
+).articles
+plan.moved = moved
 const validation = verifyBuild(plan, path.join(site, "public"))
 const hash = (x) => crypto.createHash("sha256").update(x).digest("hex")
 async function get(name) {
@@ -21,8 +25,13 @@ const articles = [],
   navigationCollisions = []
 for (const article of plan.articles) {
   const old = await get(article.legacySlug + ".html")
-  assert.equal(old.status, article.draft ? 404 : 200, article.path + " old URL")
   const current = await get(article.slug + ".html")
+  const navigationOnly =
+    article.draft &&
+    current.status === 200 &&
+    /<body[^>]*data-publication-kind="navigation"/.test(current.bytes.toString())
+  const oldNavigation = navigationOnly && article.path.endsWith("/index.md")
+  assert.equal(old.status, article.draft && !oldNavigation ? 404 : 200, article.path + " old URL")
   if (article.draft && current.status === 200) {
     assert.match(
       current.bytes.toString(),
@@ -31,9 +40,29 @@ for (const article of plan.articles) {
     )
     navigationCollisions.push({ path: article.path, navigationUrl: article.slug })
   } else assert.equal(current.status, article.draft ? 404 : 200, article.path + " new URL")
+  if (oldNavigation && article.legacySlug !== article.slug) {
+    const href = old.bytes.toString().match(/http-equiv="refresh" content="0; url=([^"\n]+)"/)?.[1]
+    assert(href && old.bytes.toString().includes('name="robots" content="noindex"'))
+    assert.equal(
+      new URL(href, new URL(encodeURI(article.legacySlug) + ".html", base)).pathname,
+      new URL(encodeURI(article.slug) + ".html", base).pathname,
+    )
+  }
   if (!article.draft)
     assert.equal((await get(article.slug)).status, 200, article.path + " clean URL")
   articles.push({ ...article, oldStatus: old.status, newStatus: current.status })
+}
+for (const move of moved) {
+  for (const oldSlug of new Set([slug(move.from), v4Slug(move.from)])) {
+    const old = await get(oldSlug + ".html")
+    assert.equal(old.status, 200, move.from + " moved URL")
+    const href = old.bytes.toString().match(/http-equiv="refresh" content="0; url=([^"\n]+)"/)?.[1]
+    assert(href && old.bytes.toString().includes('name="robots" content="noindex"'))
+    assert.equal(
+      new URL(href, new URL(encodeURI(oldSlug) + ".html", base)).pathname,
+      new URL(encodeURI(slug(move.to)) + ".html", base).pathname,
+    )
+  }
 }
 const resources = []
 for (const name of [...plan.assets, ...plan.html]) {
@@ -67,6 +96,7 @@ const report = {
   base,
   validation,
   legacyArticlesVerified: articles.length,
+  movedArticlesVerified: moved.length,
   legacyNavigationVerified: navigation.size,
   assetsAndHtmlVerified: resources.length,
   articles,

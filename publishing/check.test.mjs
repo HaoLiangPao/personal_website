@@ -269,3 +269,52 @@ test("folder navigation cannot expose a same-name draft or create its legacy URL
   fs.writeFileSync(path.join(out, "Archive/Archive.html"), "Private draft")
   assert.throws(() => verifyBuild(p, out), /草稿旧网址不应生成/)
 })
+
+test("draft index may preserve a legacy folder navigation redirect without exposing its body", (t) => {
+  const f = fixture(t)
+  f.put("Archive/index.md", "---\ndraft: true\n---\nPrivate notes")
+  const p = scan(f.content, emptyPolicy(), matter)
+  const out = path.join(f.root, "public")
+  for (const dir of ["static", "archive", "Archive"])
+    fs.mkdirSync(path.join(out, dir), { recursive: true })
+  fs.writeFileSync(path.join(out, "static/contentIndex.json"), JSON.stringify({ index: {} }))
+  fs.writeFileSync(
+    path.join(out, "sitemap.xml"),
+    "<urlset><loc>https://example.com/</loc></urlset>",
+  )
+  fs.writeFileSync(path.join(out, "index.html"), "Home")
+  fs.writeFileSync(
+    path.join(out, "archive/index.html"),
+    '<body data-publication-kind="navigation">Folder links</body>',
+  )
+  fs.writeFileSync(
+    path.join(out, "Archive/index.html"),
+    '<meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url=../archive/index.html">',
+  )
+  assert.equal(verifyBuild(p, out).excludedDrafts, 1)
+})
+
+test("moved published articles require correct old URL redirects", (t) => {
+  const f = fixture(t)
+  f.put("new/note.md", "---\ndraft: false\n---\nPublished note")
+  const p = scan(f.content, emptyPolicy(), matter)
+  p.moved = [{ from: "old/note.md", to: "new/note.md" }]
+  const out = path.join(f.root, "public")
+  for (const dir of ["static", "new", "old"]) fs.mkdirSync(path.join(out, dir), { recursive: true })
+  fs.writeFileSync(
+    path.join(out, "static/contentIndex.json"),
+    JSON.stringify({ index: {}, "new/note": {} }),
+  )
+  fs.writeFileSync(
+    path.join(out, "sitemap.xml"),
+    "<urlset><loc>https://example.com/</loc><loc>https://example.com/new/note</loc></urlset>",
+  )
+  fs.writeFileSync(path.join(out, "index.html"), "Home")
+  fs.writeFileSync(path.join(out, "new/note.html"), "Published note")
+  assert.throws(() => verifyBuild(p, out), /搬迁文章缺少旧网址/)
+  fs.writeFileSync(
+    path.join(out, "old/note.html"),
+    '<meta name="robots" content="noindex"><meta http-equiv="refresh" content="0; url=../new/note.html">',
+  )
+  assert.equal(verifyBuild(p, out).articles, 2)
+})

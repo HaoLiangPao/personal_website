@@ -14,12 +14,12 @@ draft: true
 
 | 角色 | 文件 | 模型 | 什么时候用 | 实战情况 |
 | ---- | ---- | ---- | ---------- | -------- |
-| 主驾驶 / 创始人 | [[agents/founder\|founder]] | 最强可用 | 放进 CLAUDE.md，不作为子代理 | 规则来自实战，本文件是提炼版 |
-| CTO | [[agents/cto\|cto]] | Opus | 架构、选型、数据模型 | 角色用过，本文件是提炼版 |
-| 工程师 | [[agents/engineer\|engineer]] | Sonnet | 按 spec 实现 | 角色用过，本文件是提炼版 |
-| QA | [[agents/qa\|qa]] | Sonnet | 独立验证，Go/No-Go | 角色用过，本文件是提炼版 |
-| 实习生 | [[agents/intern\|intern]] | Haiku | 机械转换 | 角色用过，本文件是提炼版 |
-| 代码审核 | [[agents/code-guardian\|code-guardian]] | 继承 | 提交前审核 | 现有文件原样复制，实测一次 |
+| 主驾驶 / 创始人 | [[founder\|founder]] | 最强可用 | 放进 CLAUDE.md，不作为子代理 | 规则来自实战，本文件是提炼版 |
+| CTO | [[cto\|cto]] | Opus | 架构、选型、数据模型 | 角色用过，本文件是提炼版 |
+| 工程师 | [[engineer\|engineer]] | Sonnet | 按 spec 实现 | 角色用过，本文件是提炼版 |
+| QA | [[qa\|qa]] | Sonnet | 独立验证，Go/No-Go | 角色用过，本文件是提炼版 |
+| 实习生 | [[intern\|intern]] | Haiku | 机械转换 | 角色用过，本文件是提炼版 |
+| 代码审核 | [[code-guardian\|code-guardian]] | 继承 | 提交前审核 | 现有文件原样复制，实测一次 |
 
 ## Skills
 

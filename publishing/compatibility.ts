@@ -11,6 +11,7 @@ import type { FilePath } from "../quartz/util/path"
 import { slugifyFilePath } from "../quartz/util/path"
 
 const policyPath = path.resolve("publishing/assets.json")
+const movedArticlesPath = path.resolve("publishing/moved-articles.json")
 
 export function v4Slug(file: string): string {
   return file
@@ -97,6 +98,32 @@ export const PublicationCompatibility: QuartzEmitterPlugin = () => ({
           const tagPath = "tags/" + segments.slice(0, i).join("/") + ".md"
           extraRedirects.set(v4Slug(tagPath), slugifyFilePath(tagPath as FilePath, true))
         }
+      }
+    }
+    const moved = JSON.parse(await fs.readFile(movedArticlesPath, "utf8")) as {
+      version: number
+      articles: Array<{ from: string; to: string }>
+    }
+    if (moved.version !== 1 || !Array.isArray(moved.articles))
+      throw new Error("Invalid moved article manifest")
+    const publishedPaths = new Set(
+      content
+        .filter(([_tree, file]) => file.data.frontmatter?.draft === false)
+        .map(([_tree, file]) => file.data.relativePath),
+    )
+    for (const move of moved.articles) {
+      if (!publishedPaths.has(move.to as FilePath))
+        throw new Error(`Moved article target is not published: ${move.to}`)
+      const target = slugifyFilePath(move.to as FilePath, true)
+      for (const oldSlug of new Set([
+        slugifyFilePath(move.from as FilePath, true),
+        v4Slug(move.from),
+      ])) {
+        if (oldSlug === target) continue
+        const previous = extraRedirects.get(oldSlug)
+        if (previous && previous !== target)
+          throw new Error(`Conflicting old article URL: ${oldSlug}`)
+        extraRedirects.set(oldSlug, target)
       }
     }
     for (const [oldSlug, newSlug] of extraRedirects) {
