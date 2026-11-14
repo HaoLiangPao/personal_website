@@ -20,6 +20,13 @@ draft: false
 - [[Amazon SQS]]
 - [[Amazon DynamoDB]]
 
+### API and Identity
+
+- [[AWS API Gateway]]
+- [[Amazon Cognito]]
+- [[AWS IAM]]
+- [[CS Area (计算机)/Software Engineering/API Design/index|API Identity and Gateway MOC]]
+
 ### Related Concepts
 
 - [[Reliable Asynchronous Processing]]

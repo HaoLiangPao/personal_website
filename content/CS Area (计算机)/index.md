@@ -59,5 +59,7 @@ draft: true
 - DevOps and Tooling: Docker、Kubernetes、Deployment、Jenkins、Git
 - Systems: OS、Linux、Networks、zOS
 - [[Software Engineering/Distributed Systems/index|Distributed Systems]]: Consistency、Concurrency、Messaging、Resilience、Observability
-- Software Engineering: Web、Database、Distributed Systems
-- Security
+- [[Software Engineering/API Design/index|API Identity and Gateway]]: Endpoint、OpenAPI、OAuth、APIC、API Gateway、Enterprise Identity
+- [[Software Engineering/Testing/index|Software Testing]]: Test Strategy、Unit、Integration、Contract、E2E
+- Software Engineering: Web、Database、Distributed Systems、API Design
+- Security: Authentication、Authorization、OAuth、Microsoft Entra ID、IBM Security Verify Access
