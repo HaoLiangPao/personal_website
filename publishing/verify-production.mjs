@@ -200,17 +200,21 @@ await parallel([...navigation], async (name) => {
 const course = published.find((a) => a.path.endsWith("CS6515 Graduate Algorithms.md"))
 const coursePage = await get(course.slug + ".html")
 const cards = [...text(coursePage).matchAll(/<a\b[^>]*data-standalone[^>]*>/g)]
-assert.equal(cards.length, 6, "Bilingual card count")
+const courseHtml = plan.html.filter((name) => name.startsWith("interactive/cs6515/"))
+assert.equal(cards.length, courseHtml.length * 2, "Bilingual card count")
+const cardTargets = []
 for (const [tag] of cards) {
   const href = tag.match(/href="([^"]+)"/)?.[1]
   assert(href)
-  assert(
-    new URL(href, new URL(encodeURI(course.slug) + ".html", base)).href.startsWith(
-      base + "interactive/cs6515/",
-    ),
-    "Card prefix",
-  )
+  const target = new URL(href, new URL(encodeURI(course.slug) + ".html", base))
+  assert(target.href.startsWith(base + "interactive/cs6515/"), "Card prefix")
+  cardTargets.push(target.pathname)
 }
+const expectedCardTargets = courseHtml.flatMap((name) => {
+  const target = new URL(encodeURI(slug(name) + ".html"), base).pathname
+  return [target, target]
+})
+assert.deepEqual(cardTargets.sort(), expectedCardTargets.sort(), "Bilingual card targets")
 const result = {
   checkedAt: new Date().toISOString(),
   base,
