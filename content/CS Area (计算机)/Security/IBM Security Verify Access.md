@@ -17,7 +17,18 @@ draft: false
 
 ## Definition
 
-IBM Security Access Manager（iSAM/ISAM）是旧称；相关产品后续使用 IBM Security Verify Access、IBM Verify Identity Access 等名称。它可以提供 web access management、SSO、MFA、reverse proxy、federation、OAuth 2.0/OIDC provider 或 token validation 能力。
+IBM Security Access Manager（iSAM/ISAM）是旧称；官方文档现在把相关产品称为 IBM Verify Identity Access（曾用名 IBM Security Verify Access）。它提供 web access management、SSO、MFA、reverse proxy、federation，并可作为 OpenID Connect Provider 或验证 OAuth bearer token。
+
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| IBM 应用网关 | IBM Application Gateway（IAG） | 保护 Web 应用或 API 的网关，可作为 OIDC RP |
+| OpenID 提供方 | OpenID Connect Provider（OP） | 认证用户并签发 ID token |
+| 依赖方 | Relying Party（RP） | 依赖 OP 的应用或网关 |
+| 令牌内省 | OAuth Introspection | 向授权服务器查询 bearer token 是否有效 |
+| 持有者令牌 | Bearer Token | 谁持有就能用的 token |
+| 联合 | Federation | 信任上游 IdP 的认证结果 |
 
 ## Possible Roles
 
@@ -27,6 +38,20 @@ IBM Security Access Manager（iSAM/ISAM）是旧称；相关产品后续使用 I
 - 验证 bearer token、建立 session 或把 identity attributes 传给 downstream。
 
 这些角色可以组合，但必须从实际 configuration 判断。
+
+IBM 文档中的典型分工：OIDC 用来保护 Web 应用，OAuth token 用来保护 Web API。IBM Application Gateway 可以作为 OIDC relying party，消费 Verify Identity Access OP 提供的 identity token 建立会话；也可以接收请求头里的 OAuth bearer token，调用 introspection endpoint 验证 token，再用返回信息建立认证会话。
+
+```mermaid
+flowchart LR
+    subgraph W["保护 Web 应用: OIDC"]
+        W1[用户浏览器] --> W2["IAG（OIDC RP）"] -->|"消费 ID token"| W3["Verify Identity Access（OP）"]
+    end
+    subgraph A["保护 API: OAuth bearer token"]
+        A1[Client + Bearer token] --> A2[IAG] -->|"introspection endpoint"| A3["Verify Identity Access（授权服务器）"]
+    end
+```
+
+IBM 文档提醒，OIDC 的 Implicit flow 现在被视为安全最佳实践里的反模式，默认和推荐使用 Authorization Code flow。
 
 ## Relationship with Microsoft Entra ID
 
@@ -41,5 +66,4 @@ IBM Security Access Manager（iSAM/ISAM）是旧称；相关产品后续使用 I
 
 ## Sources
 
-- [IBM Verify Identity Access](https://docs.verify.ibm.com/gateway/docs/verify-access)
-
+- [IBM Verify Identity Access — Application Gateway: OIDC and OAuth introspection](https://docs.verify.ibm.com/gateway/docs/verify-access)

@@ -14,6 +14,17 @@ draft: false
 
 这是一个简化的证券订单案例，用于连接并发、一致性、事件处理和恢复概念，不代表任何公司的真实内部架构。
 
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| 预留 | Reservation | 先占用资金，防止超额使用 |
+| 成交 | Execution | 订单在外部被真正执行 |
+| 持仓 | Position | 由成交事实派生出的持有状态 |
+| 权威事实 | Source of Truth | 成交记录，不能被撤销 |
+| 派生视图 | Projection | 由事实生成的、可重建的视图 |
+| 对账 | Reconciliation | 发现遗漏或重复并修复 |
+
 ## Prevent Overspending
 
 如果两个订单分别读取同一笔可用资金后再写回，可能同时通过检查。正确方向是使用 [[Atomic Operation|原子条件预留]]，让数据库在同一操作中判断余额并移动 available/reserved 金额。

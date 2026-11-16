@@ -23,6 +23,16 @@ flowchart LR
     D -->|repeated failure| F[Dead Letter Queue]
 ```
 
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| 可靠异步处理 | Reliable Asynchronous Processing | 请求被可靠接收后，交给独立 Worker 处理 |
+| 可靠接收 | Durable Acceptance | 请求被持久化后才算接收成功 |
+| 工作进程 | Worker | 从队列取消息并处理的消费者 |
+| 背压 | Backpressure | 消费者达到容量时控制生产速率或缓冲 |
+| 双写 | Dual Write | 同时写数据库和消息系统，其中一步可能失败 |
+
 ## Required Building Blocks
 
 - [[Message Queue]]：缓冲任务和提供 Backpressure。
@@ -49,3 +59,8 @@ flowchart LR
 ### Case study
 - [[Order Processing Consistency Case Study]]
 
+## Sources
+
+- [Amazon SQS — What is Amazon SQS](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/welcome.html)
+- [Amazon SQS — Using dead-letter queues](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html)
+- [microservices.io — Transactional outbox](https://microservices.io/patterns/data/transactional-outbox.html)

@@ -7,11 +7,23 @@ tags:
 type: problem
 source: work
 Status: seed
-draft: true
+draft: false
 ---
 
 > [!warning] De-identified and unverified
 > 这是由工作讨论抽象出的案例，不包含真实公司、项目或 URL。实际 issuer、gateway 配置和内部标准仍需设计图与平台配置确认。
+
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| 网关优先 | Gateway-First | 由最前面的网关完成路由，而不是业务服务转发 |
+| 遗留端点 | Legacy Endpoint | 多个项目共享的旧入口 |
+| 路由 | Routing | 按规则把请求送到对应项目后端 |
+| 签发者 / 受众 | Issuer / Audience | token 由谁签发 / 面向哪个 API |
+| 代理或下游签发者 | Broker / Downstream Issuer | 信任上游 IdP 并重新签发 token 的服务 |
+| 联合 | Federation | 一个 IdP 信任另一个 IdP |
+| 组溢出 | Group Overage | token 因组太多而不带完整组列表 |
 
 ## Symptom
 
@@ -89,4 +101,3 @@ Client 获得 Entra token；iSAM/APIC 在入口验证或执行 policy，然后�
 - [[Authorization]]
 - [[OAuth 2.0]]
 - [[IBM API Connect]]
-

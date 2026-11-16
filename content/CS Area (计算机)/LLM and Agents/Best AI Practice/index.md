@@ -34,5 +34,6 @@ draft: true
 | 测试与观测 | `synthetic-pilot` | persona 代理试用 | 从做法新提炼 |
 | 交接与收尾 | `round-closeout` | 收尾、交接、汇报 | 从做法新提炼 |
 | 理解代码 | `understand` | 为陌生代码库生成文档 | 现有 skill 原样复制 |
+| 知识整理 | `atomic-note-review` | 审核并改写原子笔记：核对事实、中英文术语表、配图、出处 | 从 CS Area 改写实战提炼 |
 
-「新提炼」的 skill 和所有角色文件还没有以这种形式实际运行过，第一次用时要留意。
+「新提炼」的 skill 和所有角色文件还没有以这种形式实际运行过，第一次用时要留意。`atomic-note-review` 的脚本在 `~/.claude/skills/atomic-note-review/scripts/`，本目录只保存说明文件。

@@ -6,10 +6,21 @@ tags:
 type: concept
 source: work
 Status: growing
-draft: true
+draft: false
 ---
 
 Software Testing 不是“写更多测试”，而是用可重复的证据降低软件变更的不确定性。一个成熟的 testing strategy 会同时考虑：需要保护什么风险、在哪个边界验证、用什么 oracle 判断，以及反馈需要多快返回。
+
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| 测试策略 | Test Strategy | 决定保护哪些风险、在哪一层验证、怎样判断结果 |
+| 测试范围 | Test Scope | 一项测试跨过多少组件和边界 |
+| 测试预言 | Test Oracle | 判断结果是否正确的依据 |
+| 被测系统 | SUT（System Under Test） | 测试要验证的对象 |
+| 回归测试 | Regression Test | 确认已有行为没有被改坏 |
+| 测试金字塔 | Test Pyramid | 底层测试多而快、顶层少而慢的组合模型 |
 
 ## Mental Model
 
@@ -63,4 +74,3 @@ flowchart TD
 - [[Reliable Asynchronous Processing]]
 - [[API Endpoint]]
 - [[Canary Deployment]]
-

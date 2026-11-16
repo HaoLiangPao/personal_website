@@ -7,12 +7,26 @@ tags:
 type: concept
 source: work
 Status: growing
-draft: true
+draft: false
 ---
 
 ## Definition
 
 Contract Test 验证系统边界两侧对协议的理解一致。Contract 不只包括 JSON schema，还包括 method、path、headers、status code、field semantics、ordering、compatibility 和 error behavior。
+
+Pact 的定义：contract testing 是通过让每个应用单独检查“它发送或接收的消息是否符合一份共享的、文档化的 contract”来测试集成点的技术。对 HTTP 应用，“消息”就是 request 和 response；对用队列的应用，就是放进队列的消息。
+
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| 契约测试 | Contract Test | 验证边界两侧对协议的理解一致 |
+| 消费者 / 提供者 | Consumer / Provider | 需要数据的一方 / 提供数据的一方 |
+| 消费者驱动契约 | Consumer-Driven Contract | 由消费者声明依赖的交互，提供者验证它们 |
+| 举例的契约 | Contract by Example | 契约由具体的 request/response 例子组成 |
+| 模式校验 | Schema Validation | 校验消息是否符合静态的 schema 或规范 |
+| 兼容性 | Compatibility | 新旧版本能否共存 |
+| 测试替身 | Test Double | 被消费者测试用来替代 provider 的对象 |
 
 ## Contract Surface
 
@@ -27,11 +41,27 @@ Contract Test 验证系统边界两侧对协议的理解一致。Contract 不只
 
 只验证 response 能被 JSON parser 解析，不能证明双方理解了同一个业务含义。
 
+## Consumer-Driven Flow
+
+```mermaid
+sequenceDiagram
+    participant CT as Consumer 测试
+    participant P as Contract（共享文件）
+    participant PT as Provider 验证
+    CT->>CT: 对 provider 的 test double 运行测试
+    CT->>P: 生成 contract（实际用到的交互）
+    PT->>P: 在 CI 中读取 contract
+    PT->>PT: 用真实 provider 重放每个交互并比较
+    Note over CT,PT: 任一方破坏约定，对应一侧的测试就会失败
+```
+
+Pact 的做法：contract 在 consumer 的自动化测试执行过程中生成，只有 consumer 实际用到的通信部分被测试，因此 provider 上没被任何 consumer 使用的行为可以放心改动。实现方式是确认对 test double 的调用，与对真实应用的调用返回相同的结果。
+
 ## Common Forms
 
-- **Schema validation**：请求和响应符合 OpenAPI、JSON Schema、Protobuf 等定义。
+- **Schema validation**：请求和响应符合 OpenAPI、JSON Schema、Protobuf 等定义。Pact 指出，schema 或规范（如 OAS）是描述资源所有可能状态的静态产物，而 Pact 的 contract 是通过执行一组测试用例来强制的，每个用例描述一个具体的 request/response 对，是“举例的契约”；两者相关但不相同。
 - **Consumer-driven contract**：consumer 声明它依赖的交互，provider 在 CI 验证这些 expectation。
-- **Provider contract test**：provider 验证对外公开的输入、输出和错误行为。
+- **Provider contract test**：provider 验证对外公开的输入、输出和错误行为，即确保提供者的实际行为符合其文档化的 contract（例如 OpenAPI 文档）。
 - **Compatibility test**：验证旧 consumer 与新 provider，或新 consumer 与旧 provider 的可共存性。
 
 ## Example: Graph Output to API Event
@@ -93,3 +123,7 @@ Contract test 可以快速穷举缺失 header、额外字段、错误码和版�
 - [[Reliable Asynchronous Processing]]
 - [[API Gateway]]
 
+## Sources
+
+- [Pact Docs — Introduction and contract testing terminology](https://docs.pact.io/)
+- [Martin Fowler — Integration Test (narrow integration tests and contract tests)](https://martinfowler.com/bliki/IntegrationTest.html)

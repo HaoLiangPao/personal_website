@@ -6,12 +6,26 @@ tags:
 type: concept
 source: work
 Status: growing
-draft: true
+draft: false
 ---
 
 ## Definition
 
 Risk-Based Test Design 根据失败的 likelihood、impact 和 detectability 分配测试投入。目标不是穷尽所有测试名称，而是优先为最重要、最容易发生且最难被其他机制发现的风险建立证据。
+
+ISTQB 术语表对 risk-based testing 的定义：一种降低产品风险水平并向干系人通报其状态的测试方法，从项目早期开始，识别产品风险，并用风险等级来指导测试过程。
+
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| 基于风险的测试 | Risk-Based Testing | 按失败风险分配测试投入 |
+| 失效模式 | Failure Mode | 系统可能怎样出错 |
+| 可能性 | Likelihood | 风险发生的概率 |
+| 影响 | Impact | 风险发生后后果的严重程度 |
+| 可发现性 | Detectability | 风险能否被其他机制及早发现 |
+| 测试预言 | Test Oracle | 判断结果是否正确的依据 |
+| 发布门槛 | Release Gate | 满足条件才允许发布的检查点 |
 
 ## Workflow
 
@@ -32,6 +46,8 @@ flowchart LR
 4. 选择能捕获风险的最低成本边界。
 5. 定义明确的 [[Test Oracle]] 和失败诊断信息。
 6. 决定运行频率：每次 commit、PR、nightly、pre-release 或 production sampling。
+
+轻量的风险评估只关注两个因素：likelihood 和 impact，用简单的高/中/低判断而不是复杂计算；更重的方法会进一步量化。可发现性是常见的第三个维度（例如 FMEA 类方法会用到），这里作为扩展保留。
 
 ## Risk Matrix
 
@@ -86,3 +102,7 @@ flowchart LR
 - [[Observability]]
 - [[Canary Deployment]]
 
+## Sources
+
+- [ISTQB Glossary — Risk-Based Testing](https://istqb-glossary.page/risk-based-testing/)
+- [Wikipedia — Risk-based testing](https://en.wikipedia.org/wiki/Risk-based_testing)

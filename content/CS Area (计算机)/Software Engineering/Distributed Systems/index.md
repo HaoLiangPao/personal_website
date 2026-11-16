@@ -11,6 +11,10 @@ draft: false
 ## Correctness
 
 - [[Consistency]]
+- [[Consistency Models]]
+- [[Linearizability]]
+- [[Serializability]]
+- [[Snapshot Isolation]]
 - [[CAP Theorem]]
 - [[Data Invariant]]
 - [[Concurrency Control]]
@@ -18,6 +22,7 @@ draft: false
 - [[Optimistic Locking]]
 - [[Transaction Isolation]]
 - [[Idempotency]]
+- [[Reconciliation]]
 
 ## Messaging and Failure Handling
 
@@ -52,5 +57,3 @@ draft: false
 ## Case Studies
 
 - [[Order Processing Consistency Case Study]]
-- [[Reconciliation]]
-

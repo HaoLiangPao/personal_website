@@ -6,7 +6,7 @@ tags:
 type: concept
 source: work
 Status: growing
-draft: true
+draft: false
 ---
 
 ## Definition
@@ -14,6 +14,26 @@ draft: true
 Integration Test 验证两个或多个真实组件在实际边界上的协作，例如 application 与 database、worker 与 queue、service 与 object storage。它重点发现单元内部正确但连接后失败的问题。
 
 Integration test 不等于“整个系统测试”，也不要求经过 UI。边界可以很小，但至少有一个重要协作者使用真实实现或高保真环境。
+
+## Key Terms
+
+| 中文 | English | 含义 |
+| --- | --- | --- |
+| 集成测试 | Integration Test | 验证组件在真实边界上的协作 |
+| 窄集成测试 | Narrow Integration Test | 只测自己服务里与外部交互的那部分代码，对方用替身 |
+| 宽集成测试 | Broad Integration Test | 需要所有服务的真实版本，穿过所有服务的代码路径 |
+| 测试夹具 | Fixture | 测试需要的最小、明确的数据和环境 |
+| 一次性容器 | Throwaway Container | 为测试临时创建、用完即删的依赖实例 |
+| 环境污染 | Test Pollution | 一个测试留下的数据影响其他测试 |
+
+## Narrow vs Broad
+
+Fowler 提醒“integration test”这个词已经被用得很模糊，很多人以为它必须范围很大。他区分：
+
+- **Narrow integration test**：只执行自己服务里与另一个服务交互的那部分代码，使用对方服务的 test double（进程内或远程），因此由许多范围很小的测试组成，范围常常不比 unit test 大，也常常用同一个测试框架。
+- **Broad integration test**：需要所有服务的真实版本，需要大量测试环境和网络访问，并穿过所有服务的代码路径。
+
+他更倾向于把 broad integration test 叫作 system test 或 end-to-end test（见 [[End-to-End Test]]）。Practical Test Pyramid 则把 integration test 定义为：测试应用与它外部所有部分（数据库、文件系统、其他服务）的集成，例如数据库集成测试会启动数据库、连接应用、触发写入、再从数据库读回数据来验证。
 
 ## Risks It Protects
 
@@ -38,9 +58,20 @@ Integration test 不等于“整个系统测试”，也不要求经过 UI。边
 - 当前测试只关心本地 adapter 的 mapping；
 - 已有独立 [[Contract Test]] 验证 fake 与真实服务的边界一致。
 
+像 Testcontainers 这样的工具可以为测试提供一次性的、轻量的数据库、消息代理或任何能跑在 Docker 容器里的依赖实例：测试运行时创建容器，结束后删除，用代码定义测试依赖，省去复杂的环境配置。
+
 ## Test Environment
 
 可靠的 integration suite 应管理自己的数据生命周期：
+
+```mermaid
+flowchart LR
+    A[创建隔离 schema / tenant / queue] --> B[加载最小明确的 fixture]
+    B --> C[执行被测行为]
+    C --> D[读取持久化结果]
+    D --> E[验证 side effects 和 invariants]
+    E --> F[清理或销毁环境]
+```
 
 1. 创建隔离 schema、tenant、queue 或 namespace；
 2. 使用最小且明确的 fixture；
@@ -63,7 +94,7 @@ Integration test 不等于“整个系统测试”，也不要求经过 UI。边
 ## Gotchas
 
 - 共享 staging data 会导致顺序依赖和 flaky tests。
-- 用 in-memory database 代替生产 database，可能遗漏 SQL dialect、index、locking 和 isolation 差异。
+- 用 in-memory database 代替生产 database，可能遗漏 SQL dialect、index、locking 和 isolation 差异。Practical Test Pyramid 的示例项目就用内存数据库代替了生产环境的 PostgreSQL，这类取舍要清楚自己放弃了什么。
 - 只验证调用返回，不验证实际 side effect，会产生假阳性。
 - 不区分 product failure 与 environment failure，会让 CI 结果难以诊断。
 
@@ -82,3 +113,8 @@ Integration test 不等于“整个系统测试”，也不要求经过 UI。边
 - [[Contract Test]]
 - [[End-to-End Test]]
 
+## Sources
+
+- [Martin Fowler — Integration Test](https://martinfowler.com/bliki/IntegrationTest.html)
+- [Ham Vocke — The Practical Test Pyramid: Integration Tests](https://martinfowler.com/articles/practical-test-pyramid.html)
+- [Testcontainers](https://testcontainers.com/)
