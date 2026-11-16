@@ -1,0 +1,1142 @@
+<!doctype html><html lang="en"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NP &amp; LP Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap">
+<style>
+/* Layout: sticky top bar · left algorithm index · main workspace (graph + controls | step & state panels) · takeaways.
+   Deliberately single dark theme, continuing the look of the March per-algorithm pages. */
+:root{
+  color-scheme:dark;
+  --bg:#0b0d12; --surface:#12151c; --surface2:#181c25; --line:#232836; --line2:#2e3446;
+  --text:#e3e7f0; --muted:#8189a0; --faint:#4a5268;
+  --blue:#4f8ef7; --green:#34c98a; --red:#f05252; --amber:#f5a623; --teal:#2ec4b6; --purple:#9d7ef7;
+  --ac:var(--blue);
+  --f-body:'DM Sans','PingFang SC','Noto Sans SC','Microsoft YaHei',system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono','SFMono-Regular',Menlo,Consolas,monospace;
+  --f-disp:'Instrument Serif','Songti SC','Noto Serif SC',Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--text)}
+body{font-family:var(--f-body);font-size:14px;line-height:1.6;font-weight:400}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(11,13,18,.94);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.topbar h1{margin:0;font-family:var(--f-disp);font-weight:400;font-size:22px;letter-spacing:.01em}
+.topbar .sub{color:var(--muted);font-size:12px}
+.topbar .keys{margin-left:auto;font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.lang{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;font-weight:600;padding:4px 12px;border-radius:5px;border:1px solid var(--line2);color:var(--text);background:var(--surface2)}
+.lang:hover{border-color:var(--muted)}
+.lang:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+kbd{font-family:var(--f-mono);font-size:10px;border:1px solid var(--line2);border-radius:3px;padding:0 4px;color:var(--muted)}
+
+.shell{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;
+  padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));max-width:1440px;margin:0 auto}
+nav.index{position:sticky;top:calc(env(safe-area-inset-top,0px) + 62px);align-self:start;display:flex;flex-direction:column;gap:14px}
+.grp{display:flex;flex-direction:column;gap:2px}
+.grp-l{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);padding:0 8px 3px}
+.nb{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:8px;padding:5px 8px;border-radius:5px;color:var(--muted)}
+.nb .ab{font-family:var(--f-mono);font-size:12.5px;font-weight:600;color:var(--text);min-width:64px}
+.nb .hn{font-size:11.5px}
+.nb:hover{background:var(--surface)}
+.nb:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.nb.on{background:var(--surface2)}
+.nb.on .ab{color:var(--c)}
+
+main{min-width:0;display:flex;flex-direction:column;gap:14px}
+.ahead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.ahead .abbr{font-family:var(--f-mono);font-size:26px;font-weight:600;color:var(--ac)}
+.ahead .nm{color:var(--muted);font-size:14px}
+.rt{margin-left:auto;font-family:var(--f-mono);font-size:12.5px;color:var(--amber);border:1px solid rgba(245,166,35,.3);background:rgba(245,166,35,.08);padding:2px 10px;border-radius:4px}
+.spec{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.spec>div{background:var(--surface);padding:9px 12px;min-width:0}
+.spec .k{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:2px}
+.spec .v{font-size:12.5px}
+.spec code,.tk code,.desc code,.ovt code,.rule code{font-family:var(--f-mono);font-size:.92em;color:#c9d3ea}
+.warn{color:var(--amber)}
+
+.work{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:14px;align-items:start}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;min-width:0}
+.gcard .hd{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted)}
+.badge{font-family:var(--f-mono);font-size:11px;color:var(--ac);border:1px solid var(--line2);border-radius:4px;padding:1px 8px;white-space:nowrap}
+svg#g{display:block;width:100%;height:auto}
+.controls{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.btn{all:unset;cursor:pointer;font-family:var(--f-mono);font-size:12px;padding:5px 12px;border:1px solid var(--line2);border-radius:5px;color:var(--text)}
+.btn:hover:not([disabled]){border-color:var(--muted)}
+.btn:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.btn[disabled]{opacity:.35;cursor:default}
+.btn.play{background:var(--ac);border-color:var(--ac);color:#0b0d12;font-weight:600}
+.prog{flex:1;min-width:80px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ac);width:0;transition:width .25s}
+.ctr{font-family:var(--f-mono);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;padding:8px 14px 12px;font-size:11px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend b{display:inline-block;width:16px;height:3px;border-radius:2px}
+
+.right{display:flex;flex-direction:column;gap:12px;min-width:0}
+.stepbox{padding:12px 14px}
+.slbl{font-family:var(--f-mono);font-size:10.5px;color:var(--faint);letter-spacing:.08em}
+.stitle{font-family:var(--f-disp);font-style:italic;font-size:20px;line-height:1.3;margin:2px 0 8px;text-wrap:balance}
+.desc{white-space:pre-line;font-size:13px;color:#c7cddb}
+.ins{margin-top:10px;font-size:12.5px;border-radius:6px;padding:8px 10px;border:1px solid}
+.ins.info{color:var(--ac);border-color:color-mix(in srgb,var(--ac) 30%,transparent);background:color-mix(in srgb,var(--ac) 8%,transparent)}
+.ins.relax{color:var(--blue);border-color:rgba(79,142,247,.3);background:rgba(79,142,247,.07)}
+.ins.warn{color:#ff8a8a;border-color:rgba(240,82,82,.35);background:rgba(240,82,82,.07)}
+.ins.ok{color:var(--green);border-color:rgba(52,201,138,.3);background:rgba(52,201,138,.07)}
+.ins.done{color:var(--purple);border-color:rgba(157,126,247,.35);background:rgba(157,126,247,.08)}
+.pnl{padding:10px 14px}
+.pnl h3{margin:0 0 7px;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.pnl h3 small{font-weight:400;letter-spacing:0;text-transform:none;color:var(--faint);font-size:11px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:var(--f-mono);font-size:11.5px;padding:2px 8px;border-radius:4px;border:1px solid var(--line2);background:var(--surface2)}
+.chip.hot{border-color:var(--amber);color:var(--amber);background:rgba(245,166,35,.08)}
+.chip.ok{border-color:rgba(52,201,138,.5);color:var(--green)}
+.chip.bad{border-color:rgba(240,82,82,.45);color:#ff8a8a;text-decoration:line-through}
+.chip.mute{color:var(--faint);border-style:dashed}
+.chip.p{border-color:rgba(157,126,247,.5);color:var(--purple)}
+.chip.t{border-color:rgba(46,196,182,.5);color:var(--teal)}
+.chip.b{border-color:rgba(79,142,247,.5);color:#7fb0ff}
+.tw{overflow-x:auto}
+table.dt{border-collapse:collapse;width:100%;font-family:var(--f-mono);font-size:11.5px;font-variant-numeric:tabular-nums}
+.dt th{color:var(--faint);font-weight:400;text-align:left;padding:3px 6px;border-bottom:1px solid var(--line)}
+.dt td{padding:3px 6px;border-bottom:1px solid #1a1e28;white-space:nowrap}
+.dt td.hi{color:var(--amber);background:rgba(245,166,35,.1)}
+.dt tr.rh td{background:rgba(255,255,255,.03)}
+.dt td.inf{color:var(--faint)}
+
+.tk{padding:12px 16px}
+.tk h2{margin:0 0 8px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.tk ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13px;max-width:90ch}
+.tk li::marker{color:var(--ac)}
+
+#ov h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ov p{color:var(--muted);margin:0 0 12px;font-size:13px}
+.ovt{border-collapse:collapse;width:100%;font-size:12.5px;min-width:720px}
+.ovt th{text-align:left;font-weight:500;color:var(--faint);font-size:11px;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid var(--line2)}
+.ovt td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.ovt td.m{font-family:var(--f-mono);font-size:12px}
+.ovt tr.cat td{color:var(--faint);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding-top:14px;border-bottom:none}
+.ovt .go{all:unset;cursor:pointer;font-family:var(--f-mono);font-weight:600}
+.ovt .go:hover{text-decoration:underline}
+.rule{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:16px}
+.rule div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px}
+.rule b{display:block;font-size:11px;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:3px}
+#ops h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#ops>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#ops .rule{margin:0 0 14px}
+.ovt td.how{color:#c7cddb;max-width:62ch}
+.ovt td.op{font-weight:500;white-space:nowrap}
+#pre h2{font-family:var(--f-disp);font-weight:400;font-size:24px;margin:0 0 4px}
+#pre>p{color:var(--muted);margin:0 0 12px;font-size:13px}
+#pre .rule{margin-top:14px}
+.ovt.pm{min-width:980px}
+.ovt.pm td{vertical-align:middle}
+.lv{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11.5px;line-height:1.45;border:1px solid}
+.lv.any{color:var(--green);border-color:rgba(52,201,138,.35);background:rgba(52,201,138,.07)}
+.lv.req{color:var(--amber);border-color:rgba(245,166,35,.4);background:rgba(245,166,35,.08)}
+.lv.no{color:#ff8a8a;border-color:rgba(240,82,82,.4);background:rgba(240,82,82,.08)}
+.lv.na{color:var(--faint);border-color:var(--line2);border-style:dashed}
+.pkey{display:flex;flex-wrap:wrap;gap:8px 14px;margin:0 0 12px;font-size:12px;color:var(--muted);align-items:center}
+
+svg text{font-family:var(--f-mono)}
+.el{paint-order:stroke;stroke:#0b0d12;stroke-width:4px;stroke-linejoin:round}
+
+@media (max-width:1100px){.work{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav.index{position:static;flex-direction:row;overflow-x:auto;gap:10px;padding-bottom:4px}
+  .grp{flex-direction:row;align-items:center;flex:none}
+  .grp-l{display:none}
+  .nb .hn{display:none}
+  .nb .ab{min-width:0}
+  .spec{grid-template-columns:minmax(0,1fr)}
+  .topbar .keys{display:none}
+  .lang{margin-left:auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="topbar">
+  <h1 id="t-h1"></h1>
+  <span class="sub" id="t-sub"></span>
+  <span class="keys" id="t-keys"></span>
+  <button class="lang" id="lang" type="button"></button>
+</div>
+
+<div class="shell">
+  <nav class="index" id="nav"></nav>
+  <main id="main">
+    <section id="algo">
+      <div class="ahead"><span class="abbr" id="a-abbr"></span><span class="nm" id="a-name"></span><span class="rt" id="a-rt"></span></div>
+      <div class="spec" style="margin-top:10px">
+        <div><div class="k">Input</div><div class="v" id="s-in"></div></div>
+        <div><div class="k">Output</div><div class="v" id="s-out"></div></div>
+        <div><div class="k" id="k-req"></div><div class="v" id="s-req"></div></div>
+      </div>
+      <div class="work" style="margin-top:14px">
+        <div class="card gcard">
+          <div class="hd"><span id="g-cap"></span><span class="badge" id="g-badge"></span></div>
+          <svg id="g" viewBox="0 0 560 380" role="img"></svg>
+          <div class="controls">
+            <button class="btn" id="b-prev" type="button">← Prev</button>
+            <button class="btn play" id="b-play" type="button">▶ Play</button>
+            <button class="btn" id="b-next" type="button">Next →</button>
+            <div class="prog"><i id="prog"></i></div>
+            <span class="ctr" id="ctr"></span>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <div class="right">
+          <div class="card stepbox">
+            <div class="slbl" id="s-lbl"></div>
+            <div class="stitle" id="s-title"></div>
+            <div class="desc" id="s-desc"></div>
+            <div class="ins" id="s-ins"></div>
+          </div>
+          <div id="panels" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+      </div>
+      <div class="card tk" style="margin-top:14px"><h2 id="tk-h"></h2><ul id="tk"></ul></div>
+    </section>
+    <section id="ov" hidden></section>
+    <section id="ops" hidden></section>
+    <section id="pre" hidden></section>
+  </main>
+</div>
+
+<style>
+.legend b.sw{width:11px;height:11px;border-radius:3px;border:1.5px solid}
+.legend b.ln{width:18px;height:0;border-top:2.5px solid;border-radius:0}
+.ovt td.yes{color:var(--green);font-family:var(--f-mono);font-size:11.5px}
+.ovt td.nope{color:#ff8a8a;font-family:var(--f-mono);font-size:11.5px}
+pre.rec{margin:0;font-family:var(--f-mono);font-size:11.5px;line-height:1.55;color:#c9d3ea;white-space:pre;overflow-x:auto}
+pre.tree{margin:0;padding:12px 14px;font-family:var(--f-mono);font-size:12px;line-height:1.6;color:#c9d3ea;white-space:pre;overflow-x:auto}
+h3.sub2{font-family:var(--f-disp);font-weight:400;font-size:19px;margin:22px 0 8px}
+.tpl{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:0 0 14px}
+.tpl div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:12.5px}
+.tpl b{display:block;font-family:var(--f-mono);font-size:11.5px;color:var(--amber);font-weight:600;margin-bottom:3px}
+.todo{display:grid;gap:6px;margin:0;padding:0;list-style:none;font-size:12.5px}
+.todo li{display:flex;gap:10px;align-items:baseline}
+</style>
+<script>
+/* ============================== language ============================== */
+let LANG='en';
+try{ const s=localStorage.getItem('np-lang'); if(s==='en'||s==='zh') LANG=s; }catch(e){}
+const tr=(zh,en)=>LANG==='en'?en:zh;
+const L2=x=>Array.isArray(x)?(LANG==='en'?x[1]:x[0]):x;
+
+/* ============================== helpers ============================== */
+const clone = o => JSON.parse(JSON.stringify(o));
+function rec(){ const L=[]; return { L, add(o){ L.push(clone(o)); } }; }
+const tbl = (title, head, rows, hi=[], sub='', rowhi=[]) => ({k:'table', title, head, rows, hi, sub, rowhi});
+const chips = (title, items, sub='') => ({k:'chips', title, items, sub});
+const note = (title, text) => ({k:'note', title, text});
+const code = (title, text) => ({k:'code', title, text});
+const D={
+  cell:(x,y,w,h,v,st,o={})=>({k:'cell',x,y,w,h,v:String(v),st,...o}),
+  txt:(x,y,s,o={})=>({k:'txt',x,y,s:String(s),...o}),
+  rect:(x,y,w,h,o={})=>({k:'rect',x,y,w,h,...o}),
+  line:(x1,y1,x2,y2,o={})=>({k:'line',x1,y1,x2,y2,...o}),
+  node:(x,y,lab,st,o={})=>({k:'node',x,y,lab,st,...o}),
+  poly:(pts,o={})=>({k:'poly',pts,...o}),
+};
+const CS={n:['#141820','#2d3344','#c9d3ea'],dim:['#0e1117','#1c2130','#3e4559'],hot:['#3d2a00','#f5a623','#f5a623'],ok:['#0d3326','#34c98a','#34c98a'],
+  b:['#0f2140','#4f8ef7','#8fb8ff'],p:['#1a1040','#9d7ef7','#bba5ff'],t:['#082828','#2ec4b6','#2ec4b6'],r:['#3a1010','#f05252','#ff8a8a'],ghost:['#0b0d12','#1f2431','#2e3446']};
+const COL={amber:'#f5a623',green:'#34c98a',blue:'#4f8ef7',red:'#f05252',teal:'#2ec4b6',purple:'#9d7ef7',muted:'#8189a0',faint:'#4a5268',text:'#e3e7f0',soft:'#c7cddb',line:'#353c50',dim:'#232836'};
+const ES={n:{s:'#353c50',w:1.8},dim:{s:'#232836',w:1.4},cl:{s:'#4f8ef7',w:2.4},vr:{s:'#f05252',w:2,d:'6 4'},hot:{s:'#f5a623',w:3},ok:{s:'#34c98a',w:3},p:{s:'#9d7ef7',w:2.4},t:{s:'#2ec4b6',w:2.4}};
+const lit=(s,o)=>D.cell(o.x,o.y,o.w||46,o.h||30,s,o.st||'n',{fs:13});
+
+/* table helper reused from the DP page */
+function gridScene(R,C,o){
+  const lw=o.lw||44, cs=o.cs||Math.min(46,Math.floor((500-lw)/C),Math.floor(262/R)), cw=o.cw||cs, W=lw+C*cw, x0=(560-W)/2+lw, y0=o.y0||74, out=[];
+  if(o.cap) out.push(D.txt(280,20,o.cap,{c:'muted',fs:12}));
+  o.cl.forEach(([a,b],j)=>{ const hi=o.colHi===j; out.push(D.txt(x0+j*cw+cw/2,y0-26,a,{c:hi?'amber':'faint',fs:10})); if(b) out.push(D.txt(x0+j*cw+cw/2,y0-11,b,{c:hi?'amber':'soft',fs:12,w:600})); });
+  o.rl.forEach((s,i)=>out.push(D.txt(x0-8,y0+i*cs+cs/2+1,s,{c:o.rowHiSet&&o.rowHiSet.includes(i)?'amber':'soft',fs:11.5,a:'end'})));
+  for(let i=0;i<R;i++) for(let j=0;j<C;j++){ const s=o.st(i,j); if(s==='none') continue;
+    out.push(D.cell(x0+j*cw+1.5,y0+i*cs+1.5,cw-3,cs-3,o.val(i,j),s,{fs:o.fs||(cs<30?11:12.5)})); }
+  if(o.sep!=null) out.push(D.line(x0+o.sep*cw,y0-30,x0+o.sep*cw,y0+R*cs,{s:'faint',w:1,d:'3 3'}));
+  if(o.foot) out.push(D.txt(280,Math.min(368,y0+R*cs+22),o.foot,{c:'amber',fs:12.5}));
+  return out;
+}
+
+/* ============================== SAT → 3SAT ============================== */
+function simSAT3(){
+  const Rc=rec(), X=['x1','x2','x3','x4','x5'];
+  const big=(st)=>X.map((s,k)=>lit(s,{x:72+k*52,y:66,st:st?st[k]:'n'}));
+  const C3=[['x1','x2','y1'],['¬y1','x3','y2'],['¬y2','x4','x5']];
+  const tri=(upto,stFn)=>{ const o=[]; for(let c=0;c<upto;c++){ const x0=40+c*172; o.push(D.rect(x0-6,176,162,44,{s:'line',sw:1.2}));
+      C3[c].forEach((s,k)=>o.push(lit(s,{x:x0+k*50,y:183,st:stFn?stFn(c,k,s):(s.includes('y')?'p':'n')})));
+      o.push(D.txt(x0+75,236,`c${c+1}′`,{c:'faint',fs:11})); } return o; };
+  const short=st=>[D.txt(460,48,tr('短子句原样保留','kept as is'),{c:'muted',fs:11}),lit('¬x1',{x:412,y:66,st}),lit('x3',{x:462,y:66,st})];
+  const head=[D.txt(20,82,'c =',{c:'faint',a:'start',fs:12})];
+  const PN=(asg)=>[code(tr('k > 3 的子句','A clause with k > 3'),'(a1 v a2 v y1)\n(!y1 v a3 v y2)\n ...\n(!y_{k-4} v a_{k-2} v y_{k-3})\n(!y_{k-3} v a_{k-1} v a_k)'),
+    ...(asg?[tbl(tr('赋值','Assignment'),['var','value'],asg)]:[]),
+    chips(tr('计数','Counts'),[{x:'k = 5'},{x:tr('新变量 k−3 = 2','new vars k−3 = 2'),c:'p'},{x:tr('新子句 k−2 = 3','new clauses k−2 = 3'),c:'b'}])];
+  Rc.add({t:tr('输入：一个 SAT 公式','Input: a SAT formula'),d:tr('f = (x1 ∨ x2 ∨ x3 ∨ x4 ∨ x5) ∧ (¬x1 ∨ x3)\n第一个子句有 k = 5 个 literal，超过 3。','f = (x1 ∨ x2 ∨ x3 ∨ x4 ∨ x5) ∧ (¬x1 ∨ x3)\nThe first clause has k = 5 literals, more than 3.'),
+    ins:tr('方向：SAT（已知 NP-C）→ 3SAT（新问题）。known → new，反过来自动 −16。','Direction: SAT (known NP-C) → 3SAT (the new problem). Known → new; the reverse is an automatic −16.'),it:'warn',S:[...head,...big(),...short('n')],P:PN()});
+  Rc.add({t:tr('k ≤ 3 的子句原样保留','Clauses with k ≤ 3 stay unchanged'),d:tr('(¬x1 ∨ x3) 只有 2 个 literal，直接放进 3SAT 的输入。','(¬x1 ∨ x3) has 2 literals; copy it into the 3SAT input.'),
+    ins:tr('input transformation 要交代每一个输入，包括原样传过去的。','The input transformation must account for every input, including the ones passed through unchanged.'),it:'info',S:[...head,...big(),...short('ok')],P:PN()});
+  [1,2,3].forEach(u=>Rc.add({t:tr(`拆分：第 ${u} 个新子句`,`Split: new clause ${u}`),d:u===1?tr('新建 k−3 = 2 个变量 y1, y2。\n第一个子句拿前两个 literal 加 y1：(x1 ∨ x2 ∨ y1)。','Create k−3 = 2 new variables y1, y2.\nThe first clause takes the first two literals plus y1: (x1 ∨ x2 ∨ y1).'):
+      u===2?tr('中间子句：(¬y1 ∨ x3 ∨ y2)。¬y1 把它和上一个子句串起来。','Middle clause: (¬y1 ∨ x3 ∨ y2). ¬y1 chains it to the previous clause.'):tr('最后一个拿最后两个 literal：(¬y2 ∨ x4 ∨ x5)。共 k−2 = 3 个子句，每个恰好 3 个 literal。','The last clause takes the last two literals: (¬y2 ∨ x4 ∨ x5). k−2 = 3 clauses, each with exactly 3 literals.'),
+    ins:u===3?tr('runtime：m 个子句，每个最多 n 个 literal → O(nm)。新变量最多 m(n−3) 个。','Runtime: m clauses of at most n literals each → O(nm). At most m(n−3) new variables.'):'',it:u===3?'info':'hide',S:[...head,...big(),...short('ok'),...tri(u)],P:PN()}));
+  const A1={x1:0,x2:0,x3:0,x4:1,x5:0,y1:1,y2:1};
+  const val=s=>{ const neg=s.startsWith('¬'), v=A1[neg?s.slice(1):s]; return neg?1-v:v; };
+  Rc.add({t:tr('⇒ SAT 有解 ⇒ 3SAT 有解','⇒ SAT satisfiable ⇒ 3SAT satisfiable'),d:tr('取一个满足 c 的赋值：只有 x4 = T。\n第一个为真的 literal 是 a_i = x4（i = 4）。\n令 y1..y_{i−2} = T，其余 y = F → y1 = y2 = T。\n三个新子句都被满足。','Take an assignment satisfying c: only x4 = T.\nThe first true literal is a_i = x4 (i = 4).\nSet y1..y_{i−2} = T and the rest F → y1 = y2 = T.\nAll three new clauses are satisfied.'),
+    ins:tr('这是 A ⇒ B 方向：由 A 的解构造 B 的解。y 的取值要显式给出来。','This is A ⇒ B: build a solution of B from a solution of A. Give the y values explicitly.'),it:'ok',
+    S:[...head,...big(X.map(s=>A1[s]?'ok':'r')),...short('ok'),...tri(3,(c,k,s)=>val(s)?'ok':'r')],P:PN(Object.keys(A1).map(k=>[k,A1[k]?'T':'F']))});
+  const A0={x1:0,x2:0,x3:0,x4:0,x5:0,y1:1,y2:1};
+  const v0=s=>{ const neg=s.startsWith('¬'), v=A0[neg?s.slice(1):s]; return neg?1-v:v; };
+  Rc.add({t:tr('⇐ 3SAT 有解 ⇒ SAT 有解','⇐ 3SAT satisfiable ⇒ SAT satisfiable'),d:tr('假设所有原 literal 都是 F：\nc1′ 逼 y1 = T → c2′ 里 ¬y1 = F、x3 = F，逼 y2 = T → c3′ 里 ¬y2、x4、x5 全 F，不满足。\n所以 3SAT 的任何满足赋值里，至少一个原 literal 为 T → c 被满足。','Suppose every original literal is F:\nc1′ forces y1 = T → in c2′, ¬y1 = F and x3 = F, forcing y2 = T → in c3′, ¬y2, x4, x5 are all F: unsatisfied.\nSo any satisfying 3SAT assignment makes some original literal T, which satisfies c.'),
+    ins:tr('这是 B ⇒ A。和上一步合起来是合法的 IFF 组合。只写一个方向 + 它的逆否 = 只证了一半。','This is B ⇒ A. Together with the previous step it is a valid IFF pair. One direction plus its own contrapositive proves only half.'),it:'warn',
+    S:[...head,...big(X.map(()=> 'r')),...short('n'),...tri(3,(c,k,s)=>c===2?'r':(v0(s)?'ok':'r'))],P:PN(Object.keys(A0).map(k=>[k,A0[k]?'T':'F']))});
+  Rc.add({t:tr('Output transformation + NO','Output transformation + NO'),d:tr('3SAT 返回赋值 → 去掉所有 y，剩下 x 的赋值返回给 SAT。\n3SAT 返回 NO → SAT 返回 NO。\n去掉最多 m(n−3) 个新变量：O(nm)。','3SAT returns an assignment → drop every y and return the x values to SAT.\n3SAT returns NO → SAT returns NO.\nDropping at most m(n−3) new variables: O(nm).'),
+    ins:tr('NP 部分：给定赋值，每个子句最多 3 个 literal，O(1) 检查，共 m 个 → O(m)（官方 3SAT.pdf）。','NP part: given an assignment, each clause has at most 3 literals, so O(1) per clause and O(m) total (official 3SAT.pdf).'),it:'done',
+    S:[...head,...big(),...short('ok'),...tri(3,(c,k,s)=>s.includes('y')?'dim':'n')],P:[tbl('Runtime',[tr('部分','part'),'Big-O'],[['3SAT ∈ NP','O(m)'],['Input transform','O(nm)'],['Output transform','O(nm)'],['Overall','O(nm)']])]});
+  return Rc.L;
+}
+
+/* ============================== 3SAT → IS ============================== */
+function simIS(){
+  const Rc=rec();
+  const V={a:[90,270,'x1',1],b:[150,150,'x2',1],c:[210,270,'¬x3',1],d:[310,80,'¬x1',2],e:[320,320,'x2',2],f:[470,140,'¬x2',3],g:[470,260,'x3',3]};
+  const CE=[['a','b'],['b','c'],['a','c'],['d','e'],['f','g']], VE=[['a','d'],['b','f'],['e','f'],['c','g']];
+  const sc=(o)=>{ const out=[];
+    if(o.ve) VE.forEach(([u,v])=>out.push(D.line(V[u][0],V[u][1],V[v][0],V[v][1],{...ES[o.veSt||'vr']})));
+    CE.forEach(([u,v],i)=>{ const c=V[u][3]; if(c<=o.cl) out.push(D.line(V[u][0],V[u][1],V[v][0],V[v][1],{...ES[o.ceSt||'cl']})); });
+    Object.entries(V).forEach(([k,[x,y,l,c]])=>{ if(c<=o.cl) out.push(D.node(x,y,l,o.ns?o.ns(k):'n')); });
+    if(o.cl>=1) out.push(D.txt(150,330,'c1',{c:'faint',fs:11})); if(o.cl>=2) out.push(D.txt(352,200,'c2',{c:'faint',fs:11})); if(o.cl>=3) out.push(D.txt(510,200,'c3',{c:'faint',fs:11}));
+    out.push(D.txt(280,22,'f = (x1 ∨ x2 ∨ ¬x3) ∧ (¬x1 ∨ x2) ∧ (¬x2 ∨ x3)',{c:'text',fs:12.5,w:600}));
+    if(o.foot) out.push(D.txt(280,368,o.foot,{c:'amber',fs:12.5}));
+    return out; };
+  const PN=(x=[])=>[chips(tr('参数','Parameters'),[{x:'n = 3 vars'},{x:'m = 3 clauses'},{x:'|V| ≤ 3m',c:'b'},{x:'g = m = 3',c:'hot'}]),...x];
+  Rc.add({t:tr('输入：3SAT 公式','Input: a 3SAT formula'),d:tr('3 个变量、3 个子句。子句可以只有 1 或 2 个 literal（"at most 3"）。','3 variables, 3 clauses. A clause may have only 1 or 2 literals ("at most 3").'),
+    ins:tr('来源选同领域：IS 是图问题，但 3SAT → IS 是课上给的标准归约。考试里 IS 的 NP-hardness 直接引用即可。','Pick a same-domain source when you can. 3SAT → IS is the lecture reduction; on an exam you may cite IS as known NP-C.'),it:'info',S:sc({cl:0}),P:PN()});
+  Rc.add({t:tr('每个子句一组顶点 + clause edges','One vertex per literal + clause edges'),d:tr('每个 literal 出现一次就建一个顶点；同一子句内两两连边（三角形 / 一条边 / 单点）。\n→ 一个 IS 在每个子句里最多选 1 个。','Create one vertex per literal occurrence and connect every pair within a clause (triangle / edge / single vertex).\n→ An independent set takes at most one vertex per clause.'),
+    ins:'',it:'hide',S:sc({cl:3}),P:PN()});
+  Rc.add({t:tr('Variable edges：x 连 ¬x','Variable edges: connect x to ¬x'),d:tr('所有互补的 literal 之间连边：x1–¬x1、x2–¬x2（两处）、¬x3–x3。\n→ IS 不会同时选 x 和 ¬x，赋值不会自相矛盾。','Join every complementary pair of occurrences: x1–¬x1, x2–¬x2 (twice), ¬x3–x3.\n→ The independent set never picks both x and ¬x, so the assignment is consistent.'),
+    ins:tr('input transformation：顶点 O(m)，variable edges 最坏 O(m²)，g = m。','Input transformation: O(m) vertices, at worst O(m²) variable edges, and g = m.'),it:'info',S:sc({cl:3,ve:true}),P:PN()});
+  const pick=['b','e','g'];
+  Rc.add({t:tr('⇒ 有满足赋值 ⇒ 有大小 m 的 IS','⇒ satisfiable ⇒ an IS of size m'),d:tr('取 x2 = T、x3 = T（x1 任意）。每个子句挑一个为真的 literal：c1 选 x2、c2 选 x2、c3 选 x3。\n每组只选 1 个 → 没有 clause edge；没有同时选 x 和 ¬x → 没有 variable edge。大小 = 3 = g。','Take x2 = T, x3 = T (x1 either). Pick one true literal per clause: x2 in c1, x2 in c2, x3 in c3.\nOne per group → no clause edge; never x with ¬x → no variable edge. Size 3 = g.'),
+    ins:tr('两个 x2 顶点之间没有边：只有互补的 literal 才连 variable edge。','The two x2 vertices are not adjacent: variable edges join only complementary literals.'),it:'ok',
+    S:sc({cl:3,ve:true,ns:k=>pick.includes(k)?'ok':'n',foot:'S = {x2(c1), x2(c2), x3(c3)}  ·  |S| = 3 = g'}),P:PN([tbl(tr('赋值','Assignment'),['var','value'],[['x1',tr('任意','either')],['x2','T'],['x3','T']])])});
+  Rc.add({t:tr('⇐ 有大小 ≥ m 的 IS ⇒ 可满足','⇐ an IS of size ≥ m ⇒ satisfiable'),d:tr('clause edges 让每个子句最多选 1 个，而 |S| ≥ m → 每个子句恰好 1 个。\n把选中的 literal 设为 T。variable edges 保证不会把 x 和 ¬x 同时设 T。\n没被选到的变量（这里 x1）随便赋值。每个子句都有一个真 literal。','Clause edges allow at most one vertex per clause, and |S| ≥ m → exactly one per clause.\nSet each chosen literal to T. Variable edges guarantee x and ¬x are never both T.\nVariables never chosen (here x1) get any value. Every clause has a true literal.'),
+    ins:tr('"at most g" 和 "exactly g" 要分清：这里由 ≥ m 推出 exactly 1 per clause，是 clause edges 给的。','Keep "at least" and "exactly" straight: ≥ m gives exactly one per clause because of the clause edges.'),it:'warn',
+    S:sc({cl:3,ve:true,veSt:'dim',ns:k=>pick.includes(k)?'ok':'dim',foot:tr('x2 = T, x3 = T, x1 = 任意','x2 = T, x3 = T, x1 = either')}),P:PN()});
+  Rc.add({t:tr('Output transformation + NO','Output transformation + NO'),d:tr('IS 返回 S → 每个顶点对应的 literal 设 T，未出现的变量设任意值，返回赋值。\nIS 返回 NO → 3SAT 返回 NO。O(n + m)。','IS returns S → set each chosen vertex\'s literal to T, give unmentioned variables any value, return the assignment.\nIS returns NO → 3SAT returns NO. O(n + m).'),
+    ins:tr('IS ∈ NP：检查 |S| ≥ g，再检查 S 中任两点之间没边 → O(n²)（或扫边 O(n+m)）。','IS ∈ NP: check |S| ≥ g and that no edge joins two vertices of S → O(n²) (or O(n+m) by scanning edges).'),it:'done',
+    S:sc({cl:3,ve:true,ns:k=>pick.includes(k)?'ok':'n'}),P:[tbl('Runtime',[tr('部分','part'),'Big-O'],[['IS ∈ NP','O(n²)'],['Input transform','O(m²)'],['Output transform','O(n+m)']])]});
+  return Rc.L;
+}
+
+/* ============================== IS ↔ VC / Clique ============================== */
+function simVC(){
+  const Rc=rec();
+  const P={A:[110,90],B:[250,70],C:[400,90],D:[460,240],E:[290,300],F:[110,270]};
+  const E=[['A','B'],['B','C'],['C','D'],['D','E'],['E','F'],['B','E']];
+  const ids=Object.keys(P), has=(u,v)=>E.some(([a,b])=>(a===u&&b===v)||(a===v&&b===u));
+  const NE=[]; for(let i=0;i<ids.length;i++) for(let j=i+1;j<ids.length;j++) if(!has(ids[i],ids[j])) NE.push([ids[i],ids[j]]);
+  const S=['A','C','F'], VC=['B','D','E'];
+  const sc=o=>{ const out=[];
+    if(o.comp) NE.forEach(([u,v])=>out.push(D.line(P[u][0],P[u][1],P[v][0],P[v][1],{...ES[(S.includes(u)&&S.includes(v))?'ok':'p']})));
+    E.forEach(([u,v])=>out.push(D.line(P[u][0],P[u][1],P[v][0],P[v][1],{...ES[o.comp?'dim':(o.es?o.es(u,v):'n')]})));
+    ids.forEach(k=>out.push(D.node(P[k][0],P[k][1],k,o.ns?o.ns(k):'n')));
+    out.push(D.txt(280,22,o.cap||'',{c:'text',fs:12.5,w:600}));
+    if(o.foot) out.push(D.txt(280,362,o.foot,{c:'amber',fs:12.5}));
+    return out; };
+  Rc.add({t:tr('输入：(G, g)，求 IS','Input: (G, g) for IS'),d:tr('n = 6、m = 6，g = 3。\nIS：|S| ≥ g，S 内任两点不相邻。','n = 6, m = 6, g = 3.\nIS: |S| ≥ g with no edge inside S.'),ins:'',it:'hide',S:sc({cap:'G · g = 3'}),P:[chips(tr('三个问题','Three problems'),[{x:'IS: |S| ≥ g',c:'ok'},{x:'VC: |S| ≤ b',c:'b'},{x:'Clique: |S| ≥ g',c:'p'}])]});
+  Rc.add({t:'S = {A, C, F}',d:tr('黑盒返回 S = {A, C, F}。三点之间没有边，|S| = 3 = g。','The black box returns S = {A, C, F}. No edges among them, |S| = 3 = g.'),
+    ins:tr('IS ∈ NP：O(n²) 查所有点对 + 数 |S|。runtime 不能依赖 g 的数值。','IS ∈ NP: O(n²) over pairs + count |S|. The runtime must not depend on the value of g.'),it:'info',S:sc({cap:'G · g = 3',ns:k=>S.includes(k)?'ok':'n'}),P:[chips('S',S.map(x=>({x,c:'ok'})))]});
+  Rc.add({t:tr('IS → VC：同一张图，b = n − g','IS → VC: same graph, b = n − g'),d:tr('V∖S = {B, D, E}，大小 3 = n − g。\n每条边至少有一个端点在 V∖S：如果某条边两端都不在 V∖S，它就在 S 里面，与 S 是 IS 矛盾。','V∖S = {B, D, E}, size 3 = n − g.\nEvery edge has an endpoint in V∖S: an edge with neither endpoint there would lie inside S, contradicting independence.'),
+    ins:tr('S 是 IS ⟺ V∖S 是 VC。input transform：(G, g) → (G, n − g)，O(1)。output：S = V ∖ VC，O(n)。','S is an IS ⟺ V∖S is a VC. Input: (G, g) → (G, n − g), O(1). Output: S = V ∖ VC, O(n).'),it:'ok',
+    S:sc({cap:'G · b = n − g = 3',ns:k=>VC.includes(k)?'b':'ok',es:()=> 'cl',foot:tr('蓝 = VC，每条边至少碰到一个蓝点','blue = VC; every edge touches a blue vertex')}),P:[chips('V ∖ S = VC',VC.map(x=>({x,c:'b'}))),tbl(tr('逐边检查','Edge check'),['edge',tr('VC 端点','VC endpoint')],E.map(([u,v])=>[u+'–'+v,[u,v].filter(x=>VC.includes(x)).join(', ')]))]});
+  Rc.add({t:tr('IS → Clique：补图 Ḡ，同一个 g','IS → Clique: complement Ḡ, same g'),d:tr(`Ḡ 有 ${NE.length} 条边：G 里没有的点对都连上。\nS = {A, C, F} 在 G 里两两不相邻 → 在 Ḡ 里两两相邻 → 是 Ḡ 的 clique。`,`Ḡ has ${NE.length} edges: every pair missing from G.\nS = {A, C, F} is pairwise non-adjacent in G → pairwise adjacent in Ḡ → a clique in Ḡ.`),
+    ins:tr('input transform 要建补图：O(n²)。output transform：clique 原样返回，但也要写出来，并写 NO → NO。','The input transformation builds the complement: O(n²). The output returns the clique unchanged, but still write it out, plus NO → NO.'),it:'info',
+    S:sc({cap:'Ḡ · g = 3',comp:true,ns:k=>S.includes(k)?'ok':'p',foot:tr('紫 = Ḡ 的边 · 绿 = S 内部的边','purple = edges of Ḡ · green = edges inside S')}),P:[chips(tr('Ḡ 的边','Edges of Ḡ'),NE.map(([u,v])=>({x:u+v,c:S.includes(u)&&S.includes(v)?'ok':'p'})))]});
+  Rc.add({t:tr('方向和 NO','Direction and NO'),d:tr('证 VC 是 NP-hard：IS → VC（已知 → 新）。证 Clique：IS → Clique。\n黑盒返回 NO → 原问题返回 NO。','To show VC is NP-hard: IS → VC (known → new). For Clique: IS → Clique.\nIf the black box returns NO → return NO for the original problem.'),
+    ins:tr('VC 是 "at most b"，IS/Clique 是 "at least g"。写 b = n − g 时不等号方向要对上。','VC is "at most b"; IS/Clique are "at least g". With b = n − g, make sure the inequalities line up.'),it:'done',
+    S:sc({cap:'G',ns:k=>S.includes(k)?'ok':'b'}),P:[tbl(tr('三个归约','Three reductions'),['',tr('输入','input'),tr('输出','output')],[['IS → VC','(G, n−g)','V ∖ S'],['IS → Clique','(Ḡ, g)','S'],['Clique → IS','(Ḡ, g)','S']])]});
+  return Rc.L;
+}
+
+/* ============================== 3SAT → Subset Sum ============================== */
+function simSSS(){
+  const Rc=rec();
+  const cols=['x1','x2','x3','c1','c2'];
+  const rows=[['v1','x1',[1,0,0,1,0]],["v1′",'¬x1',[1,0,0,0,1]],['v2','x2',[0,1,0,0,1]],["v2′",'¬x2',[0,1,0,1,0]],['v3','x3',[0,0,1,1,1]],["v3′",'¬x3',[0,0,1,0,0]],
+    ['s1','',[0,0,0,1,0]],["s1′",'',[0,0,0,1,0]],['s2','',[0,0,0,0,1]],["s2′",'',[0,0,0,0,1]],['t','',[1,1,1,3,3]]];
+  const sc=(o)=>gridScene(rows.length,5,{lw:96,cs:27,cw:46,y0:62,fs:12,sep:3,cl:[['digit','x1'],['digit','x2'],['digit','x3'],['digit','c1'],['digit','c2']],
+    rl:rows.map(r=>r[0]+(r[1]?` (${r[1]})`:'')),rowHiSet:o.rh,
+    cap:'f = (x1 ∨ ¬x2 ∨ x3) ∧ (¬x1 ∨ x2 ∨ x3)',
+    val:(i,j)=>{ if(!o.show(i,j)) return ''; return rows[i][2][j]; },
+    st:(i,j)=>{ if(!o.show(i,j)) return 'ghost'; return o.st?o.st(i,j):(i===10?'hot':(rows[i][2][j]?'b':'n')); },foot:o.foot});
+  const PN=(x=[])=>[chips(tr('规模','Size'),[{x:'2n + 2m = 10 numbers'},{x:'n + m = 5 digits',c:'b'},{x:'t = 11133',c:'hot'}]),...x];
+  Rc.add({t:tr('输入：3SAT，n = 3、m = 2','Input: 3SAT, n = 3, m = 2'),d:tr('目标：造一组十进制数和 t，使「选子集和 = t」⟺「f 可满足」。\n每个数有 n + m 位：前 n 位对应变量，后 m 位对应子句。','Goal: build base-10 numbers and t so that "a subset sums to t" ⟺ "f is satisfiable".\nEach number has n + m digits: n variable digits, then m clause digits.'),
+    ins:tr('lecture 是 3SAT → SSS 直接归约（DPV 走 3DM → ZOE → SSS）。','The lecture reduces 3SAT → SSS directly (DPV goes 3DM → ZOE → SSS).'),it:'info',S:sc({show:()=>false}),P:PN()});
+  Rc.add({t:tr('变量位：v_i 和 v_i′ 在第 i 位都是 1','Variable digits: v_i and v_i′ have a 1 in digit i'),d:tr('v_i 代表 x_i = T，v_i′ 代表 x_i = F。','v_i means x_i = T, v_i′ means x_i = F.'),ins:'',it:'hide',
+    S:sc({show:(i,j)=>i<6&&j<3}),P:PN()});
+  Rc.add({t:tr('子句位：literal 出现在哪个子句就填 1','Clause digits: 1 where the literal appears'),d:tr('c1 = (x1 ∨ ¬x2 ∨ x3) → v1、v2′、v3 的 c1 位是 1。\nc2 = (¬x1 ∨ x2 ∨ x3) → v1′、v2、v3 的 c2 位是 1。','c1 = (x1 ∨ ¬x2 ∨ x3) → v1, v2′, v3 get a 1 in digit c1.\nc2 = (¬x1 ∨ x2 ∨ x3) → v1′, v2, v3 get a 1 in digit c2.'),ins:'',it:'hide',
+    S:sc({show:(i,j)=>i<6}),P:PN()});
+  Rc.add({t:tr('Buffers：每个子句两个 slack 数','Buffers: two slack numbers per clause'),d:tr('s_j 和 s_j′ 只在 c_j 位是 1。最多补 2。','s_j and s_j′ have a 1 only in digit c_j. They add at most 2.'),
+    ins:tr('为什么不进位：每列最多 3 个 literal + 2 个 buffer = 5 < 10。所以每一位可以单独看。','No carries: each column has at most 3 literals + 2 buffers = 5 < 10, so each digit can be read on its own.'),it:'info',S:sc({show:(i,j)=>i<10}),P:PN()});
+  Rc.add({t:tr('目标 t = 1…1 3…3','Target t = 1…1 3…3'),d:tr('变量位要 1：每个变量恰好选 v_i 或 v_i′ 之一。\n子句位要 3：至少 1 个真 literal，剩下用 buffer 补。','Variable digits need 1: exactly one of v_i, v_i′ per variable.\nClause digits need 3: at least one true literal, buffers fill the rest.'),ins:'',it:'hide',S:sc({show:()=>true}),P:PN()});
+  const ch=[0,2,5,6,7,8,9];
+  Rc.add({t:tr('⇒ 可满足 ⇒ 有子集和 = t','⇒ satisfiable ⇒ a subset sums to t'),d:tr('x1 = T、x2 = T、x3 = F → 选 v1、v2、v3′。\n变量位各得 1。c1 位：v1 给 1，再补 s1、s1′ → 3。c2 位：v2 给 1，补 s2、s2′ → 3。\n和 = 11133 = t。','x1 = T, x2 = T, x3 = F → choose v1, v2, v3′.\nEach variable digit gets 1. Digit c1: 1 from v1, plus s1, s1′ → 3. Digit c2: 1 from v2, plus s2, s2′ → 3.\nSum = 11133 = t.'),
+    ins:tr('每个子句有 1–3 个真 literal，buffer 补 2–0 个，总能凑到 3。','Each clause has 1–3 true literals and the buffers add 2–0, so 3 is always reachable.'),it:'ok',
+    S:sc({show:()=>true,rh:ch,st:(i,j)=>i===10?'hot':(ch.includes(i)?(rows[i][2][j]?'ok':'n'):'dim'),foot:'100 10 + 010 01 + 001 00 + 2·(000 10) + 2·(000 01) = 111 33'}),
+    P:PN([tbl(tr('选中的数','Chosen numbers'),['row','value'],ch.map(i=>[rows[i][0],rows[i][2].join('')]))])});
+  Rc.add({t:tr('⇐ 有子集和 = t ⇒ 可满足','⇐ a subset sums to t ⇒ satisfiable'),d:tr('不进位 → 每一位单独成立。\n变量位 = 1 → v_i、v_i′ 恰好选一个 → 赋值合法：选 v_i 就 x_i = T。\n子句位 = 3，buffer 最多给 2 → 至少 1 来自某个 literal 数 → 该 literal 为 T → 子句满足。','No carries → each digit holds on its own.\nVariable digit = 1 → exactly one of v_i, v_i′ → a valid assignment: v_i chosen means x_i = T.\nClause digit = 3 with at most 2 from buffers → at least 1 comes from a literal number → that literal is T → the clause is satisfied.'),
+    ins:tr('「不进位」这一句是整个 IFF 的关键，必须写出来。','"No carries" is the key sentence of the whole IFF; write it out.'),it:'warn',S:sc({show:()=>true,st:(i,j)=>i===10?'hot':(j<3?(rows[i][2][j]?'t':'n'):(rows[i][2][j]?'p':'n'))}),P:PN()});
+  Rc.add({t:tr('Output + runtime','Output + runtime'),d:tr('SSS 返回子集 → v_i 在子集里就 x_i = T，否则 F。SSS 返回 NO → 3SAT 返回 NO。\n建表：2n + 2m 个数，每个 n + m 位 → O((n + m)²)。','SSS returns a subset → x_i = T iff v_i is in it. SSS returns NO → 3SAT returns NO.\nBuilding: 2n + 2m numbers of n + m digits → O((n + m)²).'),
+    ins:tr('t 的数值约 10^(n+m)，但位数只有 n + m：归约是多项式的。SSS 的 O(nt) DP 是伪多项式，不矛盾。','t is about 10^(n+m) in value but has only n + m digits, so the reduction is polynomial. The O(nt) DP for SSS is pseudo-polynomial; no contradiction.'),it:'done',
+    S:sc({show:()=>true}),P:[tbl('Runtime',[tr('部分','part'),'Big-O'],[['SSS ∈ NP',tr('加法 O(n log t)','additions O(n log t)')],['Input transform','O((n+m)²)'],['Output transform','O(n)']])]});
+  return Rc.L;
+}
+
+/* ============================== LP: geometry + simplex ============================== */
+function simLP(){
+  const Rc=rec(), px=x=>70+x*1.1, py=y=>350-y*0.8;
+  const axes=()=>[D.line(px(0),py(0),px(420),py(0),{s:'faint',w:1.2}),D.line(px(0),py(0),px(0),py(400),{s:'faint',w:1.2}),
+    ...[100,200,300,400].map(v=>D.txt(px(v),py(0)+14,v,{c:'faint',fs:10})),...[100,200,300,400].map(v=>D.txt(px(0)-14,py(v),v,{c:'faint',fs:10})),
+    D.txt(px(420)+4,py(0),'x1',{c:'muted',a:'start',fs:11}),D.txt(px(0)+10,py(400)-4,'x2',{c:'muted',fs:11,a:'start'})];
+  const region=(pts,o={})=>D.poly(pts.map(([x,y])=>[px(x),py(y)]),{f:o.f||'rgba(79,142,247,.12)',s:o.s||'#4f8ef7',sw:1.6});
+  const cons=(k,hot)=>{ const o=[]; const c=hot?'amber':'blue';
+    if(k>=1) o.push(D.line(px(200),py(0),px(200),py(400),{s:k===1&&hot?'amber':'line',w:k===1&&hot?2.4:1.2,d:'5 4'}),D.txt(px(200)+4,py(395),'x1 ≤ 200',{c:k===1&&hot?'amber':'muted',a:'start',fs:10.5}));
+    if(k>=2) o.push(D.line(px(0),py(300),px(420),py(300),{s:k===2&&hot?'amber':'line',w:k===2&&hot?2.4:1.2,d:'5 4'}),D.txt(px(330),py(300)-8,'x2 ≤ 300',{c:k===2&&hot?'amber':'muted',a:'start',fs:10.5}));
+    if(k>=3) o.push(D.line(px(0),py(400),px(400),py(0),{s:k===3&&hot?'amber':'line',w:k===3&&hot?2.4:1.2,d:'5 4'}),D.txt(px(300)+6,py(100)-6,'x1 + x2 ≤ 400',{c:k===3&&hot?'amber':'muted',a:'start',fs:10.5}));
+    return o; };
+  const FEAS=[[0,0],[200,0],[200,200],[100,300],[0,300]];
+  const VX={'(0,0)':[0,0],'(200,0)':[200,0],'(200,200)':[200,200],'(100,300)':[100,300],'(0,300)':[0,300]};
+  const val=([x,y])=>x+6*y;
+  const level=c=>{ const x2a=c/6, x1b=Math.min(400,c); const p1=[0,x2a], p2=[x1b,(c-x1b)/6]; return D.line(px(p1[0]),py(p1[1]),px(p2[0]),py(p2[1]),{s:'teal',w:1.6,d:'2 4'}); };
+  const verts=(path,cur)=>Object.entries(VX).map(([k,p])=>D.node(px(p[0]),py(p[1]),'',k===cur?'hot':(path.includes(k)?'ok':'n'),{r:7}));
+  const vlab=()=>Object.entries(VX).map(([k,p])=>D.txt(px(p[0])+(p[0]===200?36:p[0]===0?-34:-6),py(p[1])+(p[1]===0?-12:p[1]===300?-14:4),k,{c:'soft',fs:10}));
+  const LPtxt='max  x1 + 6 x2\ns.t. x1        <= 200\n          x2  <= 300\n     x1 + x2  <= 400\n     x1, x2   >= 0';
+  const PN=(x=[])=>[code('LP (DPV 7.1)',LPtxt),...x];
+  const vt=(path,cur)=>tbl(tr('顶点','Vertices'),[tr('顶点','vertex'),'x1 + 6x2'],Object.entries(VX).map(([k,p])=>[k,String(val(p))]),[],'',Object.keys(VX).map((k,i)=>k===cur?i:-1));
+  Rc.add({t:tr('非负约束：第一象限','Non-negativity: the first quadrant'),d:tr('x1, x2 ≥ 0。在课上的标准形式里，它们不是 A 的行。','x1, x2 ≥ 0. In the lecture\'s standard form they are not rows of A.'),
+    ins:tr('一个完整的 LP = 目标 + 约束 + 每个变量的非负约束。漏写非负会扣分。','A complete LP = objective + constraints + non-negativity for every variable. Leaving it out loses points.'),it:'warn',S:[...axes(),region([[0,0],[400,0],[400,400],[0,400]],{f:'rgba(79,142,247,.05)',s:'#2e3446'})],P:PN()});
+  [1,2,3].forEach(k=>Rc.add({t:tr(`加约束 ${k}`,`Add constraint ${k}`),d:k===1?tr('x1 ≤ 200：半平面，切掉右边。','x1 ≤ 200: a half-plane that cuts off the right side.'):k===2?tr('x2 ≤ 300：切掉上面。','x2 ≤ 300: cuts off the top.'):tr('x1 + x2 ≤ 400：切掉右上角。可行域是 5 个顶点的凸多边形。','x1 + x2 ≤ 400: cuts off the top-right corner. The feasible region is a convex polygon with 5 vertices.'),
+    ins:k===3?tr('可行域 = 所有半空间的交 → 凸。凸性是「局部最优 = 全局最优」的原因。','Feasible region = intersection of half-spaces → convex. Convexity is why a local optimum is global.'):'',it:k===3?'info':'hide',
+    S:[...axes(),region(k===1?[[0,0],[200,0],[200,400],[0,400]]:k===2?[[0,0],[200,0],[200,300],[0,300]]:FEAS),...cons(k,true)],P:PN()}));
+  Rc.add({t:tr('目标函数：等值线','Objective: level lines'),d:tr('x1 + 6x2 = c 是一族平行线，往右上推 c 增大。\n最后离开可行域的点一定是顶点（或一条边）。','x1 + 6x2 = c is a family of parallel lines; c grows toward the upper right.\nThe last point to leave the region is a vertex (or a whole edge).'),
+    ins:tr('三种结局：feasible & bounded（顶点上取到最优）、infeasible（可行域空）、unbounded（可以无限推）。','Three outcomes: feasible & bounded (optimum at a vertex), infeasible (empty region), unbounded (push forever).'),it:'info',
+    S:[...axes(),region(FEAS),...cons(3),level(600),level(1200),level(1900),D.txt(px(30),py(330)-6,'c = 1900',{c:'teal',fs:10.5,a:'start'})],P:PN()});
+  const path=['(0,0)','(200,0)','(200,200)','(100,300)'];
+  path.forEach((k,i)=>{ const p=VX[k];
+    Rc.add({t:i===0?tr('Simplex：从 (0,0) 出发','Simplex: start at (0,0)'):i===3?tr(`到达 ${k}，值 ${val(p)}`,`Reach ${k}, value ${val(p)}`):tr(`走到相邻更好的顶点 ${k}`,`Move to a better neighbor ${k}`),
+      d:i===0?tr('值 = 0。相邻顶点 (200,0) = 200、(0,300) = 1800 都更好，任选一个改进的。','Value 0. Neighbors (200,0) = 200 and (0,300) = 1800 are both better; any improving neighbor will do.'):
+        i===3?tr('相邻顶点 (200,200) = 1400、(0,300) = 1800 都更差 → 局部最优 → 因为凸，就是全局最优。\nx* = (100, 300)，值 1900。','Neighbors (200,200) = 1400 and (0,300) = 1800 are both worse → local optimum → global, by convexity.\nx* = (100, 300), value 1900.'):tr(`值 ${val(VX[path[i-1]])} → ${val(p)}。`,`Value ${val(VX[path[i-1]])} → ${val(p)}.`),
+      ins:i===1?tr('Simplex 最坏情况指数时间，实际很快；ellipsoid / interior point 是多项式时间。','Simplex is exponential in the worst case but fast in practice; ellipsoid and interior-point methods are polynomial.'):i===3?tr('停下来的条件：没有改进的邻居。输出一定是最优。','It stops when no neighbor improves; the output is always optimal.'):'',it:i===3?'done':(i===1?'info':'hide'),
+      S:[...axes(),region(FEAS),...cons(3),...(i===3?[level(1900)]:[]),...path.slice(0,i).map((q,j)=>D.line(px(VX[q][0]),py(VX[q][1]),px(VX[path[j+1]][0]),py(VX[path[j+1]][1]),{s:'green',w:3})),...verts(path.slice(0,i+1),k),...vlab()],P:PN([vt(path,k)])}); });
+  return Rc.L;
+}
+
+/* ============================== LP duality ============================== */
+function simDual(){
+  const Rc=rec();
+  const A=[[1,0],[0,1],[1,1]], b=[200,300,400], c=[1,6];
+  const mat=(o)=>{ const out=[], x0=150, y0=70, w=60, h=34;
+    out.push(D.txt(x0+w/2,y0-14,'x1',{c:'soft',fs:12,w:600}),D.txt(x0+w*1.5,y0-14,'x2',{c:'soft',fs:12,w:600}),D.txt(x0+w*2.5+10,y0-14,'b',{c:'soft',fs:12,w:600}));
+    if(o.y) out.push(D.txt(x0-46,y0-14,'y',{c:'purple',fs:12,w:600}));
+    A.forEach((r,i)=>{ r.forEach((v,j)=>out.push(D.cell(x0+j*w+2,y0+i*h+2,w-4,h-4,v,o.colHi===j?'hot':(o.rowHi&&o.rowHi[i]?'b':'n'))));
+      out.push(D.txt(x0+w*2+5,y0+i*h+h/2,'≤',{c:'muted'})); out.push(D.cell(x0+w*2+14,y0+i*h+2,w-4,h-4,b[i],o.bHi?'p':'n'));
+      if(o.y) out.push(D.cell(x0-74,y0+i*h+2,54,h-4,o.y[i],o.y[i]!=='0'&&o.y[i]!=='y'+(i+1)?'p':'ghost'),D.txt(x0-12,y0+i*h+h/2,'×',{c:'faint'})); });
+    const cy=y0+3*h+14; out.push(D.txt(x0-12,cy+h/2-2,'c',{c:'soft',fs:12,w:600,a:'end'}));
+    c.forEach((v,j)=>out.push(D.cell(x0+j*w+2,cy,w-4,h-4,v,o.colHi===j?'ok':'t')));
+    if(o.lines) o.lines.forEach((l,i)=>out.push(D.txt(280,cy+60+i*22,l,{c:i===o.lines.length-1&&o.lastHi?'amber':'soft',fs:12.5})));
+    return out; };
+  const PR='max  x1 + 6x2\ns.t. x1      <= 200   (y1)\n         x2  <= 300   (y2)\n     x1 + x2 <= 400   (y3)\n     x1, x2 >= 0';
+  const DU='min  200y1 + 300y2 + 400y3\ns.t. y1      + y3 >= 1   (x1)\n          y2 + y3 >= 6   (x2)\n     y1, y2, y3 >= 0';
+  Rc.add({t:tr('先确认 primal 是标准形式','First check the primal is in standard form'),d:tr('max；所有约束都是 ≤；变量都在左边；所有变量 ≥ 0。✓\n不是的话先转换（见「证明写法」页的转换表）。','max; every constraint is ≤; variables on the left; every variable ≥ 0. ✓\nIf not, convert first (see the conversion table on the format page).'),
+    ins:tr('用 lecture 的标准形式，不是课本的。转换之前就取对偶是常见失分点。','Use the lecture\'s standard form, not the textbook\'s. Taking the dual before converting is a common point loss.'),it:'warn',S:mat({}),P:[code('Primal',PR)]});
+  Rc.add({t:tr('每个约束一个乘子 y_i ≥ 0','One multiplier y_i ≥ 0 per constraint'),d:tr('3 个约束 → 3 个对偶变量。y_i ≥ 0 才能保持 ≤ 的方向。','3 constraints → 3 dual variables. y_i ≥ 0 keeps each ≤ pointing the same way.'),ins:'',it:'hide',
+    S:mat({y:['y1','y2','y3'],rowHi:[1,1,1]}),P:[code('Primal',PR)]});
+  Rc.add({t:tr('线性组合给目标一个上界','A linear combination bounds the objective'),d:tr('y1·(x1) + y2·(x2) + y3·(x1 + x2) ≤ 200y1 + 300y2 + 400y3\n左边 = (y1 + y3)x1 + (y2 + y3)x2。\n只要 y1 + y3 ≥ 1、y2 + y3 ≥ 6（且 x ≥ 0），左边 ≥ x1 + 6x2。','y1·(x1) + y2·(x2) + y3·(x1 + x2) ≤ 200y1 + 300y2 + 400y3\nThe left side is (y1 + y3)x1 + (y2 + y3)x2.\nIf y1 + y3 ≥ 1 and y2 + y3 ≥ 6 (and x ≥ 0), the left side is ≥ x1 + 6x2.'),
+    ins:tr('对偶约束 = A 的列。第 j 个对偶约束对应 primal 变量 x_j。','Dual constraints are the columns of A. The j-th dual constraint belongs to primal variable x_j.'),it:'info',
+    S:mat({y:['y1','y2','y3'],colHi:0,lines:['x1:  y1 + y3 ≥ 1','x2:  y2 + y3 ≥ 6']}),P:[code('Primal',PR)]});
+  Rc.add({t:tr('Dual：min bᵀy，Aᵀy ≥ c，y ≥ 0','Dual: min bᵀy, Aᵀy ≥ c, y ≥ 0'),d:tr('目标是让上界最小 → min。\nb 变成对偶目标系数；c 变成对偶约束右边；A 转置。','We want the tightest bound → min.\nb becomes the dual objective; c becomes the dual right-hand side; A is transposed.'),
+    ins:tr('max ↔ min，≤ ↔ ≥，n 个变量 ↔ n 个约束，m 个约束 ↔ m 个变量。dual 的 dual = primal。','max ↔ min, ≤ ↔ ≥, n variables ↔ n constraints, m constraints ↔ m variables. The dual of the dual is the primal.'),it:'info',
+    S:mat({y:['y1','y2','y3'],bHi:true,lines:['min  200y1 + 300y2 + 400y3','y1 + y3 ≥ 1,   y2 + y3 ≥ 6,   y ≥ 0']}),P:[code('Primal',PR),code('Dual',DU)]});
+  Rc.add({t:tr('Weak duality：任一可行 y 都是上界','Weak duality: any feasible y is an upper bound'),d:tr('y = (1, 6, 0)：可行，值 200 + 1800 = 2000。\n所以 primal 最优 ≤ 2000。','y = (1, 6, 0): feasible, value 200 + 1800 = 2000.\nSo the primal optimum is at most 2000.'),
+    ins:tr('cᵀx ≤ bᵀy 对任意可行 x、y 成立。推论：primal unbounded ⇒ dual infeasible。','cᵀx ≤ bᵀy for every feasible x and y. Consequence: primal unbounded ⇒ dual infeasible.'),it:'info',
+    S:mat({y:['1','6','0'],lines:['bᵀy = 200·1 + 300·6 + 400·0 = 2000','cᵀx ≤ 2000 for every feasible x']}),P:[code('Dual',DU),tbl(tr('可行 y','Feasible y'),['y','bᵀy'],[['(1, 6, 0)','2000']])]});
+  Rc.add({t:tr('Strong duality：两边相等 = 都最优','Strong duality: equal values = both optimal'),d:tr('y* = (0, 5, 1)：y1 + y3 = 1 ✓，y2 + y3 = 6 ✓，值 1500 + 400 = 1900。\nprimal 的 x* = (100, 300) 也是 1900。两者相等 → 都是最优（证书）。','y* = (0, 5, 1): y1 + y3 = 1 ✓, y2 + y3 = 6 ✓, value 1500 + 400 = 1900.\nThe primal x* = (100, 300) is also 1900. Equal values → both optimal (a certificate).'),
+    ins:tr('primal feasible & bounded ⟺ dual feasible & bounded，且最优值相等。Max-flow = min-cut 就是它的特例。','Primal feasible & bounded ⟺ dual feasible & bounded, with equal optima. Max-flow = min-cut is a special case.'),it:'done',
+    S:mat({y:['0','5','1'],lines:['bᵀy* = 300·5 + 400·1 = 1900','cᵀx* = 100 + 6·300 = 1900'],lastHi:true}),P:[code('Dual',DU),tbl(tr('可行 y','Feasible y'),['y','bᵀy'],[['(1, 6, 0)','2000'],['(0, 5, 1)','1900 ★']],[],'',[1])]});
+  return Rc.L;
+}
+
+/* ============================== Max-SAT approximation ============================== */
+function simMax(){
+  const Rc=rec();
+  const CL=[['¬x2 ∨ ¬x3',2,1,'7/9'],['¬x1',1,'2/3','2/3'],['x1 ∨ ¬x2 ∨ x3',3,1,'19/27'],['¬x3 ∨ x1',2,1,'7/9'],['x2',1,'2/3','2/3']];
+  const simple=['3/4','1/2','7/8','3/4','1/2'];
+  const head=[['',tr('子句','clause')],['k','k'],['z*','z_j'],['1/2','simple'],['LP','round']];
+  const sc=(o)=>{ const out=[], x0=40, y0=72, ws=[190,46,70,90,90], h=40;
+    out.push(D.txt(280,22,o.cap||tr('m = 5 个子句 · 最多同时满足 m* = 4','m = 5 clauses · at most m* = 4 satisfiable at once'),{c:'muted',fs:12}));
+    let x=x0; head.forEach((hd,j)=>{ if(j<=o.cols){ out.push(D.txt(x+ws[j]/2,y0-14,L2(hd),{c:o.colHi===j?'amber':'soft',fs:11.5,w:600})); } x+=ws[j]; });
+    CL.forEach((r,i)=>{ let x=x0; const vals=[r[0],r[1],r[2],simple[i],r[3]];
+      vals.forEach((v,j)=>{ if(j<=o.cols) out.push(D.cell(x+2,y0+i*h+2,ws[j]-4,h-4,v,j===0?'n':(o.colHi===j?'hot':(j===4?'ok':j===3?'b':j===2?'p':'n')),{fs:12.5})); x+=ws[j]; }); });
+    if(o.foot) out.push(D.txt(280,y0+5*h+30,o.foot,{c:'amber',fs:12.5}));
+    if(o.foot2) out.push(D.txt(280,y0+5*h+54,o.foot2,{c:'soft',fs:12}));
+    return out; };
+  Rc.add({t:tr('Max-SAT：最大化被满足的子句数','Max-SAT: maximize the number of satisfied clauses'),d:tr('f 的 5 个子句不能同时满足（x2 和 ¬x1 两个单子句会把其余逼到冲突）。\n最优 m* = 4，例如 x1 = F、x2 = T、x3 = F。','The 5 clauses cannot all hold (the unit clauses x2 and ¬x1 push the rest into conflict).\nThe optimum is m* = 4, e.g. x1 = F, x2 = T, x3 = F.'),
+    ins:tr('Max-SAT 是 NP-hard，所以退而求近似：保证达到 m* 的某个比例。','Max-SAT is NP-hard, so we settle for an approximation guaranteeing a fraction of m*.'),it:'info',S:sc({cols:1}),P:[chips(tr('目标','Goal'),[{x:'m* = 4',c:'hot'},{x:'m = 5'}])]});
+  Rc.add({t:tr('简单方案：每个变量 1/2 概率为 T','Simple scheme: each variable T with probability 1/2'),d:tr('k 个 literal 的子句不被满足的概率 = 2^−k。\nE[满足数] = Σ (1 − 2^−k) = 3/4 + 1/2 + 7/8 + 3/4 + 1/2 = 3.375。','A clause with k literals fails with probability 2^−k.\nE[satisfied] = Σ (1 − 2^−k) = 3/4 + 1/2 + 7/8 + 3/4 + 1/2 = 3.375.'),
+    ins:tr('每个子句至少 1 个 literal → 每个至少 1/2 → E ≥ m/2 ≥ m*/2。Ek-SAT（每个子句恰好 k 个）给 (1 − 2^−k)，k = 3 时 7/8。','Every clause has ≥ 1 literal → each holds w.p. ≥ 1/2 → E ≥ m/2 ≥ m*/2. Ek-SAT (exactly k per clause) gives 1 − 2^−k, which is 7/8 for k = 3.'),it:'info',
+    S:sc({cols:3,colHi:3,foot:'E[simple] = 27/8 = 3.375'}),P:[note(tr('保证','Guarantee'),'≥ m*/2')]});
+  Rc.add({t:tr('写成 ILP','Write it as an ILP'),d:tr('y_i ∈ {0,1}：x_i 是否为 T。z_j ∈ {0,1}：c_j 是否满足。\nmax Σ z_j，s.t. z_j ≤ Σ_{x_i ∈ c_j} y_i + Σ_{¬x_i ∈ c_j} (1 − y_i)。','y_i ∈ {0,1}: is x_i true. z_j ∈ {0,1}: is c_j satisfied.\nmax Σ z_j subject to z_j ≤ Σ_{x_i ∈ c_j} y_i + Σ_{¬x_i ∈ c_j} (1 − y_i).'),
+    ins:tr('ILP 本身是 NP-hard（在 13 个已知问题里），所以下一步放松成 LP。','ILP is itself NP-hard (one of the 13 known problems), so next we relax it to an LP.'),it:'info',S:sc({cols:1}),
+    P:[code('ILP','max  z1 + z2 + z3 + z4 + z5\nz1 <= (1-y2) + (1-y3)\nz2 <= 1 - y1\nz3 <= y1 + (1-y2) + y3\nz4 <= (1-y3) + y1\nz5 <= y2\ny_i, z_j in {0, 1}')]});
+  Rc.add({t:tr('LP relaxation：0 ≤ y, z ≤ 1','LP relaxation: 0 ≤ y, z ≤ 1'),d:tr('解出一个最优 y* = (1/3, 2/3, 1/3)，z* = (1, 2/3, 1, 1, 2/3)。\nLP* = 13/3 ≈ 4.33 ≥ m* = 4。','One optimum is y* = (1/3, 2/3, 1/3), z* = (1, 2/3, 1, 1, 2/3).\nLP* = 13/3 ≈ 4.33 ≥ m* = 4.'),
+    ins:tr('放松只会让可行域变大 → LP* ≥ m*。所以和 LP* 比的保证，也是和 m* 比的保证。','Relaxing only enlarges the feasible region → LP* ≥ m*. A guarantee against LP* is therefore a guarantee against m*.'),it:'ok',
+    S:sc({cols:2,colHi:2,foot:'LP* = Σ z* = 13/3 ≈ 4.33   ≥   m* = 4'}),P:[tbl('y*',['var','y*'],[['y1','1/3'],['y2','2/3'],['y3','1/3']])]});
+  Rc.add({t:tr('Randomized rounding：x_i 以概率 y*_i 为 T','Randomized rounding: x_i true with probability y*_i'),d:tr('例如 c3 = (x1 ∨ ¬x2 ∨ x3) 不满足的概率 = (1 − 1/3)(2/3)(1 − 1/3) = 8/27 → 满足 19/27。\nE[满足数] = 97/27 ≈ 3.59。','E.g. c3 = (x1 ∨ ¬x2 ∨ x3) fails with probability (1 − 1/3)(2/3)(1 − 1/3) = 8/27 → holds w.p. 19/27.\nE[satisfied] = 97/27 ≈ 3.59.'),
+    ins:tr('每个 k-子句：Pr ≥ (1 − (1 − 1/k)^k)·z*_j ≥ (1 − 1/e)·z*_j。所以 E ≥ (1 − 1/e)·LP* ≈ 0.632·m*。证明用到 AM-GM。','For a k-clause: Pr ≥ (1 − (1 − 1/k)^k)·z*_j ≥ (1 − 1/e)·z*_j. So E ≥ (1 − 1/e)·LP* ≈ 0.632·m*. The proof uses AM-GM.'),it:'info',
+    S:sc({cols:4,colHi:4,foot:'E[round] = 97/27 ≈ 3.593'}),P:[note(tr('保证','Guarantee'),'≥ (1 − 1/e)·m*')]});
+  Rc.add({t:tr('Best of 2：两个都跑，取好的','Best of 2: run both, keep the better'),d:tr('这里 max(3.375, 3.593) = 3.593。\nk 小时 rounding 强（k = 1：1 vs 1/2），k 大时 simple 强（k = 3：7/8 vs 19/27）。','Here max(3.375, 3.593) = 3.593.\nRounding wins on short clauses (k = 1: 1 vs 1/2); simple wins on long ones (k = 3: 7/8 vs 19/27).'),
+    ins:tr('对每个 k，两者的平均 ≥ 3/4：k=1 (1/2+1)/2, k=2 (3/4+3/4)/2, k≥3 更高。max ≥ 平均 → E[best] ≥ (3/4)·m*。','For every k the average of the two is ≥ 3/4: k=1 (1/2+1)/2, k=2 (3/4+3/4)/2, higher for k≥3. max ≥ average → E[best] ≥ (3/4)·m*.'),it:'done',
+    S:sc({cols:4,foot:'max(3.375, 3.593) = 3.593  ≥  (3/4)·LP* = 3.25',foot2:tr('k=1: 1/2 vs 1 · k=2: 3/4 vs 3/4 · k=3: 7/8 vs 19/27','k=1: 1/2 vs 1 · k=2: 3/4 vs 3/4 · k=3: 7/8 vs 19/27')}),
+    P:[tbl(tr('每个 k 的保证','Per-k guarantee'),['k','simple','round',tr('平均','avg')],[['1','1/2','1','3/4'],['2','3/4','3/4','3/4'],['3','7/8','19/27','≈ 0.79'],['∞','1','1 − 1/e','≈ 0.82']])]});
+  return Rc.L;
+}
+
+/* ============================== 13 known problems: detail pages ============================== */
+const NPC=(hard,extra=[])=>chips(tr('复杂度类','Complexity class'),[{x:'∈ NP',c:'ok'},{x:'NP-hard',c:'ok'},{x:'NP-complete',c:'hot'},...extra],tr('NP-hard 来源：','NP-hard via: ')+hard);
+const VER=(rows,tot)=>tbl(tr('Verify（给定 I + 候选 S）','Verify (given I + candidate S)'),[tr('步骤','step'),'Big-O'],[...rows,[tr('合计','total'),tot]],[],'',[rows.length]);
+
+/* clause rows: cls = [[lit,...],...], asg = {x1:1,...} or null */
+function clauseScene(cls,asg,o={}){
+  const out=[], y0=o.y0||70, rh=o.rh||52;
+  if(o.cap) out.push(D.txt(280,24,o.cap,{c:'text',fs:12.5,w:600}));
+  cls.forEach((c,i)=>{ const y=y0+i*rh; out.push(D.txt(40,y+15,'c'+(i+1),{c:'faint',fs:11}));
+    let sat=false;
+    c.forEach((l,k)=>{ const neg=l.startsWith('¬'), v=asg?asg[neg?l.slice(1):l]:null, tv=v==null?null:(neg?1-v:v); if(tv) sat=true;
+      const x=70+k*76; out.push(lit(l,{x,y,w:52,st:tv==null?'n':(tv?'ok':'r')}));
+      if(k<c.length-1) out.push(D.txt(x+64,y+15,'∨',{c:'muted',fs:13})); });
+    if(asg) out.push(D.txt(70+c.length*76+10,y+15,sat?'✓':'✗',{c:sat?'green':'red',fs:16,w:600,a:'start'}));
+  });
+  if(o.foot) out.push(D.txt(280,o.fy||(y0+cls.length*rh+18),o.foot,{c:'amber',fs:12.5}));
+  return out;
+}
+const asgRow=a=>Object.entries(a).map(([k,v])=>`${k}=${v?'T':'F'}`).join('  ');
+
+function simSATp(){
+  const Rc=rec(), C=[['x1','¬x2','x3','x4'],['¬x1','x2'],['¬x3','¬x4'],['x2','¬x4']];
+  const P=x=>[NPC(tr('Cook–Levin（所有 NP 问题 → SAT）','Cook–Levin (every NP problem → SAT)')),...x];
+  const V=VER([[tr('对每个子句：扫它的 literal，查赋值','for each clause, scan its literals and look up values'),'O(n) / clause'],[tr('m 个子句','m clauses'),'× m']],'O(nm)');
+  Rc.add({t:tr('实例：CNF 公式','Instance: a CNF formula'),d:tr('n = 4 个变量，m = 4 个子句。子句长度不限（c1 有 4 个 literal）。\n子句内 OR，子句之间 AND。','n = 4 variables, m = 4 clauses. Clause length is unbounded (c1 has 4 literals).\nOR inside a clause, AND between clauses.'),
+    ins:tr('variable 是 x1；literal 是 x1 或 ¬x1。赋值是给 variable 的。','A variable is x1; a literal is x1 or ¬x1. Assignments go to variables.'),it:'info',S:clauseScene(C,null,{cap:'f = c1 ∧ c2 ∧ c3 ∧ c4'}),P:P([V])});
+  const bad={x1:1,x2:0,x3:0,x4:0};
+  Rc.add({t:tr('候选赋值：不满足','A candidate that fails'),d:tr(`${asgRow(bad)}\nc2 = (¬x1 ∨ x2) 两个 literal 都是 F → 不满足 → 这个候选被拒。`,`${asgRow(bad)}\nc2 = (¬x1 ∨ x2) has both literals F → unsatisfied → reject this candidate.`),
+    ins:tr('NP 只验证给定候选：拒绝它不代表 f 无解。','NP only checks the given candidate: rejecting it says nothing about whether f has a solution.'),it:'warn',S:clauseScene(C,bad,{cap:asgRow(bad)}),P:P([V])});
+  const good={x1:1,x2:1,x3:0,x4:0};
+  Rc.add({t:tr('一个解','A solution'),d:tr(`${asgRow(good)}\n每个子句至少一个 literal 为 T → 输出这个赋值。`,`${asgRow(good)}\nEvery clause has a true literal → output this assignment.`),ins:'',it:'hide',S:clauseScene(C,good,{cap:asgRow(good)}),P:P([V])});
+  Rc.add({t:tr('NO 实例','A NO instance'),d:tr('f = (x1) ∧ (¬x1)：x1 取什么都有一个子句失败 → 返回 NO。','f = (x1) ∧ (¬x1): whatever x1 is, one clause fails → return NO.'),
+    ins:tr('合法子句：可以含 x 和 ¬x（但 8.8 默认没有这种 tautology）；不能重复 literal、不能写死 T/F、不能嵌套、不能空。','Valid clauses may contain both x and ¬x (8.8 assumes no such tautology); no repeated literal, hard-coded T/F, nesting or empty clause.'),it:'done',
+    S:[...clauseScene([['x1'],['¬x1']],{x1:1},{cap:'x1 = T'}),...clauseScene([['x1'],['¬x1']],{x1:0},{cap:'',y0:220}),D.txt(280,196,'x1 = F',{c:'text',fs:12.5,w:600})],P:P([V])});
+  return Rc.L;
+}
+function simSAT3p(){
+  const Rc=rec(), C=[['x1','x2','¬x3'],['¬x1','x3'],['¬x2','x3']];
+  const P=x=>[NPC(tr('SAT → 3SAT（NP2 lecture，官方 3SAT.pdf）','SAT → 3SAT (NP2 lecture, official 3SAT.pdf)')),...x];
+  const V=VER([[tr('每个子句 ≤ 3 个 literal，常数时间','each clause has ≤ 3 literals: constant time'),'O(1) / clause'],[tr('m 个子句','m clauses'),'× m']],'O(m)');
+  Rc.add({t:tr('实例：每个子句至多 3 个 literal','Instance: at most 3 literals per clause'),d:tr('"at most 3"：1、2、3 个都可以。恰好 3 个是另一个问题（Exact 3SAT）。','"At most 3": 1, 2 or 3 are all allowed. Exactly 3 is a different problem (Exact 3SAT).'),
+    ins:tr('verification 是 O(m)，因为子句大小是常数（#605）；写 O(nm) 也对。','Verification is O(m) because clause size is constant (#605); O(nm) is also correct.'),it:'info',S:clauseScene(C,null,{cap:'f = (x1 ∨ x2 ∨ ¬x3) ∧ (¬x1 ∨ x3) ∧ (¬x2 ∨ x3)'}),P:P([V])});
+  const g={x1:1,x2:0,x3:1};
+  Rc.add({t:tr('一个解','A solution'),d:tr(`${asgRow(g)} 满足全部 3 个子句。`,`${asgRow(g)} satisfies all 3 clauses.`),ins:'',it:'hide',S:clauseScene(C,g,{cap:asgRow(g)}),P:P([V])});
+  const N=[['x','y'],['x','¬y'],['¬x','y'],['¬x','¬y']];
+  const tt=[[1,1],[1,0],[0,1],[0,0]];
+  Rc.add({t:tr('NO 实例：2 个变量的 4 种组合','A NO instance: all 4 combinations of 2 variables'),d:tr('f = (x ∨ y)(x ∨ ¬y)(¬x ∨ y)(¬x ∨ ¬y)\n4 种赋值，每种恰好让一个子句失败（右表）→ 返回 NO。','f = (x ∨ y)(x ∨ ¬y)(¬x ∨ y)(¬x ∨ ¬y)\nEach of the 4 assignments fails exactly one clause (table) → return NO.'),
+    ins:tr('2SAT 在 P 里（SCC，Exam 3）。3SAT 是 NP-complete：子句长度 2 → 3 这一步跨过了界线。','2SAT is in P (SCC, Exam 3). 3SAT is NP-complete: going from clause length 2 to 3 crosses the line.'),it:'done',
+    S:clauseScene(N,{x:1,y:1},{cap:'x = T, y = T',foot:tr('c4 失败；其余 3 种赋值分别让 c3 / c2 / c1 失败','c4 fails; the other 3 assignments fail c3 / c2 / c1')}),
+    P:P([tbl(tr('真值表','Truth table'),['x','y',tr('失败的子句','failing clause')],tt.map(([x,y])=>[x?'T':'F',y?'T':'F','c'+(N.findIndex(c=>c.every(l=>{const neg=l.startsWith('¬'),v=(l.slice(neg?1:0)==='x'?x:y);return (neg?1-v:v)===0}))+1)]))])});
+  return Rc.L;
+}
+
+/* shared graph for IS / Clique / VC */
+const G6={P:{A:[120,100],B:[120,290],C:[235,195],D:[345,195],E:[460,290],F:[460,100]},E:[['A','B'],['A','C'],['B','C'],['C','D'],['D','E'],['D','F'],['E','F'],['B','E']]};
+function gScene(G,o){ const out=[];
+  G.E.forEach(([u,v])=>{ const s=o.es?o.es(u,v):'n'; out.push(D.line(G.P[u][0],G.P[u][1],G.P[v][0],G.P[v][1],{...ES[s]})); });
+  if(o.extra) o.extra.forEach(([u,v,s])=>out.push(D.line(G.P[u][0],G.P[u][1],G.P[v][0],G.P[v][1],{...ES[s]})));
+  Object.entries(G.P).forEach(([k,[x,y]])=>out.push(D.node(x,y,o.lab?o.lab(k):k,o.ns?o.ns(k):'n')));
+  if(o.cap) out.push(D.txt(280,24,o.cap,{c:'text',fs:12.5,w:600}));
+  if(o.foot) out.push(D.txt(280,356,o.foot,{c:'amber',fs:12.5}));
+  return out; }
+const inE=(G,u,v)=>G.E.some(([a,b])=>(a===u&&b===v)||(a===v&&b===u));
+function simISp(){
+  const Rc=rec(), G=G6, P=x=>[NPC(tr('3SAT → IS（NP3 lecture）','3SAT → IS (NP3 lecture)')),...x];
+  const V=VER([[tr('数 |S|，和 g 比','count |S|, compare with g'),'O(n)'],[tr('S 里每一对查是否有边','check every pair in S for an edge'),'O(n²)']],'O(n²)');
+  Rc.add({t:tr('实例：(G, g)','Instance: (G, g)'),d:tr('两个三角形 ABC、DEF，加两条桥 C–D、B–E。g = 2。\nIS：|S| ≥ g，S 内任两点之间没有边。','Two triangles ABC and DEF, plus bridges C–D and B–E. g = 2.\nIS: |S| ≥ g with no edge between any two vertices of S.'),ins:'',it:'hide',S:gScene(G,{cap:'G · g = 2'}),P:P([V])});
+  const bad=['A','D','F'];
+  Rc.add({t:tr('候选 {A, D, F}：被拒','Candidate {A, D, F}: rejected'),d:tr('D–F 是一条边，两端都在 S 里 → 不是独立集。','D–F is an edge with both ends in S → not independent.'),
+    ins:tr('verification 只看给的 S，不去找别的 S。','Verification only checks the S it is given; it never searches for another S.'),it:'warn',
+    S:gScene(G,{cap:'S = {A, D, F}',ns:k=>bad.includes(k)?'r':'n',es:(u,v)=>bad.includes(u)&&bad.includes(v)?'hot':'n',foot:tr('D–F 两端都在 S','D–F has both ends in S')}),P:P([V])});
+  const S=['A','F'];
+  Rc.add({t:tr('一个解：{A, F}','A solution: {A, F}'),d:tr('A、F 不相邻，|S| = 2 ≥ g → 输出 S。','A and F are not adjacent, |S| = 2 ≥ g → output S.'),ins:tr('IS 是 "at least g"：比 g 大的也算解。','IS is "at least g": a larger set also counts.'),it:'ok',
+    S:gScene(G,{cap:'S = {A, F}',ns:k=>S.includes(k)?'ok':'n'}),P:P([V])});
+  Rc.add({t:tr('NO 实例：g = 3','A NO instance: g = 3'),d:tr('每个三角形里最多选 1 个点，而 6 个点全在这两个三角形里 → 最多 2 个 → g = 3 返回 NO。','At most one vertex per triangle, and all 6 vertices lie in the two triangles → at most 2 → return NO for g = 3.'),
+    ins:tr('Max IS（不给 g、要最大的）是优化版本，不知道是否在 NP：没法在多项式时间验证「最大」。考试用带 g 的 search 版本。','Max IS (no g, find the largest) is the optimization version and is not known to be in NP: "largest" cannot be verified in polynomial time. Exams use the search version with g.'),it:'done',
+    S:gScene(G,{cap:'G · g = 3 → NO',ns:k=>['A','B','C'].includes(k)?'b':'p',es:(u,v)=>(['A','B','C'].includes(u)&&['A','B','C'].includes(v))?'cl':((['D','E','F'].includes(u)&&['D','E','F'].includes(v))?'p':'dim'),foot:tr('每个三角形最多贡献 1 个','each triangle contributes at most 1')}),P:P([V,tbl(tr('三者关系','How the three relate'),['',tr('同一张 G','same G')],[['max IS','2  {A, F}'],['max Clique','3  {A, B, C}'],['min VC','4 = n − 2']])])});
+  return Rc.L;
+}
+function simCLp(){
+  const Rc=rec(), G=G6, P=x=>[NPC(tr('IS → Clique（补图，NP3 lecture）','IS → Clique (complement graph, NP3 lecture)')),...x];
+  const V=VER([[tr('数 |S|，和 g 比','count |S|, compare with g'),'O(n)'],[tr('S 里每一对查是否有边','check every pair in S for an edge'),'O(n²)']],'O(n²)');
+  Rc.add({t:tr('实例：(G, g)，g = 3','Instance: (G, g), g = 3'),d:tr('Clique：|S| ≥ g，S 里两两相邻。','Clique: |S| ≥ g with every pair in S adjacent.'),ins:'',it:'hide',S:gScene(G,{cap:'G · g = 3'}),P:P([V])});
+  const bad=['B','C','E'];
+  Rc.add({t:tr('候选 {B, C, E}：被拒','Candidate {B, C, E}: rejected'),d:tr('B–C ✓、B–E ✓，但 C–E 没有边 → 不是 clique。','B–C ✓, B–E ✓, but C–E is missing → not a clique.'),ins:'',it:'hide',
+    S:gScene(G,{cap:'S = {B, C, E}',ns:k=>bad.includes(k)?'r':'n',es:(u,v)=>bad.includes(u)&&bad.includes(v)?'ok':'n',extra:[['C','E','vr']],foot:tr('红虚线 = 缺的那条边','red dashed = the missing edge')}),P:P([V])});
+  const S=['A','B','C'];
+  Rc.add({t:tr('一个解：{A, B, C}','A solution: {A, B, C}'),d:tr('三条边都在 → 输出 S。{D, E, F} 也是。','All three edges exist → output S. {D, E, F} works too.'),ins:'',it:'hide',
+    S:gScene(G,{cap:'S = {A, B, C}',ns:k=>S.includes(k)?'ok':'n',es:(u,v)=>S.includes(u)&&S.includes(v)?'ok':'n'}),P:P([V])});
+  Rc.add({t:tr('NO 实例：g = 4','A NO instance: g = 4'),d:tr('任何 4 个点里一定有两点不相邻（比如两个三角形各取一部分）→ 返回 NO。','Any 4 vertices include a non-adjacent pair → return NO.'),
+    ins:tr('S 是 G 的 clique ⟺ S 是补图 Ḡ 的 IS。8.4 Clique-3（度 ≤ 3）里「度 ≤ 3」是输入的性质，不用验证（#605）。','S is a clique of G ⟺ S is an IS of the complement Ḡ. In 8.4 Clique-3, "degree ≤ 3" is a property of the input and need not be verified (#605).'),it:'done',
+    S:gScene(G,{cap:'G · g = 4 → NO'}),P:P([V])});
+  return Rc.L;
+}
+function simVCp(){
+  const Rc=rec(), G=G6, P=x=>[NPC(tr('IS → VC（b = n − g，NP3 lecture）','IS → VC (b = n − g, NP3 lecture)')),...x];
+  const V=VER([[tr('数 |S|，和 b 比','count |S|, compare with b'),'O(n)'],[tr('每条边查一个端点在 S（布尔数组）','each edge: is an endpoint in S (boolean array)'),'O(n + m)']],'O(n + m)');
+  Rc.add({t:tr('实例：(G, b)，b = 4','Instance: (G, b), b = 4'),d:tr('VC：|S| ≤ b，每条边至少一个端点在 S。两端都在也可以。','VC: |S| ≤ b, every edge has at least one endpoint in S. Both endpoints is fine.'),ins:tr('VC 是 "at most b"，方向和 IS / Clique 相反。','VC is "at most b", the opposite direction from IS / Clique.'),it:'warn',S:gScene(G,{cap:'G · b = 4'}),P:P([V])});
+  const bad=['B','C','D'];
+  Rc.add({t:tr('候选 {B, C, D}：被拒','Candidate {B, C, D}: rejected'),d:tr('E–F 两端都不在 S → 没被覆盖。','Neither end of E–F is in S → uncovered.'),ins:'',it:'hide',
+    S:gScene(G,{cap:'S = {B, C, D}',ns:k=>bad.includes(k)?'b':'n',es:(u,v)=>(bad.includes(u)||bad.includes(v))?'cl':'hot',foot:tr('橙色边没被覆盖','the amber edge is uncovered')}),P:P([V])});
+  const S=['B','C','D','E'];
+  Rc.add({t:tr('一个解：{B, C, D, E}','A solution: {B, C, D, E}'),d:tr('8 条边每条都碰到蓝点 → 输出 S。它正是 IS {A, F} 的补集。','All 8 edges touch a blue vertex → output S. It is exactly the complement of the IS {A, F}.'),
+    ins:tr('S 是 VC ⟺ V∖S 是 IS。所以 min VC = n − max IS = 6 − 2 = 4。','S is a VC ⟺ V∖S is an IS. So min VC = n − max IS = 6 − 2 = 4.'),it:'ok',
+    S:gScene(G,{cap:'S = {B, C, D, E}',ns:k=>S.includes(k)?'b':'ok',es:()=> 'cl'}),P:P([V])});
+  Rc.add({t:tr('NO 实例：b = 3','A NO instance: b = 3'),d:tr('大小 3 的 VC 需要大小 3 的 IS 作补集，但 max IS = 2 → 返回 NO。','A cover of size 3 would leave an IS of size 3 as its complement, but max IS = 2 → return NO.'),
+    ins:tr('Content Quiz 5 也在问 At-Most-k-VC 这类变体（#672）。8.20 Dominating Set：每条边加一个点，区分「碰到边」和「碰到点」（#605）。','Content Quiz 5 asks about variants like At-Most-k-VC (#672). 8.20 Dominating Set: add a vertex per edge to separate "touching edges" from "touching vertices" (#605).'),it:'done',
+    S:gScene(G,{cap:'G · b = 3 → NO'}),P:P([V])});
+  return Rc.L;
+}
+
+function simSSSp(){
+  const Rc=rec(), P=x=>[NPC(tr('3SAT → SSS（lecture）；DPV：ZOE → SSS','3SAT → SSS (lecture); DPV: ZOE → SSS')),...x];
+  const V=VER([[tr('把 S 里的数加起来（每个 O(log t) 位）','add the numbers in S (O(log t) bits each)'),'O(n log t)'],[tr('和 t 比','compare with t'),'O(log t)']],'O(n log t)');
+  const sc=(a,t,sel,o={})=>{ const out=[], w=Math.min(70,460/a.length), x0=(560-a.length*w)/2;
+    out.push(D.txt(280,24,o.cap||`t = ${t}`,{c:'text',fs:12.5,w:600}));
+    a.forEach((v,i)=>{ out.push(D.cell(x0+i*w+3,70,w-6,40,v,sel.includes(i)?(o.bad?'r':'ok'):'n',{fs:14})); out.push(D.txt(x0+i*w+w/2,124,'a'+(i+1),{c:'faint',fs:10.5})); });
+    const s=sel.reduce((p,i)=>p+a[i],0), mx=Math.max(t,s,1)*1.15, bx=70, bw=420, sx=v=>bx+v/mx*bw;
+    out.push(D.rect(bx,180,bw,26,{s:'line',sw:1}));
+    if(sel.length) out.push(D.rect(bx,180,sx(s)-bx,26,{f:o.bad?'rgba(240,82,82,.25)':'rgba(52,201,138,.25)',s:o.bad?'red':'green',sw:1.4}));
+    out.push(D.line(sx(t),170,sx(t),216,{s:'amber',w:2.4}),D.txt(sx(t),232,`t = ${t}`,{c:'amber',fs:12}));
+    if(sel.length) out.push(D.txt(280,270,`Σ = ${sel.map(i=>a[i]).join(' + ')} = ${s}`,{c:o.bad?'red':'green',fs:14,w:600}));
+    if(o.foot) out.push(D.txt(280,310,o.foot,{c:'soft',fs:12}));
+    return out; };
+  const a=[3,34,4,12,5,2];
+  Rc.add({t:tr('实例：正整数 + 目标 t','Instance: positive integers + a target t'),d:tr('a = (3, 34, 4, 12, 5, 2)，t = 9。找一个子集，和恰好等于 t。','a = (3, 34, 4, 12, 5, 2), t = 9. Find a subset summing to exactly t.'),ins:'',it:'hide',S:sc(a,9,[]),P:P([V])});
+  Rc.add({t:tr('候选 {3, 5}：被拒','Candidate {3, 5}: rejected'),d:'3 + 5 = 8 ≠ 9.',ins:tr('是「恰好」t，不是 ≤ t。','It is exactly t, not at most t.'),it:'warn',S:sc(a,9,[0,4],{bad:true}),P:P([V])});
+  Rc.add({t:tr('一个解：{4, 5}','A solution: {4, 5}'),d:tr('4 + 5 = 9 → 输出这个子集。{3, 4, 2} 也行。','4 + 5 = 9 → output this subset. {3, 4, 2} works too.'),ins:'',it:'hide',S:sc(a,9,[2,4]),P:P([V])});
+  Rc.add({t:tr('NO 实例','A NO instance'),d:tr('a = (6, 10, 15)，t = 13。所有子集和：0, 6, 10, 15, 16, 21, 25, 31 → 没有 13 → 返回 NO。','a = (6, 10, 15), t = 13. All subset sums: 0, 6, 10, 15, 16, 21, 25, 31 → no 13 → return NO.'),
+    ins:tr('O(nt) 的 DP 是伪多项式：t 只占 log t 位。所以 SSS 有「快」算法和它是 NP-complete 不矛盾。Knapsack 不在 13 个里，但和它很像（#605）。','The O(nt) DP is pseudo-polynomial: t has only log t bits. That is why a "fast" algorithm and NP-completeness do not conflict. Knapsack is not among the 13 but is very close (#605).'),it:'done',
+    S:sc([6,10,15],13,[],{cap:'t = 13 → NO',foot:'{ } 0 · {6} 6 · {10} 10 · {15} 15 · {6,10} 16 · {6,15} 21 · {10,15} 25 · {6,10,15} 31'}),P:P([V])});
+  return Rc.L;
+}
+
+/* Rudrata family on a hexagon with a chord */
+const H6={P:{A:[280,60],B:[420,135],C:[420,275],D:[280,345],E:[140,275],F:[140,135]},E:[['A','B'],['B','C'],['C','D'],['D','E'],['E','F'],['F','A'],['B','E']]};
+const pathEs=(p)=>{ const s=new Set(); for(let i=0;i+1<p.length;i++){ s.add(p[i]+p[i+1]); s.add(p[i+1]+p[i]); } return s; };
+const VRUD=(cyc)=>VER([[tr('长度 = n，每个点恰好一次（布尔数组）','length n, each vertex once (boolean array)'),'O(n)'],[tr('相邻两点之间有边（邻接矩阵 O(1)）','consecutive vertices adjacent (adjacency matrix O(1))'),'O(n)'],...(cyc?[[tr('最后一点连回第一点','last vertex adjacent to the first'),'O(1)']]:[])],'O(n)');
+function rudScene(p,o={}){ const es=pathEs(p), G=o.G||H6;
+  return gScene(G,{cap:o.cap,foot:o.foot,ns:k=>o.bad&&o.bad.includes(k)?'r':(k===o.s?'b':(k===o.t?'p':(p.includes(k)?'ok':'n'))),es:(u,v)=>es.has(u+v)?(o.badE?'hot':'ok'):'n',lab:k=>{ const i=p.indexOf(k); return i<0||o.noNum?k:k+(i+1);} }); }
+function simRPp(){
+  const Rc=rec(), P=x=>[NPC(tr('课程 13 个已知问题之一（DPV §8.3 家族）','one of the course\'s 13 known problems (DPV §8.3 family)')),...x];
+  Rc.add({t:tr('实例：图 G','Instance: a graph G'),d:tr('六边形加一条弦 B–E。找一条经过每个点恰好一次的路径，端点任意。','A hexagon plus the chord B–E. Find a path visiting every vertex exactly once, with any endpoints.'),ins:tr('Rudrata = Hamiltonian。和 Euler（每条边一次）不同，Euler 在 P 里。','Rudrata = Hamiltonian. Unlike Euler (every edge once), which is in P.'),it:'info',S:gScene(H6,{cap:'G'}),P:P([VRUD(false)])});
+  Rc.add({t:tr('候选 A→B→E→F：被拒','Candidate A→B→E→F: rejected'),d:tr('只经过 4 个点，C、D 没访问 → 不是 Rudrata 路径。','Only 4 vertices; C and D are missed → not a Rudrata path.'),ins:'',it:'hide',S:rudScene(['A','B','E','F'],{cap:'A → B → E → F',bad:['C','D'],foot:tr('红 = 没访问到','red = never visited')}),P:P([VRUD(false)])});
+  const p=['C','D','E','F','A','B'];
+  Rc.add({t:tr('一个解','A solution'),d:'C → D → E → F → A → B',ins:tr('输出是点的顺序，不只是一个点集。','The output is an ordering of vertices, not just a set.'),it:'info',S:rudScene(p,{cap:'C → D → E → F → A → B'}),P:P([VRUD(false)])});
+  const Star={P:{X:[280,200],L1:[280,70],L2:[150,300],L3:[410,300]},E:[['X','L1'],['X','L2'],['X','L3']]};
+  Rc.add({t:tr('NO 实例：三片叶子的星','A NO instance: a star with three leaves'),d:tr('L1、L2、L3 度数都是 1，只能当路径端点；但路径只有 2 个端点 → 返回 NO。','L1, L2 and L3 have degree 1, so each must be an endpoint; a path has only 2 endpoints → return NO.'),
+    ins:tr('度数 1 的点只能在两端：这是快速判断 NO 的常用论证。','A degree-1 vertex can only be an endpoint: a handy argument for NO instances.'),it:'done',S:gScene(Star,{cap:tr('星 K1,3 → NO','star K1,3 → NO'),ns:k=>k==='X'?'n':'r'}),P:P([VRUD(false)])});
+  return Rc.L;
+}
+function simRSTp(){
+  const Rc=rec(), P=x=>[NPC(tr('课程 13 个已知问题之一；DPV §8.3：Rudrata (s,t)-Path → Rudrata Cycle','one of the 13; DPV §8.3: Rudrata (s,t)-Path → Rudrata Cycle')),...x];
+  Rc.add({t:tr('实例：G + 起点 s + 终点 t','Instance: G + start s + end t'),d:tr('s = A，t = B。路径必须从 s 出发、在 t 结束，经过每个点恰好一次。','s = A, t = B. The path must start at s, end at t, and visit every vertex exactly once.'),ins:'',it:'hide',S:gScene(H6,{cap:'s = A · t = B',ns:k=>k==='A'?'b':(k==='B'?'p':'n')}),P:P([VRUD(false)])});
+  const bad=['C','D','E','F','A','B'];
+  Rc.add({t:tr('候选：路径对，但端点不对','Candidate: a valid path with the wrong ends'),d:tr('C → … → B 经过所有点，但起点是 C 不是 s = A → 被拒。','C → … → B visits every vertex, but starts at C, not s = A → rejected.'),
+    ins:tr('它是 Rudrata Path 的解，却不是 (s,t) 版本的解。端点是约束的一部分。','It solves Rudrata Path but not the (s,t) version. The endpoints are part of the constraint.'),it:'warn',S:rudScene(bad,{cap:'C → D → E → F → A → B',s:'A',t:'B',badE:true}),P:P([VRUD(false)])});
+  const p=['A','F','E','D','C','B'];
+  Rc.add({t:tr('一个解','A solution'),d:'A → F → E → D → C → B',ins:tr('(s,t)-path → cycle 的经典归约：加一个新点连到 s 和 t，有 (s,t) 路径 ⟺ 有回路。','The classic (s,t)-path → cycle reduction: add a new vertex joined to s and t; an (s,t)-path exists ⟺ a cycle exists.'),it:'info',S:rudScene(p,{cap:'A → F → E → D → C → B',s:'A',t:'B'}),P:P([VRUD(false)])});
+  Rc.add({t:tr('NO 实例：s = A，t = C','A NO instance: s = A, t = C'),d:tr('从 A 出发、走完 6 个点的路径只有 3 条：\nA-F-E-B-C-D、A-F-E-D-C-B、A-B-C-D-E-F。终点只能是 D、B、F，没有停在 C 的 → NO。','From A there are only 3 paths through all 6 vertices:\nA-F-E-B-C-D, A-F-E-D-C-B, A-B-C-D-E-F. They end at D, B or F, never at C → NO.'),
+    ins:tr('同一张图：Rudrata Path 是 YES，(s,t) 版本可以是 NO。','Same graph: Rudrata Path is YES while the (s,t) version can be NO.'),it:'done',S:gScene(H6,{cap:'s = A · t = C → NO',ns:k=>k==='A'?'b':(k==='C'?'p':'n')}),P:P([VRUD(false),tbl(tr('从 A 出发的 Rudrata 路径','Rudrata paths from A'),[tr('路径','path'),tr('终点','end')],[['A F E B C D','D'],['A F E D C B','B'],['A B C D E F','F']])])});
+  return Rc.L;
+}
+function simRCp(){
+  const Rc=rec(), P=x=>[NPC(tr('课程 13 个已知问题之一；DPV §8.3：ZOE → Rudrata Cycle','one of the 13; DPV §8.3: ZOE → Rudrata Cycle')),...x];
+  const cyc=['A','B','C','D','E','F','A'];
+  Rc.add({t:tr('实例：图 G','Instance: a graph G'),d:tr('找一个经过每个点恰好一次、回到起点的回路。','Find a cycle that visits every vertex exactly once and returns to the start.'),ins:'',it:'hide',S:gScene(H6,{cap:'G'}),P:P([VRUD(true)])});
+  Rc.add({t:tr('一个解：沿六边形走一圈','A solution: around the hexagon'),d:'A → B → C → D → E → F → A',ins:tr('输出 n 个点的顺序；verify 时别忘了最后一点连回第一点。','Output an order of the n vertices; when verifying, remember the last vertex must connect back to the first.'),it:'info',S:rudScene(cyc,{cap:'A → B → C → D → E → F → A',noNum:false}),P:P([VRUD(true)])});
+  const G2={P:H6.P,E:H6.E.filter(([u,v])=>!(u==='F'&&v==='A'))};
+  Rc.add({t:tr('NO 实例：去掉边 F–A','A NO instance: remove edge F–A'),d:tr('A 只剩一个邻居 B → 任何回路都要进出 A 各一次，需要度数 ≥ 2 → 返回 NO。\n但 Rudrata Path A → B → C → D → E → F 仍然存在。','A now has only one neighbor, B → a cycle must enter and leave A, which needs degree ≥ 2 → return NO.\nYet the Rudrata path A → B → C → D → E → F still exists.'),
+    ins:tr('有路径 ≠ 有回路。Rudrata Cycle → TSP（DPV）：边距离 1，非边距离很大，预算 n。','A path does not imply a cycle. Rudrata Cycle → TSP (DPV): distance 1 on edges, a large distance on non-edges, budget n.'),it:'done',
+    S:gScene(G2,{cap:tr('去掉 F–A → NO','without F–A → NO'),ns:k=>k==='A'?'r':'n'}),P:P([VRUD(true)])});
+  return Rc.L;
+}
+function simTSPp(){
+  const Rc=rec(), P=x=>[NPC(tr('Rudrata Cycle → TSP（DPV §8.3）','Rudrata Cycle → TSP (DPV §8.3)')),...x];
+  const Pt={A:[150,90],B:[410,90],C:[410,290],D:[150,290]}, d={AB:1,BC:2,CD:1,DA:2,AC:3,BD:3};
+  const dd=(u,v)=>d[u+v]??d[v+u];
+  const V=VER([[tr('n 个城市各一次（布尔数组）','each of the n cities once (boolean array)'),'O(n)'],[tr('n 段距离求和，和 b 比','sum n distances, compare with b'),'O(n)']],'O(n)');
+  const sc=(tour,o={})=>{ const out=[], es=tour?pathEs(tour):new Set();
+    Object.keys(d).forEach(k=>{ const [u,v]=[k[0],k[1]], on=es.has(u+v); out.push(D.line(Pt[u][0],Pt[u][1],Pt[v][0],Pt[v][1],{...ES[on?(o.bad?'hot':'ok'):'dim']}));
+      const mx=(Pt[u][0]+Pt[v][0])/2+(k==='AC'?-26:k==='BD'?26:0), my=(Pt[u][1]+Pt[v][1])/2+(u===v?0:(k==='AB'?-12:k==='CD'?14:0)); out.push(D.txt(mx+(k==='BC'?16:k==='DA'?-16:0),my,d[k],{c:on?(o.bad?'amber':'green'):'muted',fs:13,w:600})); });
+    Object.entries(Pt).forEach(([k,[x,y]])=>out.push(D.node(x,y,k,tour&&tour.includes(k)?(o.bad?'hot':'ok'):'n')));
+    out.push(D.txt(280,24,o.cap,{c:'text',fs:12.5,w:600})); if(o.foot) out.push(D.txt(280,350,o.foot,{c:o.bad?'amber':'green',fs:13,w:600})); return out; };
+  const cost=t=>{ let s=0; for(let i=0;i+1<t.length;i++) s+=dd(t[i],t[i+1]); return s; };
+  Rc.add({t:tr('实例：完全图 + 距离 + 预算 b','Instance: complete graph + distances + budget b'),d:tr('4 个城市，任两城之间都有距离。b = 6。\n找一个环游（每城一次、回到起点），总长 ≤ b。','4 cities with a distance for every pair. b = 6.\nFind a tour (each city once, back to the start) of total length ≤ b.'),ins:'',it:'hide',S:sc(null,{cap:'b = 6'}),P:P([V])});
+  const t1=['A','B','D','C','A'];
+  Rc.add({t:tr(`候选 A→B→D→C→A：长 ${cost(t1)} > 6`,`Candidate A→B→D→C→A: length ${cost(t1)} > 6`),d:'1 + 3 + 1 + 3 = 8 > b',ins:'',it:'hide',S:sc(t1,{cap:'A → B → D → C → A',bad:true,foot:`= ${cost(t1)} > 6`}),P:P([V])});
+  const t2=['A','B','C','D','A'];
+  Rc.add({t:tr(`一个解：A→B→C→D→A，长 ${cost(t2)}`,`A solution: A→B→C→D→A, length ${cost(t2)}`),d:'1 + 2 + 1 + 2 = 6 ≤ b',ins:tr('MST 总长（这里 1+1+2 = 4）是最优环游的下界，不是一个解（#596）。','The MST total (here 1+1+2 = 4) is a lower bound on the optimal tour, not a solution (#596).'),it:'info',S:sc(t2,{cap:'A → B → C → D → A',foot:`= ${cost(t2)} ≤ 6 ✓`}),P:P([V])});
+  Rc.add({t:tr('NO 实例：b = 5','A NO instance: b = 5'),d:tr('3 种环游长度分别是 6、8、10，最短 6 > 5 → 返回 NO。','The 3 tours have lengths 6, 8 and 10; the shortest is 6 > 5 → return NO.'),
+    ins:tr('优化版 TSP（求最短）不在 NP。8.1 讲优化版和预算版的关系，Tim 说容易混，放到最后做。','Optimization TSP (find the shortest) is not in NP. 8.1 relates the optimization and budget versions; Tim calls it confusing, so do it last.'),it:'done',
+    S:sc(null,{cap:'b = 5 → NO'}),P:P([V,tbl(tr('全部环游','All tours'),[tr('环游','tour'),tr('长度','length')],[['A B C D A','6'],['A B D C A','8'],['A C B D A','10']])])});
+  return Rc.L;
+}
+function simILPp(){
+  const Rc=rec(), P=x=>[NPC(tr('ZOE → ILP（DPV §8.3）；SAT → ILP 是 LP4 的建模','ZOE → ILP (DPV §8.3); SAT → ILP is the LP4 model')),...x];
+  const V=VER([[tr('检查 x 每个分量是整数','check every entry of x is an integer'),'O(n)'],[tr('m 个不等式，每个 n 项乘加','m inequalities, n multiply-adds each'),'O(mn)']],'O(mn)');
+  const px=x=>80+x*70, py=y=>340-y*60;
+  const ok=(x,y,g)=>2*x+3*y<=12&&3*x+y<=9&&x+y>=g;
+  const sc=(g,o={})=>{ const out=[];
+    out.push(D.line(px(0),py(0),px(6),py(0),{s:'faint',w:1.2}),D.line(px(0),py(0),px(0),py(5),{s:'faint',w:1.2}));
+    for(let i=1;i<=5;i++) out.push(D.txt(px(i),py(0)+14,i,{c:'faint',fs:10})); for(let j=1;j<=4;j++) out.push(D.txt(px(0)-12,py(j),j,{c:'faint',fs:10}));
+    out.push(D.poly([[0,0],[3,0],[15/7,18/7],[0,4]].map(([x,y])=>[px(x),py(y)]),{f:'rgba(79,142,247,.10)',s:'#4f8ef7',sw:1.4}));
+    out.push(D.line(px(0),py(4),px(6),py(0),{s:'line',w:1.2,d:'5 4'}),D.txt(px(4.6),py(1.2)-8,'2x1 + 3x2 ≤ 12',{c:'muted',fs:10.5}));
+    out.push(D.line(px(3),py(0),px(4/3),py(5),{s:'line',w:1.2,d:'5 4'}),D.txt(px(1.6)+40,py(4.4),'3x1 + x2 ≤ 9',{c:'muted',fs:10.5,a:'start'}));
+    out.push(D.line(px(0),py(g),px(Math.min(6,g)),py(Math.max(0,g-6)),{s:'teal',w:1.8,d:'2 4'}),D.txt(px(0)+8,py(g)-10,`x1 + x2 ≥ ${g}`,{c:'teal',fs:10.5,a:'start'}));
+    for(let x=0;x<=5;x++) for(let y=0;y<=4;y++){ const good=ok(x,y,g), sel=o.pt&&o.pt[0]===x&&o.pt[1]===y; out.push(D.node(px(x),py(y),'',sel?(o.bad?'r':'hot'):(good?'ok':'dim'),{r:sel?8:5})); }
+    if(o.frac) out.push(D.node(px(15/7),py(18/7),'',"p",{r:7}),D.txt(px(15/7)+12,py(18/7)-14,'(15/7, 18/7)',{c:'purple',fs:10.5,a:'start'}));
+    out.push(D.txt(280,22,o.cap,{c:'text',fs:12.5,w:600})); if(o.foot) out.push(D.txt(330,368,o.foot,{c:'amber',fs:12}));
+    return out; };
+  Rc.add({t:tr('实例：线性不等式组，要整数解','Instance: linear inequalities, integer solution wanted'),d:tr('2x1 + 3x2 ≤ 12，3x1 + x2 ≤ 9，x ≥ 0，目标并成约束 x1 + x2 ≥ 4。\n绿点 = 满足全部约束的整数点。','2x1 + 3x2 ≤ 12, 3x1 + x2 ≤ 9, x ≥ 0, with the goal folded in as x1 + x2 ≥ 4.\nGreen dots = integer points satisfying everything.'),
+    ins:tr('search 版 ILP 没有目标函数：目标写成一个约束（≥ g）。','The search version of ILP has no objective: the goal becomes a constraint (≥ g).'),it:'info',S:sc(4,{cap:'g = 4'}),P:P([V])});
+  Rc.add({t:tr('候选 (3, 1)：被拒','Candidate (3, 1): rejected'),d:'3·3 + 1 = 10 > 9.',ins:'',it:'hide',S:sc(4,{cap:'x = (3, 1)',pt:[3,1],bad:true,foot:'3x1 + x2 = 10 > 9 ✗'}),P:P([V])});
+  Rc.add({t:tr('一个解：(2, 2)','A solution: (2, 2)'),d:'2·2 + 3·2 = 10 ≤ 12 ✓ · 3·2 + 2 = 8 ≤ 9 ✓ · 2 + 2 = 4 ≥ 4 ✓',ins:tr('(1, 3) 也是解。','(1, 3) also works.'),it:'info',S:sc(4,{cap:'x = (2, 2)',pt:[2,2]}),P:P([V])});
+  Rc.add({t:tr('NO 实例：x1 + x2 ≥ 4.5','A NO instance: x1 + x2 ≥ 4.5'),d:tr('整数点的 x1 + x2 最多是 4 → 没有整数解 → 返回 NO。\n但 LP（不要求整数）可行：(15/7, 18/7) 的和约 4.71。','Integer points reach x1 + x2 = 4 at most → no integer solution → return NO.\nThe LP without integrality is feasible: (15/7, 18/7) sums to about 4.71.'),
+    ins:tr('LP 在 P 里，ILP 是 NP-complete：差别只在「整数」。这正是 LP4 relaxation + rounding 的出发点。','LP is in P while ILP is NP-complete; the only difference is integrality. That gap is where LP4\'s relaxation + rounding starts.'),it:'done',
+    S:sc(4.5,{cap:'g = 4.5 → NO',frac:true}),P:P([V])});
+  return Rc.L;
+}
+function simZOEp(){
+  const Rc=rec(), P=x=>[NPC(tr('3D Matching → ZOE（DPV §8.3）','3D Matching → ZOE (DPV §8.3)')),...x];
+  const V=VER([[tr('x 每个分量是 0 或 1','every entry of x is 0 or 1'),'O(n)'],[tr('每行求和，和 1 比','sum each row, compare with 1'),'O(mn)']],'O(mn)');
+  const A=[[1,0,1,0,0],[0,1,0,0,1],[1,0,0,1,0],[0,1,0,1,0]];
+  const sc=(M,x,o={})=>{ const R=M.length; return [...gridScene(R+1,6,{lw:50,cs:40,cw:52,y0:70,cl:[...Array.from({length:5},(_,j)=>['col',`x${j+1}`]),['','Ax']],rl:[...M.map((_,i)=>'row '+(i+1)),'x'],sep:5,
+    cap:o.cap,val:(i,j)=>{ if(i===R) return j<5?(x?x[j]:'?'):''; if(j===5) return x?M[i].reduce((s,v,k)=>s+v*x[k],0):''; return M[i][j]; },
+    st:(i,j)=>{ if(i===R) return j<5?(x&&x[j]?'hot':'n'):'none'; if(j===5){ if(!x) return 'ghost'; const s=M[i].reduce((a,v,k)=>a+v*x[k],0); return s===1?'ok':'r'; } return M[i][j]?(x&&x[j]?'ok':'b'):'n'; },foot:o.foot})]; };
+  Rc.add({t:tr('实例：0/1 矩阵 A','Instance: a 0/1 matrix A'),d:tr('找 0/1 向量 x 使 Ax = 1：每一行恰好选中一个 1。\n等价于「选一些列，让每行被恰好覆盖一次」。','Find a 0/1 vector x with Ax = 1: every row has exactly one chosen 1.\nEquivalently, choose columns so each row is covered exactly once.'),ins:'',it:'hide',S:sc(A,null,{cap:'A (4 × 5)'}),P:P([V])});
+  const xb=[1,0,1,1,0];
+  Rc.add({t:tr('候选 x = (1,0,1,1,0)：被拒','Candidate x = (1,0,1,1,0): rejected'),d:tr('第 1 行 = 1 + 1 = 2 ≠ 1；第 2 行 = 0 ≠ 1。','Row 1 = 1 + 1 = 2 ≠ 1; row 2 = 0 ≠ 1.'),ins:tr('是「恰好 1」：多了少了都不行。','It must be exactly 1: more or fewer both fail.'),it:'warn',S:sc(A,xb,{cap:'x = (1, 0, 1, 1, 0)'}),P:P([V])});
+  const xg=[0,0,1,1,1];
+  Rc.add({t:tr('一个解：x = (0,0,1,1,1)','A solution: x = (0,0,1,1,1)'),d:tr('每行恰好一个绿色 1 → Ax = (1,1,1,1)。','Each row has exactly one green 1 → Ax = (1,1,1,1).'),ins:'',it:'hide',S:sc(A,xg,{cap:'x = (0, 0, 1, 1, 1)'}),P:P([V])});
+  const A2=[...A,[0,0,0,0,0]];
+  Rc.add({t:tr('NO 实例：多一行全 0','A NO instance: add an all-zero row'),d:tr('第 5 行全是 0，不论 x 怎么取和都是 0 ≠ 1 → 返回 NO。','Row 5 is all zeros, so its sum is 0 ≠ 1 for every x → return NO.'),
+    ins:tr('ZOE 是 ILP 的特例（Ax ≤ 1 且 −Ax ≤ −1，0 ≤ x ≤ 1，x 整数），所以 ZOE → ILP 几乎不用改。','ZOE is a special case of ILP (Ax ≤ 1, −Ax ≤ −1, 0 ≤ x ≤ 1, x integer), so ZOE → ILP needs almost no work.'),it:'done',S:sc(A2,xg,{cap:tr('加一行全 0 → NO','an all-zero row → NO')}),P:P([V])});
+  return Rc.L;
+}
+function sim3DMp(){
+  const Rc=rec(), P=x=>[NPC(tr('3SAT → 3D Matching（DPV §8.3）','3SAT → 3D Matching (DPV §8.3)')),...x];
+  const V=VER([[tr('恰好 n 个三元组，都在 T 里','exactly n triples, all in T'),'O(n)'],[tr('三个布尔数组标记 b / g / p，查重复','three boolean arrays for b / g / p, check repeats'),'O(n)']],'O(n)');
+  const T={t1:['b1','g1','p2'],t2:['b1','g2','p1'],t3:['b2','g1','p1'],t4:['b2','g3','p3'],t5:['b3','g2','p1']};
+  const pos=k=>{ const col={b:120,g:280,p:440}[k[0]], row=+k[1]; return [col,20+row*90]; };
+  const TC={t1:'#4f8ef7',t2:'#9d7ef7',t3:'#2ec4b6',t4:'#f5a623',t5:'#f05252'};
+  const sc=(sel,o={})=>{ const out=[], used={};
+    Object.entries(T).forEach(([k,[b,g,p]])=>{ if(o.drop&&o.drop.includes(k)) return; const on=sel.includes(k);
+      const w=on?3.4:1.3, op=on?1:.35; [[b,g],[g,p]].forEach(([u,v])=>out.push(D.line(pos(u)[0],pos(u)[1],pos(v)[0],pos(v)[1],{s:on?TC[k]:'#353c50',w,d:on?'none':'4 4'})));
+      if(on) [b,g,p].forEach(x=>used[x]=(used[x]||0)+1); });
+    ['b','g','p'].forEach(c=>[1,2,3].forEach(i=>{ const k=c+i, [x,y]=pos(k), u=used[k]||0; out.push(D.node(x,y,k,u>1?'r':(u===1?'ok':'n'),{r:20})); }));
+    out.push(D.txt(120,62,'B',{c:'soft',fs:12,w:600}),D.txt(280,62,'G',{c:'soft',fs:12,w:600}),D.txt(440,62,'P',{c:'soft',fs:12,w:600}));
+    if(o.foot) out.push(D.txt(280,360,o.foot,{c:'amber',fs:12.5})); return out; };
+  const TT=()=>tbl('T',['',tr('三元组','triple')],Object.entries(T).map(([k,v])=>[k,'('+v.join(', ')+')']));
+  Rc.add({t:tr('实例：B、G、P 各 n 个 + 兼容三元组 T','Instance: B, G, P of size n + compatible triples T'),d:tr('n = 3，T 有 5 个三元组（虚线）。找 n 个两两不交的三元组，覆盖每个元素恰好一次。','n = 3; T has 5 triples (dashed). Find n pairwise disjoint triples covering every element exactly once.'),ins:'',it:'hide',S:sc([]),P:P([V,TT()])});
+  Rc.add({t:tr('候选 {t1, t3, t5}：被拒','Candidate {t1, t3, t5}: rejected'),d:tr('g1 被 t1、t3 用了两次；p1 被 t3、t5 用了两次 → 不是匹配。','g1 is used by both t1 and t3; p1 by both t3 and t5 → not a matching.'),ins:'',it:'hide',S:sc(['t1','t3','t5'],{foot:tr('红 = 被用了两次','red = used twice')}),P:P([V,TT()])});
+  Rc.add({t:tr('一个解：{t1, t4, t5}','A solution: {t1, t4, t5}'),d:'(b1, g1, p2) · (b2, g3, p3) · (b3, g2, p1)',ins:tr('9 个元素每个恰好被用一次。','Each of the 9 elements is used exactly once.'),it:'ok',S:sc(['t1','t4','t5']),P:P([V,TT()])});
+  Rc.add({t:tr('NO 实例：去掉 t4','A NO instance: remove t4'),d:tr('b2 只剩 t3 = (b2, g1, p1)，选了它 g1、p1 就被占；b1 的 t1 要 g1、t2 要 p1，都冲突 → 返回 NO。','b2 is left with only t3 = (b2, g1, p1), which takes g1 and p1; b1\'s options t1 (needs g1) and t2 (needs p1) both clash → return NO.'),
+    ins:tr('形状：「分成互不相交的三人组」。DPV 用 3DM → ZOE：每个元素一行、每个三元组一列。','Shape: "split into disjoint groups of three". DPV reduces 3DM → ZOE: one row per element, one column per triple.'),it:'done',S:sc(['t3'],{drop:['t4'],foot:tr('t3 一旦被选，b1 无处可去','once t3 is chosen, b1 has nowhere to go')}),P:P([V])});
+  return Rc.L;
+}
+
+const PDATA=[
+ {id:'p-sat',abbr:'SAT',hn:['布尔可满足','satisfiability'],name:'SAT',c:'--blue',sim:simSATp,in:['CNF 公式 f：n 个变量、m 个子句','CNF formula f: n variables, m clauses'],out:['满足所有子句的赋值（给 n 个变量）','An assignment to the n variables satisfying every clause'],no:['不可满足','unsatisfiable'],
+  tk:[['作为 source：目标问题是「布尔公式 / 赋值」时首选（Stingy SAT、Exact 4SAT、NAE 类）。','As a source: the first choice when the target is about Boolean formulas / assignments (Stingy SAT, Exact 4SAT, NAE-type).'],['不能预设变量的值；要强制就加子句（OH 10/28）。','Never pre-assign variables; force values with added clauses (OH 10/28).'],['f(I) 只需覆盖 B 的一部分实例：8.3 Stingy SAT 直接令 k = n（#605）。','f(I) may hit only part of B\'s instances: 8.3 Stingy SAT simply sets k = n (#605).']]},
+ {id:'p-3sat',abbr:'3SAT',hn:['子句 ≤ 3','clauses ≤ 3'],name:'3SAT',c:'--blue',sim:simSAT3p,in:['CNF，每个子句至多 3 个 literal','CNF with at most 3 literals per clause'],out:['满足赋值','A satisfying assignment'],no:['不可满足','unsatisfiable'],
+  tk:[['最常用的 source：图问题从它出发要造 gadget（每个子句一组点、每个变量一组点）。','The most common source: graph targets need gadgets (one group per clause, one per variable).'],['HW5 stress test：(x∨y∨z)(x)(y)(z) 只有一个满足赋值，transformation 必须保住它（#600）。','HW5 stress test: (x∨y∨z)(x)(y)(z) has exactly one satisfying assignment, and your transformation must keep it (#600).'],['子句大小 1 / 2 / 3 可以分情况处理（8.8 解答）。','Clauses of size 1 / 2 / 3 may be handled case by case (8.8 solution).']]},
+ {id:'p-is',abbr:'IS',hn:['独立集','independent set'],name:'Independent Set',c:'--green',sim:simISp,in:['图 G = (V, E)，目标 g','Graph G = (V, E), goal g'],out:['S ⊆ V，|S| ≥ g，S 内没有边','S ⊆ V, |S| ≥ g, no edge inside S'],no:['没有大小 ≥ g 的','none of size ≥ g'],
+  tk:[['作为 source：「选一组点、点之间有冲突」的问题。','As a source: problems that pick vertices with conflicts between them.'],['数 |S| 要 O(n)（#7，#596）。','Counting |S| costs O(n) (#7, #596).'],['ILP 写法（LP4，Tim 推荐练）：每点 x_v ∈ {0,1}，每条边 x_u + x_v ≤ 1，Σ x_v ≥ g。','ILP form (LP4; Tim suggests practicing it): x_v ∈ {0,1} per vertex, x_u + x_v ≤ 1 per edge, Σ x_v ≥ g.']]},
+ {id:'p-clq',abbr:'Clique',hn:['团','clique'],name:'Clique',c:'--green',sim:simCLp,in:['图 G，目标 g','Graph G, goal g'],out:['S ⊆ V，|S| ≥ g，两两相邻','S ⊆ V, |S| ≥ g, every pair adjacent'],no:['没有','none'],
+  tk:[['作为 source：「子图要稠密 / 完全连通」的问题（8.4 Clique-3、8.10 子图同构）。','As a source: dense / fully connected subgraph problems (8.4 Clique-3, 8.10 subgraph isomorphism).'],['8.10(a)：加进去的结构 G 被造成完全图，原来的 H 不假设（#596）。','8.10(a): the added structure G is built complete; the original H is not assumed to be (#596).'],['和 IS 互为补图：同一个 g。','The complement of IS: same g.']]},
+ {id:'p-vc',abbr:'VC',hn:['点覆盖','vertex cover'],name:'Vertex Cover',c:'--green',sim:simVCp,in:['图 G，预算 b','Graph G, budget b'],out:['S ⊆ V，|S| ≤ b，每条边至少一端在 S','S ⊆ V, |S| ≤ b, every edge has an endpoint in S'],no:['没有大小 ≤ b 的','none of size ≤ b'],
+  tk:[['作为 source：「用最少的点 / 集合碰到所有东西」的问题（8.9 Hitting Set、8.20 Dominating Set、Set Cover）。','As a source: "touch everything with few vertices / sets" (8.9 Hitting Set, 8.20 Dominating Set, Set Cover).'],['8.9 gadget：每条边 (u,v) 造一个集合 {u,v}（#605）。','8.9 gadget: one set {u,v} per edge (u,v) (#605).'],['ILP：x_u + x_v ≥ 1 每条边，Σ x_v ≤ b。','ILP: x_u + x_v ≥ 1 per edge, Σ x_v ≤ b.']]},
+ {id:'p-sss',abbr:'SSS',hn:['子集和','subset sum'],name:'Subset Sum',c:'--amber',sim:simSSSp,in:['正整数 a1…an，目标 t','Positive integers a1…an, target t'],out:['和恰好为 t 的子集','A subset summing to exactly t'],no:['没有','none'],
+  tk:[['作为 source：「挑数字凑一个总和」（Partition、Knapsack 类）。','As a source: "pick numbers hitting a total" (Partition, Knapsack-type).'],['verify 写 O(n log t)，不能写依赖 t 数值的 O(t)。','Write the verification as O(n log t), never O(t), which depends on t\'s value.'],['3SAT → SSS 的关键：十进制数位 + 不进位（见 NP 归约里的演示）。','The key in 3SAT → SSS: decimal digits + no carries (see the walkthrough under NP reductions).']]},
+ {id:'p-rp',abbr:'Rud-P',hn:['Rudrata 路径','Rudrata path'],name:'Rudrata Path',c:'--purple',sim:simRPp,in:['图 G','Graph G'],out:['经过每个点恰好一次的路径，端点任意','A path through every vertex exactly once, any endpoints'],no:['没有','none'],
+  tk:[['作为 source：「访问每个点一次 / 排序」。路径类允许但少见（OH）。','As a source: "visit each vertex once / ordering". Path problems are allowed but rare (OH).'],['verify：长度 n、无重复、相邻有边，O(n)（邻接矩阵）或 O(n + m)。','Verify: length n, no repeats, consecutive vertices adjacent: O(n) with a matrix or O(n + m).']]},
+ {id:'p-rst',abbr:'Rud-st',hn:['(s,t) 路径','(s,t)-path'],name:'Rudrata (s,t)-Path',c:'--purple',sim:simRSTp,in:['图 G，顶点 s、t','Graph G, vertices s and t'],out:['从 s 到 t、经过每点恰好一次的路径','A path from s to t through every vertex exactly once'],no:['没有','none'],
+  tk:[['端点固定是额外约束：同一张图上，Rudrata Path 是 YES 而 (s,t) 版本可能 NO。','Fixed endpoints are an extra constraint: on the same graph, Rudrata Path can be YES while the (s,t) version is NO.'],['(s,t)-path → cycle：加一个点连 s 和 t。','(s,t)-path → cycle: add one vertex joined to s and t.']]},
+ {id:'p-rc',abbr:'Rud-C',hn:['Rudrata 回路','Rudrata cycle'],name:'Rudrata Cycle',c:'--purple',sim:simRCp,in:['图 G','Graph G'],out:['经过每点恰好一次的回路','A cycle through every vertex exactly once'],no:['没有','none'],
+  tk:[['有 Rudrata Path 不代表有 Rudrata Cycle（度数 1 的点）。','A Rudrata path does not imply a Rudrata cycle (a degree-1 vertex).'],['Rudrata Cycle → TSP：边距离 1，非边距离大，b = n。','Rudrata Cycle → TSP: distance 1 on edges, large on non-edges, b = n.']]},
+ {id:'p-tsp',abbr:'TSP',hn:['旅行商','traveling salesman'],name:'TSP (search / budget version)',c:'--purple',sim:simTSPp,in:['n 个城市，距离 d_ij（完全图），预算 b','n cities, distances d_ij (complete graph), budget b'],out:['总长 ≤ b 的环游','A tour of total length ≤ b'],no:['预算内没有','none within the budget'],
+  tk:[['优化版 TSP 不在 NP；考试用带 b 的版本。','Optimization TSP is not in NP; exams use the budget version.'],['MST 是下界不是解（#596）。','The MST is a lower bound, not a solution (#596).'],['verify：n 个城市各一次 + n 段求和 ≤ b，O(n)。','Verify: each of the n cities once + a sum of n distances ≤ b, O(n).']]},
+ {id:'p-ilp',abbr:'ILP',hn:['整数线性规划','integer LP'],name:'Integer Linear Programming',c:'--teal',sim:simILPp,in:['线性不等式组 Ax ≤ b（目标并进约束）','Linear inequalities Ax ≤ b (goal folded in)'],out:['满足全部不等式的整数向量 x','An integer vector x satisfying all of them'],no:['没有整数解','no integer solution'],
+  tk:[['作为 source：「整数变量 + 线性约束」。更常见的是反过来用：把问题写成 ILP（LP4）。','As a source: "integer variables + linear constraints". More often used the other way: formulating a problem as an ILP (LP4).'],['LP 在 P 里，ILP 是 NP-complete：只差整数。','LP is in P, ILP is NP-complete: integrality is the only difference.'],['Tim 推荐：自己写出 VC、IS 的 ILP（#671）。','Tim recommends writing the ILPs for VC and IS yourself (#671).']]},
+ {id:'p-zoe',abbr:'ZOE',hn:['0/1 方程','zero-one equations'],name:'Zero-One Equations',c:'--teal',sim:simZOEp,in:['m × n 的 0/1 矩阵 A','An m × n 0/1 matrix A'],out:['0/1 向量 x，Ax = 1','A 0/1 vector x with Ax = 1'],no:['没有','none'],
+  tk:[['理解成 exact cover：选一些列，每行被恰好覆盖一次。','Read it as exact cover: choose columns so every row is covered exactly once.'],['DPV 里它是枢纽：ZOE → SSS、ILP、Rudrata Cycle。','In DPV it is a hub: ZOE → SSS, ILP, Rudrata Cycle.']]},
+ {id:'p-3dm',abbr:'3DM',hn:['三维匹配','3D matching'],name:'3D Matching',c:'--teal',sim:sim3DMp,in:['B、G、P 各 n 个元素 + 兼容三元组 T','Sets B, G, P of n elements each + compatible triples T'],out:['n 个两两不交、覆盖每个元素一次的三元组','n pairwise disjoint triples covering every element once'],no:['没有完美匹配','no perfect matching'],
+  tk:[['作为 source：「分成互不相交的三人组」。','As a source: "split into disjoint groups of three".'],['二维匹配（bipartite）在 P 里（max-flow）；三维是 NP-complete。','2D (bipartite) matching is in P (max-flow); 3D is NP-complete.'],['verify：三个布尔数组查重复，O(n)。','Verify: three boolean arrays to catch repeats, O(n).']]},
+];
+
+/* ============================== data ============================== */
+const CATS={c0:['13 个已知问题','13 known problems'],c1:['NP 归约（课上）','NP reductions (lecture)'],c2:['LP','LP']};
+const ALGOS=[
+ {id:'sat3',cat:'c1',abbr:'SAT→3SAT',hn:['拆长子句','split long clauses'],name:'SAT → 3SAT (official model: 3SAT.pdf)',c:'--blue',rt:'O(nm)',cap:['一个 k = 5 的子句','One clause with k = 5'],
+  in:['CNF 公式 f，n 个变量、m 个子句','CNF formula f, n variables, m clauses'],out:['3SAT 实例：每个子句 ≤ 3 个 literal','A 3SAT instance: ≤ 3 literals per clause'],
+  req:['k &gt; 3 → k−3 个新变量、k−2 个子句；<span class="warn">不能预设变量的值</span>','k &gt; 3 → k−3 new variables, k−2 clauses; <span class="warn">never pre-assign variables</span>'],
+  sim:()=>simSAT3(),
+  tk:[['NP 部分：每个子句 ≤ 3 个 literal → O(m)。一般 SAT 是 O(nm)，按子句大小写。','NP part: ≤ 3 literals per clause → O(m). General SAT is O(nm); match the clause size.'],
+      ['output transform 可以用 input transform 的上下文：去掉 y。图问题里「直接去掉加的点」有风险。','The output may use context from the input transformation: drop the y\'s. For graph problems, "just remove the added vertices" is risky.'],
+      ['想强制某个变量的值：用子句结构强制，不能在 f 里直接写死 T/F。','To force a variable\'s value, use clause structure; never hard-code T/F in f.'],
+      ['子句里可以同时有 x 和 ¬x，但不能重复同一个 literal、不能空、不能嵌套括号。','A clause may contain both x and ¬x, but no repeated literal, no empty clause, no nested parentheses.']]},
+ {id:'is',cat:'c1',abbr:'3SAT→IS',hn:['三角形 + 互补边','triangles + complement edges'],name:'3SAT → Independent Set',c:'--purple',rt:'O(m²)',cap:['3 个子句 · g = m','3 clauses · g = m'],
+  in:['3SAT 公式 f（m 个子句）','3SAT formula f (m clauses)'],out:['(G, g)：每个 literal 一个顶点，g = m','(G, g): one vertex per literal occurrence, g = m'],
+  req:['clause edges + variable edges；<span class="warn">没被选到的变量要给值</span>','Clause edges + variable edges; <span class="warn">unchosen variables still get a value</span>'],
+  sim:()=>simIS(),
+  tk:[['g = m（子句数），不是 n。','g = m (the number of clauses), not n.'],
+      ['IFF 的 ⇐ 方向：|S| ≥ m + clause edges ⇒ 每个子句恰好一个。','The ⇐ direction: |S| ≥ m plus clause edges ⇒ exactly one per clause.'],
+      ['variable vs literal：顶点是 literal 的一次出现，variable edges 只连互补的 literal。','Variable vs literal: a vertex is one occurrence of a literal; variable edges join only complementary literals.']]},
+ {id:'vc',cat:'c1',abbr:'IS↔VC/Clique',hn:['补集 / 补图','complement set / graph'],name:'IS → Vertex Cover, IS → Clique',c:'--teal',rt:'O(n²)',cap:['n = 6 · g = 3','n = 6 · g = 3'],
+  in:['(G, g)','(G, g)'],out:['VC：(G, n − g) · Clique：(Ḡ, g)','VC: (G, n − g) · Clique: (Ḡ, g)'],
+  req:['VC 是 <span class="warn">at most b</span>，IS / Clique 是 at least g','VC is <span class="warn">at most b</span>; IS / Clique are at least g'],
+  sim:()=>simVC(),
+  tk:[['S 是 IS ⟺ V∖S 是 VC ⟺ S 是 Ḡ 的 clique。','S is an IS ⟺ V∖S is a VC ⟺ S is a clique of Ḡ.'],
+      ['建补图 O(n²)；IS → VC 只改一个数，O(1)，output 取补集 O(n)。','Building the complement is O(n²); IS → VC changes one number, O(1), and the output complement is O(n).'],
+      ['Max Clique / Min VC 是优化版，不在 NP。考试用带 g / b 的 search 版本。','Max Clique / min VC are optimization versions and not in NP. Exams use the search versions with g / b.']]},
+ {id:'sss',cat:'c1',abbr:'3SAT→SSS',hn:['十进制数位','decimal digits'],name:'3SAT → Subset Sum',c:'--amber',rt:'O((n+m)²)',cap:['n = 3, m = 2 · 10 个数','n = 3, m = 2 · 10 numbers'],
+  in:['3SAT 公式 f','3SAT formula f'],out:['2n + 2m 个 (n+m) 位十进制数 + 目标 t','2n + 2m base-10 numbers of n + m digits + target t'],
+  req:['关键：每列和 ≤ 5，<span class="warn">不进位</span>','Key: each column sums to ≤ 5, so <span class="warn">no carries</span>'],
+  sim:()=>simSSS(),
+  tk:[['t = 1…1 3…3：变量位 1（恰好选一个），子句位 3（至少 1 个真 literal + buffer）。','t = 1…1 3…3: variable digits 1 (pick exactly one), clause digits 3 (≥ 1 true literal + buffers).'],
+      ['SSS 的 verification：O(n log t) 位的加法，多项式。不能写成依赖 t 数值的 O(nt)。','Verifying SSS: additions on O(n log t) bits, polynomial. Do not write O(nt), which depends on t\'s value.'],
+      ['Knapsack 的 O(nB) 也是伪多项式：B 只占 log B 位。','Knapsack\'s O(nB) is pseudo-polynomial too: B takes only log B bits.']]},
+ {id:'lp',cat:'c2',abbr:'Simplex',hn:['几何 + 顶点行走','geometry + vertex walk'],name:'LP geometry and Simplex (DPV 7.1)',c:'--green',rt:'poly / exp worst',cap:['max x1 + 6x2','max x1 + 6x2'],
+  in:['目标 cᵀx + 约束 Ax ≤ b + x ≥ 0','Objective cᵀx + constraints Ax ≤ b + x ≥ 0'],out:['最优 x*，或 infeasible / unbounded','An optimal x*, or infeasible / unbounded'],
+  req:['标准形式：max，全部 ≤，<span class="warn">x ≥ 0 不是 A 的行</span>','Standard form: max, all ≤, <span class="warn">x ≥ 0 is not a row of A</span>'],
+  sim:()=>simLP(),
+  tk:[['最优解在顶点上取到（feasible & bounded 时）；可行域是凸多面体。','The optimum is at a vertex (when feasible & bounded); the region is a convex polytope.'],
+      ['Simplex：沿边走到更好的邻居，没有更好的就停。最坏指数，实际很快。','Simplex: move along edges to a better neighbor; stop when none is better. Exponential worst case, fast in practice.'],
+      ['检查可行：加一个变量 z，看能否 z ≥ 0。检查无界：primal 可行 + dual 不可行。','Feasibility check: add a variable z and see whether z ≥ 0 is achievable. Unboundedness: primal feasible + dual infeasible.'],
+      ['Max-flow 写成 LP：f_e ≤ c_e、守恒、f_e ≥ 0，目标是流出 s 的总量。','Max-flow as an LP: f_e ≤ c_e, conservation, f_e ≥ 0; maximize the flow out of s.']]},
+ {id:'dual',cat:'c2',abbr:'Dual',hn:['对偶 + weak/strong','dual + weak/strong'],name:'LP Duality',c:'--purple',rt:'cᵀx ≤ bᵀy',cap:['同一个 LP 的对偶','The dual of the same LP'],
+  in:['标准形式的 primal','A primal in standard form'],out:['min bᵀy，Aᵀy ≥ c，y ≥ 0','min bᵀy, Aᵀy ≥ c, y ≥ 0'],
+  req:['<span class="warn">先转标准形式</span>，再取对偶','<span class="warn">Convert to standard form</span> before taking the dual'],
+  sim:()=>simDual(),
+  tk:[['每个 primal 约束 ↔ 一个 dual 变量；每个 primal 变量 ↔ 一个 dual 约束。','Each primal constraint ↔ a dual variable; each primal variable ↔ a dual constraint.'],
+      ['weak：cᵀx ≤ bᵀy。strong：两边都 feasible & bounded 时最优值相等。','Weak: cᵀx ≤ bᵀy. Strong: when both are feasible & bounded, the optima are equal.'],
+      ['primal unbounded ⇒ dual infeasible；但 dual infeasible 不能推出 primal unbounded（两个可以都 infeasible）。','Primal unbounded ⇒ dual infeasible; but dual infeasible does not imply primal unbounded (both can be infeasible).'],
+      ['LP 题没有固定答题结构，会给具体指令，如「写出对应的 primal」（#657）。','LP questions have no fixed answer structure; they come with specific instructions, e.g. "produce the corresponding primal" (#657).']]},
+ {id:'max',cat:'c2',abbr:'Max-SAT',hn:['LP 近似 · 3/4','LP approximation · 3/4'],name:'Max-SAT approximation (LP4)',c:'--red',rt:'3/4 · m*',cap:['5 个子句 · m* = 4','5 clauses · m* = 4'],
+  in:['CNF 公式 f，m 个子句','CNF formula f, m clauses'],out:['一个赋值，期望满足 ≥ (3/4)·m* 个子句','An assignment satisfying ≥ (3/4)·m* clauses in expectation'],
+  req:['LP* ≥ m*：<span class="warn">放松后的最优是上界</span>','LP* ≥ m*: <span class="warn">the relaxed optimum is an upper bound</span>'],
+  sim:()=>simMax(),
+  tk:[['简单方案：1/2 近似；Ek-SAT 是 1 − 2^−k。','Simple scheme: 1/2-approximation; Ek-SAT gives 1 − 2^−k.'],
+      ['LP rounding：1 − 1/e ≈ 0.632；best of 2：3/4。','LP rounding: 1 − 1/e ≈ 0.632; best of 2: 3/4.'],
+      ['SAT → ILP 是标准建模：每个变量 y_i，每个子句 z_j，约束 z_j ≤ 该子句 literal 之和。','SAT → ILP is the standard model: y_i per variable, z_j per clause, z_j ≤ the sum of its literals.']]},
+];
+
+ALGOS.unshift(...PDATA.map(p=>({...p,cat:'c0',rt:'NP-complete',req:p.no,cap:['实例 · 被拒的候选 · 一个解 · NO 实例','instance · rejected candidate · a solution · NO instance']})));
+const PLEG=()=>[['ok',tr('解里的元素 / 满足','in the solution / satisfied')],['r',tr('违反 / 冲突','violates / conflicts')],['hot',tr('被拒候选','rejected candidate')],['b',tr('选中（VC）/ s','chosen (VC) / s')],['p','t']];
+/* ============================== rendering ============================== */
+const NS='http://www.w3.org/2000/svg';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+let A=null, STEPS=[], cur=0, timer=null, VIEW='sat3';
+const LEGF=()=>({sat3:[['n',tr('原 literal','original literal')],['p',tr('新变量 y','new variable y')],['ok','T'],['r','F']],
+  is:[['n',tr('literal 顶点','literal vertex')],['ok',tr('选进 IS','in the IS')],['-cl',tr('clause edge','clause edge')],['-vr',tr('variable edge','variable edge')]],
+  vc:[['ok','S (IS)'],['b','V ∖ S (VC)'],['-p',tr('Ḡ 的边','edge of Ḡ')],['-ok',tr('S 内部','inside S')]],
+  sss:[['b',tr('数位 1','digit 1')],['hot',tr('目标 t','target t')],['ok',tr('选中的数','chosen number')],['dim',tr('没选','not chosen')]],
+  lp:[['hot',tr('当前顶点','current vertex')],['ok',tr('已走过','visited')],['-t',tr('目标等值线','objective level line')]],
+  dual:[['b',tr('约束行','constraint row')],['p',tr('y / b','y / b')],['t','c'],['hot',tr('当前列','current column')]],
+  max:[['p','z*'],['b','simple'],['ok','LP rounding'],['hot',tr('当前列','current column')]]});
+function mk(tag,attrs,parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e; }
+
+function applyStatic(){
+  document.documentElement.lang=LANG==='en'?'en':'zh-CN';
+  $('t-h1').textContent=tr('NP & LP 总复习','NP & LP Review');
+  $('t-sub').textContent=tr('CS-6515 Exam 4 · 13 个已知问题 + 4 个课上归约 + 3 个 LP 演示 · Ed 更新到 11/06','CS-6515 Exam 4 · 13 known problems + 4 lecture reductions + 3 LP walkthroughs · Ed through 11/06');
+  $('t-keys').innerHTML=tr('<kbd>←</kbd> <kbd>→</kbd> 单步 · <kbd>Space</kbd> 播放 · <kbd>[</kbd> <kbd>]</kbd> 换算法','<kbd>←</kbd> <kbd>→</kbd> step · <kbd>Space</kbd> play · <kbd>[</kbd> <kbd>]</kbd> switch');
+  $('lang').textContent=LANG==='en'?'中文':'English';
+  $('lang').setAttribute('aria-label',tr('切换到英文','Switch to Chinese'));
+  $('nav').setAttribute('aria-label',tr('算法索引','Algorithm index'));
+  $('k-req').textContent=tr('要求 / 注意','Requirements / notes');
+  $('tk-h').textContent=tr('考点 · 陷阱','Exam points · traps');
+  $('g').setAttribute('aria-label',tr('演示','Animation'));
+}
+function buildNav(){
+  const nav=$('nav'); nav.innerHTML='';
+  const g0=document.createElement('div'); g0.className='grp'; g0.innerHTML=`<div class="grp-l">${tr('总览','Overview')}</div>`;
+  [['ov',tr('13 个问题','13 problems'),tr('input / output / NO','input / output / NO')],['ops',tr('证明写法','Proof format'),tr('#596 + LP 规则','#596 + LP rules')],['pre',tr('选型矩阵','Matrices'),tr('source / 对偶 / IFF','source / duality / IFF')]].forEach(([id,ab,hn])=>{
+    const b=document.createElement('button'); b.type='button'; b.className='nb'; b.dataset.id=id; b.style.setProperty('--c','var(--text)');
+    b.innerHTML=`<span class="ab">${ab}</span><span class="hn">${hn}</span>`; b.onclick=()=>select(id); g0.appendChild(b); });
+  nav.appendChild(g0);
+  Object.keys(CATS).forEach(cat=>{ const gr=document.createElement('div'); gr.className='grp'; gr.innerHTML=`<div class="grp-l">${L2(CATS[cat])}</div>`;
+    ALGOS.filter(a=>a.cat===cat).forEach(a=>{ const b=document.createElement('button'); b.type='button'; b.className='nb'; b.dataset.id=a.id; b.style.setProperty('--c',`var(${a.c})`);
+      b.innerHTML=`<span class="ab">${a.abbr}</span><span class="hn">${L2(a.hn)}</span>`; b.onclick=()=>select(a.id); gr.appendChild(b); });
+    nav.appendChild(gr); });
+}
+
+/* [name, input, output, NO, verify, group] */
+const PROBS=[
+ ['SAT 家族','SAT family',[
+  ['SAT',['CNF 公式 f，n 个变量、m 个子句','CNF formula f, n variables, m clauses'],['满足所有子句的赋值（给 n 个<b>变量</b>赋值）','An assignment to the n <b>variables</b> satisfying every clause'],['不可满足','Unsatisfiable'],'O(nm)'],
+  ['3SAT',['CNF，每个子句 <b>至多 3</b> 个 literal','CNF with <b>at most 3</b> literals per clause'],['满足赋值','A satisfying assignment'],['不可满足','Unsatisfiable'],'O(m)']]],
+ ['图：选点集','Graphs: pick a vertex set',[
+  ['IS',['G = (V, E)，目标 g','G = (V, E), goal g'],['S ⊆ V，|S| ≥ g，S 内<b>没有边</b>','S ⊆ V, |S| ≥ g, <b>no edge</b> inside S'],['没有大小 ≥ g 的','None of size ≥ g'],'O(n²)'],
+  ['Clique',['G，目标 g','G, goal g'],['S ⊆ V，|S| ≥ g，S 内<b>两两相邻</b>','S ⊆ V, |S| ≥ g, <b>every pair</b> adjacent'],['没有','None'],'O(n²)'],
+  ['VC',['G，预算 b','G, budget b'],['S ⊆ V，|S| ≤ b，<b>每条边至少一个端点</b>在 S','S ⊆ V, |S| ≤ b, <b>every edge has ≥ 1 endpoint</b> in S'],['没有大小 ≤ b 的','None of size ≤ b'],'O(n+m)']]],
+ ['数','Numbers',[
+  ['Subset Sum',['正整数 a1…an，目标 t','Positive integers a1…an, target t'],['和<b>恰好</b>为 t 的子集','A subset summing to <b>exactly</b> t'],['没有','None'],'O(n log t)']]],
+ ['路径 / 回路','Paths / tours',[
+  ['Rudrata Path',['图 G','Graph G'],['经过<b>每个点恰好一次</b>的路径（端点任意）','A path visiting <b>every vertex exactly once</b> (any endpoints)'],['没有','None'],'O(n+m)'],
+  ['Rudrata (s,t)-Path',['G，顶点 s、t','G, vertices s, t'],['从 <b>s 到 t</b>、经过每个点恰好一次的路径','A path from <b>s to t</b> visiting every vertex exactly once'],['没有','None'],'O(n+m)'],
+  ['Rudrata Cycle',['图 G','Graph G'],['经过每个点恰好一次的回路','A cycle visiting every vertex exactly once'],['没有','None'],'O(n+m)'],
+  ['TSP',['n 个城市，距离 d_ij（完全图），预算 b','n cities, distances d_ij (complete graph), budget b'],['总长 <b>≤ b</b> 的环游','A tour of total length <b>≤ b</b>'],['预算内没有','None within budget'],'O(n)']]],
+ ['整数规划','Integer programs',[
+  ['ILP',['线性不等式组 Ax ≤ b（目标并进约束）','Linear inequalities Ax ≤ b (goal folded into a constraint)'],['满足全部不等式的<b>整数</b>向量 x','An <b>integer</b> vector x satisfying all of them'],['没有整数解','No integer solution'],'O(mn)'],
+  ['ZOE',['m×n 的 0/1 矩阵 A','An m×n 0/1 matrix A'],['0/1 向量 x，<b>Ax = 1</b>（全 1 向量）','A 0/1 vector x with <b>Ax = 1</b> (all ones)'],['没有','None'],'O(mn)']]],
+ ['匹配','Matching',[
+  ['3D Matching',['大小为 n 的 B、G、P + 兼容三元组集合 T','Sets B, G, P of size n + compatible triples T'],['T 里 n 个<b>两两不交</b>的三元组，覆盖每个元素恰好一次','n <b>pairwise disjoint</b> triples from T covering every element once'],['没有完美匹配','No perfect matching'],'O(n)']]]
+];
+const PID={'SAT':'p-sat','3SAT':'p-3sat','IS':'p-is','Clique':'p-clq','VC':'p-vc','Subset Sum':'p-sss','Rudrata Path':'p-rp','Rudrata (s,t)-Path':'p-rst','Rudrata Cycle':'p-rc','TSP':'p-tsp','ILP':'p-ilp','ZOE':'p-zoe','3D Matching':'p-3dm'};
+const TODO_OLD=[
+ ['Exam 4 Details 帖（日期、题数、LP 是否 free response）','The Exam 4 Details post (dates, number of problems, whether LP is free response)'],
+ ['LP practice problems + 官方解答（说是「下周」，10/26）','LP practice problems + solutions (promised "next week" on 10/26)'],
+ ['"NP-Complete Proofs" PDF（8.1, 8.3, 8.4, 8.8, 8.9, 8.10a, 8.19）还没上传到 project','The "NP-Complete Proofs" PDF (8.1, 8.3, 8.4, 8.8, 8.9, 8.10a, 8.19) is not in the project yet'],
+ ['HW5（NAE-3SAT）官方解答 + feedback thread','HW5 (NAE-3SAT) official solution + feedback thread'],
+ ['Format Quiz 4 walkthrough','Format Quiz 4 walkthrough'],
+ ['下一次 OH：常见 SAT transformation 技巧','The next OH: common SAT transformation techniques']];
+const TODO=[
+ ['Exam 4 Details 帖：11/06 还没出（+30 分钟请求 #659 未回复）','The Exam 4 Details post: still not out on 11/06 (the +30 min request #659 has no reply)'],
+ ['LP 练习题的 PDF 解答（7.1, 7.2, 7.4, 7.5, 7.6, 7.11, 7.12, 7.27）：说会放 Resources，11/06 还没有','LP practice PDF solutions (7.1, 7.2, 7.4, 7.5, 7.6, 7.11, 7.12, 7.27): promised for Resources, not there on 11/06'],
+ ['"NP-Complete Proofs" PDF 还没上传到 project','The "NP-Complete Proofs" PDF is not in the project yet'],
+ ['11/4 OH（HW5 + LP 入门）的 transcript 还没拉：需要在浏览器里登录 Teams','The 11/4 OH transcript (HW5 + LP intro) is not pulled yet: needs a Teams sign-in in the browser'],
+ ['HW5 成绩 + feedback thread；Content Quiz 5 walkthrough（11/9 之后）','HW5 grades + feedback thread; the Content Quiz 5 walkthrough (after 11/9)']];
+const NEWS=[
+ ['#671 LP 练习题已出','#671 LP practice problems posted','7.1–7.8, 7.11, 7.12, 7.25–7.28。7.25 / 7.26 / 7.28 是 challenge。周 12–13 不会再有别的练习集。','7.1–7.8, 7.11, 7.12, 7.25–7.28. 7.25 / 7.26 / 7.28 are challenges. No other sets for weeks 12–13.'],
+ ['LP4 重点（Tim #671）','LP4 focus (Tim #671)','自己写出 VC、IS 的 ILP；掌握 ILP → LP relaxation、randomized rounding、近似。','Write the ILPs for VC and IS yourself; know ILP → LP relaxation, randomized rounding and approximation.'],
+ ['格式不是得分点（#596）','Format is not where points are (#596)','没有固定格式；结构本身几乎不给分，transformation 的正确性才是「the work itself」。','There is no fixed format; structure itself is worth almost nothing, and the correctness of the transformations is "the work itself".'],
+ ['verification（#596, #605）','Verification (#596, #605)','对每个实例 + 候选都要成立；任何多项式都行；数 |S| 是 O(n)；输入的性质（如 8.4 的度 ≤ 3）不用验。','Must hold for every instance + candidate; any polynomial is fine; counting |S| is O(n); input properties (e.g. degree ≤ 3 in 8.4) need no check.'],
+ ['f(I) 的范围由你定（#605）','You choose the scope of f(I) (#605)','f(I) 不必覆盖 B 的所有输入，只要 IFF 成立。8.3 Stingy SAT 直接令 k = n。','f(I) need not cover every input of B, as long as the IFF holds. 8.3 Stingy SAT simply sets k = n.'],
+ ['LP 澄清（#673, #686, #687）','LP clarifications (#673, #686, #687)','严格不等式是 ill-defined（转不了标准形式），不是 infeasible；只查原点不能判可行（errata）；min 转 max 就是目标系数变号。','A strict inequality is ill-defined (no standard form), not infeasible; checking only the origin does not decide feasibility (erratum); min → max just flips the objective\'s signs.'],
+ ['截止（11/9 8am ET）','Deadlines (11/9 8am ET)','HW6 Induced Matching（#667）和 Content Quiz 5（#672）。两者都要独立完成，这页不碰它们的题。','HW6 Induced Matching (#667) and Content Quiz 5 (#672). Both are individual work; this page does not touch them.']];
+function venn(){
+  const t=(x,y,s,c,fs,a)=>`<text x="${x}" y="${y}" fill="${c}" font-size="${fs||11}" text-anchor="${a||'middle'}" font-family="IBM Plex Mono, monospace">${s}</text>`;
+  return `<svg viewBox="0 0 640 290" style="display:block;width:100%;min-width:560px;height:auto" role="img" aria-label="P, NP, NP-hard">
+  <rect x="14" y="14" width="486" height="240" rx="18" fill="rgba(79,142,247,.07)" stroke="#4f8ef7" stroke-width="1.5"/>
+  <rect x="330" y="14" width="296" height="240" rx="18" fill="rgba(240,82,82,.07)" stroke="#f05252" stroke-width="1.5"/>
+  <rect x="34" y="66" width="270" height="168" rx="16" fill="rgba(52,201,138,.08)" stroke="#34c98a" stroke-width="1.5"/>
+  ${t(34,42,'NP','#4f8ef7',14,'start')}${t(74,42,tr('可多项式验证','poly-time verifiable'),'#8189a0',10.5,'start')}
+  ${t(169,96,'P','#34c98a',14)}${t(169,124,'MST · Dijkstra','#c7cddb')}${t(169,144,'2SAT (SCC)','#c7cddb')}${t(169,164,'max-flow · LP','#c7cddb')}${t(169,184,'Euler path','#c7cddb')}${t(169,212,tr('多项式时间能解','solvable in poly time'),'#8189a0',10)}
+  ${t(415,42,'NP-complete','#f5a623',13)}${t(415,76,'SAT · 3SAT','#e3e7f0')}${t(415,96,'IS · Clique · VC','#e3e7f0')}${t(415,116,'Subset Sum','#e3e7f0')}${t(415,136,'Rudrata ×3','#e3e7f0')}${t(415,156,'TSP · ILP','#e3e7f0')}${t(415,176,'ZOE · 3DM','#e3e7f0')}${t(415,206,'Knapsack*','#8189a0',10.5)}${t(415,222,tr('（不在 13 个里）','(not in the 13)'),'#8189a0',10)}
+  ${t(563,42,'NP-hard','#f05252',13)}${t(563,86,'Max IS','#c7cddb',10.5)}${t(563,104,'Max Clique','#c7cddb',10.5)}${t(563,122,'Min VC','#c7cddb',10.5)}${t(563,140,tr('优化 TSP','opt. TSP'),'#c7cddb',10.5)}${t(563,172,'Halting','#ff8a8a',11)}${t(563,188,'(#662)','#ff8a8a',10)}${t(563,222,tr('不知道 / 不在 NP','not known / not in NP'),'#8189a0',9.5)}
+  ${t(320,278,'P ⊆ NP · NP-complete = NP ∩ NP-hard · P = NP ?','#8189a0',10.5)}
+  </svg>`; }
+function buildOverview(){
+  let h=`<h2>${tr('13 个可用的 source problem','The 13 allowed source problems')}</h2><p>${tr('名字会印在考卷上，定义不会（#596）。每个都要知道 input / output / NO。全部是 search 版本：返回解或 NO。点名字进入详情页：例子图、被拒的候选、一个解、NO 实例、verify 步骤。','The names are printed on the exam; the definitions are not (#596). Know the input / output / NO for each. All are search versions: return a solution or NO. Click a name for its detail page: an example, a rejected candidate, a solution, a NO instance, and the verification steps.')}</p>`;
+  h+=`<div class="card tw"><table class="ovt" style="min-width:900px"><thead><tr><th>${tr('问题','Problem')}</th><th>Input</th><th>Output</th><th>${tr('返回 NO 当','NO when')}</th><th>${tr('Verify (∈ NP)','Verify (∈ NP)')}</th></tr></thead><tbody>`;
+  PROBS.forEach(([gz,ge,rows])=>{ h+=`<tr class="cat"><td colspan="5">${tr(gz,ge)}</td></tr>`;
+    rows.forEach(([n,i,o,no,v])=>{ const pid=PID[n]; h+=`<tr><td class="m" style="font-weight:600">${pid?`<button type="button" class="go" style="color:var(${ALGOS.find(a=>a.id===pid).c})" data-go="${pid}">${n} →</button>`:n}</td><td>${L2(i)}</td><td>${L2(o)}</td><td style="color:var(--muted)">${L2(no)}</td><td class="m">${v}</td></tr>`; }); });
+  h+='</tbody></table></div>';
+  h+=`<h3 class="sub2">${tr('归约树','Reduction tree')}</h3><div class="card"><pre class="tree">SAT → 3SAT ──→ IS ──→ Clique
+         │       └──→ VC
+         ├──→ Subset Sum                 ${tr('(lecture: 3SAT → SSS 直接)','(lecture: 3SAT → SSS directly)')}
+         └──→ 3D Matching → ZOE ──→ Subset Sum
+                             ├──→ ILP
+                             └──→ Rudrata Cycle → TSP</pre></div>`;
+  h+='<div class="rule">'+
+   tr('<div><b>NP-complete = NP ∩ NP-hard</b>(1) 给定候选解，多项式时间验证；(2) 从已知 NP-C 问题归约到它。</div>','<div><b>NP-complete = NP ∩ NP-hard</b>(1) Verify a given candidate in polynomial time; (2) reduce a known NP-C problem to it.</div>')+
+   tr('<div><b>A → B 的含义</b>用 B 的黑盒解 A，所以 B 至少和 A 一样难。证 B 是 NP-hard：A 必须是已知的。</div>','<div><b>What A → B means</b>Solve A with a black box for B, so B is at least as hard as A. To show B is NP-hard, A must be the known one.</div>')+
+   tr('<div><b>优化 ≠ search</b>Max IS、Max Clique、Min VC、优化 TSP 不在 NP（验证不了最优）。用带 g / b 的版本。</div>','<div><b>Optimization ≠ search</b>Max IS, Max Clique, min VC and optimization TSP are not in NP (optimality cannot be verified). Use the g / b versions.</div>')+
+   tr('<div><b>推荐 source</b>SAT、3SAT、IS、Clique、VC、Subset Sum（绿色）。路径类可用但少见。题目点名 source 时必须用它。</div>','<div><b>Recommended sources</b>SAT, 3SAT, IS, Clique, VC, Subset Sum (green). Path problems are allowed but rare. If the problem names a source, you must use it.</div>')+
+   tr('<div><b>练习题（#605）</b>先做 8.3 Stingy SAT、8.19 Kite、8.8 Exact 4SAT；8.1 最后做。8.15、8.20 有视频。</div>','<div><b>Practice (#605)</b>Start with 8.3 Stingy SAT, 8.19 Kite, 8.8 Exact 4SAT; leave 8.1 for last. 8.15 and 8.20 have videos.</div>')+
+   tr('<div><b>考试 / 期末</b>HW5 的答题结构考试不会给，要背（#657）。Exam 5 的 RSA 要能手算。</div>','<div><b>Exam / final</b>The HW5 answer structure will not be given on the exam; know it cold (#657). Exam 5 RSA must be done by hand.</div>')+
+   '</div>';
+  h+=`<h3 class="sub2">${tr('复杂度类','Complexity classes')}</h3><div class="card tw" style="padding:8px 10px">${venn()}</div>`;
+  h+=`<h3 class="sub2">${tr('Ed 新内容（11/01 → 11/06）','New on Ed (11/01 → 11/06)')}</h3><div class="rule" style="margin-top:0">${NEWS.map(([hz,he,bz,be])=>`<div><b>${tr(hz,he)}</b>${tr(bz,be)}</div>`).join('')}</div>`;
+  h+=`<h3 class="sub2">${tr('还在等','Still waiting on')}</h3><div class="card" style="padding:12px 14px"><ul class="todo">${TODO.map(t=>`<li><span class="lv na">${tr('待补','pending')}</span><span>${L2(t)}</span></li>`).join('')}</ul></div>`;
+  $('ov').innerHTML=h; $('ov').querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>select(b.dataset.go));
+}
+
+/* [rule, ✓, ✗, why] */
+const RULES=[
+ ['1 · B ∈ NP','1 · B ∈ NP',[
+  ['只验证给定的候选解','Verify only the given candidate',tr('Given instance I and candidate S, check each clause ... O(m).','Given instance I and candidate S, check each clause ... O(m).'),'Run DP to find a solution, then compare.',['不能去解它；也不验证 NO（#596）','Never solve it, and never verify a NO (#596)']],
+  ['runtime 不依赖 g / k / b / t 的数值','Runtime independent of the values of g / k / b / t','check |S| >= g by counting S: O(n)','loop g times ...: O(g)',['依赖数值 = 伪多项式','Depending on a value is pseudo-polynomial']],
+  ['按子句大小写 bound','Match the bound to the clause size','Exact 4SAT: O(m)   SAT: O(nm)','Exact 4SAT: O(n^4)',['#605 Tim','#605 Tim']],
+  ['数 |S| 是 O(n)','Counting |S| is O(n)','count the vertices in S: O(n)','len(S) >= g: O(1)',['#7 + #596（11/05）','#7 + #596 (11/05)']],
+  ['不用验证输入的性质','No need to verify input properties','8.4a: check |S| >= g and all pairs adjacent','(required) also check every degree <= 3',['验了也不扣分（#605）','Checking anyway costs nothing (#605)']],
+  ['对每个实例都成立','Works for every instance','for any valid I and candidate S ...','for this example graph ...',['#596 Jamie 11/02','#596 Jamie 11/02']]]],
+ ['2 · Reduction A → B','2 · Reduction A → B',[
+  ['写明方向：known → new','State the direction: known → new','Reduce 3SAT -> Stingy SAT','Reduce Stingy SAT -> 3SAT',['反方向自动 −16','The reverse is an automatic −16']],
+  ['input transform 交代全部输入','Input transform accounts for every input','... and k = n, the formula f is unchanged','(only describes the new gadget)',['原样传过去的也要写 + Big-O','Pass-throughs count too, with a Big-O']],
+  ['不能预设 SAT 变量','No pre-assigned SAT variables','add clauses (z) and (!z v ...) to force z','set z = TRUE in f',['用子句结构强制（OH 10/28）','Force with clause structure (OH 10/28)']],
+  ['不能限制 A 的实例','Do not restrict A\'s instances','map every 3SAT instance; may land on a subset of B','assume each variable appears at most twice',['可以映射到 B 的子集（OH）','Mapping onto a subset of B is fine (OH)']],
+  ['output transform 写 NO','Output transform states NO','If B returns NO, return NO for A.','(only the YES case)',['不是可选项','Not optional']],
+  ['identity 也要写','Write it even when it is the identity','Return S unchanged as the clique for A. O(1).','(omitted)',['#596','#596']],
+  ['图问题别盲目删加的点','Do not blindly drop added vertices','extract the needed structure / check it','return S minus the added vertices',['黑盒可能选了不含它们的解','The black box may pick a solution without them']],
+  ['不要组合归约','No composed reductions','3SAT -> B','3SAT -> IS -> B',['不需要（OH）','Not needed (OH)']],
+  ['f(I) 的范围由你定','You choose the scope of f(I)','8.3: map (f) to (f, k = n)','try to cover every k for Stingy SAT',['只要 IFF 成立（#605 11/05）','As long as the IFF holds (#605 11/05)']],
+  ['B 是黑盒，没有「修改」可言','B is a black box; there is nothing to modify','assume a solver for B exists','modify the IS solver to ...',['#596 Jamie','#596 Jamie']],
+  ['tautology 子句','Tautology clauses','pre-process (x v !x v ...) out, add back in the output','(silently ignored)',['默认不出现；处理了也无害（#605）','Assumed absent; handling them is harmless (#605)']]]],
+ ['3 · IFF','3 · IFF',[
+  ['两个方向都证','Prove both directions','A has a sol => B has a sol; B has a sol => A has a sol','A => B  and  !B => !A',['后者是同一句话的逆否，只证了一半','The second is the same claim\'s contrapositive: half a proof']],
+  ['写出用的是哪一组','Name the combination used','(B=>A) and (A=>B)','(unlabeled)',['4 种合法组合见「选型矩阵」页','The 4 valid pairs are on the matrix page']],
+  ['at least / exactly 分清','Keep at least / exactly straight','|S| >= m and clause edges => exactly one per clause','|S| = m so one per clause',['之前失分点','A past point loss']]]],
+ ['CNF（#598）','CNF (#598)',[
+  ['variable ≠ literal','variable ≠ literal','x is a variable; x and !x are literals','"set literal !x to FALSE" as an assignment',['赋值是给 variable 的','Assignments go to variables']],
+  ['合法子句','Valid clauses','(x v !x v y)','(x v x v y)  (TRUE v y)  ((x v y) v z)  ()',['不能重复 literal、写死 T/F、嵌套、空','No repeated literal, hard-coded T/F, nesting, or empty clause']],
+  ['纯 ASCII','Plain ASCII','!x  v  ^  ->','¬ ∨ ∧ (may break on Canvas export)',['Canvas 导出会坏','Canvas export can break']]]],
+ ['LP（#597, #661）','LP (#597, #661)',[
+  ['完整 LP','A complete LP','objective + constraints + x_i >= 0 for every i','objective + constraints',['漏非负扣分','Missing non-negativity loses points']],
+  ['lecture 标准形式','Lecture standard form','max c^T x, Ax <= b, x >= 0','min ..., Ax >= b (textbook form)',['取对偶前先转换','Convert before taking the dual']],
+  ['非负不是 A 的行','Non-negativity is not a row of A','A = [[1,0],[0,1],[1,1]]','A with an extra row [-1,-1,-1]',['#661 knowledge check 的错','The #661 knowledge-check error']],
+  ['严格不等式','Strict inequalities','x <= 100','x < 100  ("infeasible")',['是 ill-defined，不是 infeasible（#673）','Ill-defined, not infeasible (#673)']],
+  ['min 转 max','min to max','min 3x1 - 2.5x2 + x3  ->  max -3x1 + 2.5x2 - x3','max 3x1 - 2.5x2 + x3',['目标系数全部变号（#687）','Flip every objective sign (#687)']],
+  ['只查原点不够','Checking the origin is not enough','DPV: move a vertex to the origin first','0 infeasible => LP infeasible',['LP1 #19 有 errata（#686）','LP1 #19 has an erratum (#686)']]]]
+];
+function buildOps(){
+  let h=`<h2>${tr('NP 证明写法 + LP 规则','NP proof format + LP rules')}</h2><p>${tr('依据 #596 NP Theory Guidance、#598 CNF、#597 LP、10/28 OH 和官方 3SAT.pdf。没有唯一的格式，但这四段必须都能被找到。','From #596 NP Theory Guidance, #598 CNF, #597 LP, the 10/28 OH and the official 3SAT.pdf. There is no single required format, but all four parts must be easy to find.')}</p>`;
+  h+='<div class="tpl">'+
+   tr('<div><b>1. B ∈ NP</b>给定 I 和候选 S，逐步验证 + Big-O。不依赖 g/k/b/t 的数值。</div>','<div><b>1. B ∈ NP</b>Given I and a candidate S, verify step by step + Big-O, independent of the values of g/k/b/t.</div>')+
+   tr('<div><b>2a. Input transform</b>A 的实例 → B 的实例。每个输入都交代，含原样传递的。Big-O。</div>','<div><b>2a. Input transform</b>Instance of A → instance of B. Account for every input, including pass-throughs. Big-O.</div>')+
+   tr('<div><b>2b. Output transform</b>B 的解 → A 的解，<b style="display:inline;color:inherit;font-family:inherit">和 NO 的情况</b>。identity 也写。Big-O。</div>','<div><b>2b. Output transform</b>A solution of B → a solution of A, <b style="display:inline;color:inherit;font-family:inherit">plus the NO case</b>. Write it even if it is the identity. Big-O.</div>')+
+   tr('<div><b>3. Correctness (IFF)</b>独立一段，写明用哪一组合法组合，两个方向都证。</div>','<div><b>3. Correctness (IFF)</b>Its own paragraph; name the valid pair you use and prove both directions.</div>')+
+   '</div>';
+  h+=`<div class="card tw"><table class="ovt" style="min-width:980px"><thead><tr><th>${tr('规则','Rule')}</th><th>✓ ${tr('这样写','Write this')}</th><th>✗ ${tr('别这样写','Not this')}</th><th>${tr('为什么','Why')}</th></tr></thead><tbody>`;
+  RULES.forEach(([gz,ge,rows])=>{ h+=`<tr class="cat"><td colspan="4">${tr(gz,ge)}</td></tr>`;
+    rows.forEach(r=>{ h+=`<tr><td class="op">${tr(r[0],r[1])}</td><td class="yes" style="white-space:pre-wrap">${esc(r[2])}</td><td class="nope" style="white-space:pre-wrap">${esc(r[3])}</td><td class="how">${L2(r[4])}</td></tr>`; }); });
+  h+='</tbody></table></div>';
+  h+=`<h3 class="sub2">${tr('转成标准形式','Converting to standard form')}</h3><div class="card tw"><table class="ovt"><thead><tr><th>${tr('原来','Original')}</th><th>${tr('转换后','Converted')}</th></tr></thead><tbody>`;
+  const CONV2=[['min cᵀx','max (−c)ᵀx'],['aᵀx ≥ b','(−a)ᵀx ≤ −b'],['aᵀx = b',tr('aᵀx ≤ b 且 (−a)ᵀx ≤ −b','aᵀx ≤ b and (−a)ᵀx ≤ −b')],['x_i ≤ 0',tr('换元 x_i′ = −x_i ≥ 0','substitute x_i′ = −x_i ≥ 0')],[tr('x_i 无符号限制','x_i unrestricted'),tr('x_i = x_i⁺ − x_i⁻，两者 ≥ 0','x_i = x_i⁺ − x_i⁻, both ≥ 0')],[tr('x < 100（严格）','x < 100 (strict)'),tr('LP 不允许','not allowed in an LP')]];
+  CONV2.forEach(([a,b])=>{ h+=`<tr><td class="m">${a}</td><td class="m" style="color:var(--green)">${b}</td></tr>`; });
+  h+='</tbody></table></div><div class="rule" style="margin-top:14px">'+
+   tr('<div><b>Gadget（#605）</b>对整个实例统一施加的一小块构造，例如每条边 (u,v) 造一个集合 {u,v}。具体例子不是证明，但要拿小例子测。</div>','<div><b>Gadget (#605)</b>An atomic piece of construction applied across the whole instance, e.g. one set {u,v} per edge (u,v). An example is not a proof, but test on small examples.</div>')+
+   tr('<div><b>不要设计 B 的解法</b>你只需要 A 的 input / output / NO 行为。B 是黑盒。</div>','<div><b>Do not design a solver for B</b>You only need A\'s input / output / NO behavior. B is a black box.</div>')+
+   tr('<div><b>NP 是唯一不要求最优</b>transformation 不按最优性评分（#608）。但太大说明 source 可能选错了。</div>','<div><b>The one section without optimality</b>Transformations are not graded on optimality (#608). If yours is huge, you probably picked the wrong source.</div>')+
+   tr('<div><b>段落</b>第 1 段 NP；第 2 段归约 + runtime；IFF 单独一段（#596 best practice）。</div>','<div><b>Paragraphs</b>Paragraph 1: NP; paragraph 2: reduction + runtime; IFF on its own (#596 best practice).</div>')+
+   '</div>';
+  $('ops').innerHTML=h;
+}
+
+/* source-choice matrix */
+const SRC_COLS=['SAT / 3SAT','IS / Clique / VC','Subset Sum','Rudrata / TSP','ILP / ZOE','3DM'];
+const SRC=[
+ [['布尔公式 / 赋值（Stingy SAT, Exact 4SAT, NAE 类）','Boolean formula / assignment (Stingy SAT, Exact 4SAT, NAE-type)'],['any','req','no','no','na','na']],
+ [['选一组点，有大小上 / 下限（Kite, Dominating Set, Hitting Set）','Pick vertices with a size bound (Kite, Dominating Set, Hitting Set)'],['na','any','no','na','na','na']],
+ [['选数字凑一个总和（Partition 类）','Choose numbers hitting a total (Partition-type)'],['req','no','any','no','na','na']],
+ [['每个点恰好访问一次 / 排序 / 路径','Visit every vertex once / ordering / path'],['no','na','no','any','na','na']],
+ [['整数变量 + 线性约束','Integer variables + linear constraints'],['req','na','na','na','any','na']],
+ [['分成不相交的三元组','Split into disjoint triples'],['no','na','na','na','req','any']],
+ [['子图同构 / 一般化（8.10）','Subgraph isomorphism / generalization (8.10)'],['no','any','na','req','na','na']],
+];
+const SRC_KEY=[['any','同领域，首选','same domain, first choice'],['req','可行但 transformation 会长','works, but the transformation gets long'],['no','跨领域，别选','cross-domain, avoid'],['na','不相关','not relevant']];
+/* primal × dual */
+const PD_COLS=[['dual feasible & bounded','dual feasible & bounded'],['dual unbounded','dual unbounded'],['dual infeasible','dual infeasible']];
+const PD=[
+ [['primal feasible & bounded','primal feasible & bounded'],[['any','✓ 最优值相等（strong）','✓ equal optima (strong)'],['no','✗','✗'],['no','✗','✗']]],
+ [['primal unbounded','primal unbounded'],[['no','✗','✗'],['no','✗','✗'],['any','✓ 必然','✓ always']]],
+ [['primal infeasible','primal infeasible'],[['no','✗','✗'],['any','✓ 可能','✓ possible'],['any','✓ 可能（都不可行）','✓ possible (both infeasible)']]]];
+const IFF=[['B ⇒ A','A ⇒ B','any',['最常用','most common']],['B ⇒ A','¬B ⇒ ¬A','any',['合法','valid']],['¬A ⇒ ¬B','A ⇒ B','any',['合法','valid']],['¬A ⇒ ¬B','¬B ⇒ ¬A','any',['合法','valid']],
+  ['A ⇒ B','¬B ⇒ ¬A','no',['同一句话 + 逆否 = 只证一半','a claim + its contrapositive = half']],['B ⇒ A','¬A ⇒ ¬B','no',['同上','same problem']],[['四个全写','all four'],['',''],'req',['不错，但浪费时间','not wrong, but wastes time']]];
+function buildPre(){
+  const lv=(l,t)=>`<span class="lv ${l}">${t}</span>`;
+  let h=`<h2>${tr('选哪个 source problem','Which source problem to pick')}</h2><p>${tr('OH 10/28：最重要的决定是从哪个已知问题出发，选同领域的。图问题经 SAT 归约会非常复杂。','OH 10/28: the most important decision is which known problem to start from; choose one in the same domain. Reducing graph problems through SAT gets very complicated.')}</p>`;
+  h+=`<div class="pkey">${SRC_KEY.map(([l,z,e])=>lv(l,tr(z,e))).join('')}</div>`;
+  h+=`<div class="card tw"><table class="ovt pm"><thead><tr><th>${tr('新问题长什么样','What the new problem looks like')}</th>${SRC_COLS.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>`;
+  SRC.forEach(([lab,cells])=>{ h+=`<tr><td>${L2(lab)}</td>${cells.map(l=>`<td>${lv(l,l==='any'?'✓':l==='req'?'~':l==='no'?'✗':'—')}</td>`).join('')}</tr>`; });
+  h+='</tbody></table></div>';
+  h+=`<h3 class="sub2">${tr('Primal × Dual 可能的组合','Possible primal × dual combinations')}</h3><div class="card tw"><table class="ovt pm" style="min-width:700px"><thead><tr><th></th>${PD_COLS.map(c=>`<th>${L2(c)}</th>`).join('')}</tr></thead><tbody>`;
+  PD.forEach(([lab,cells])=>{ h+=`<tr><td class="op">${L2(lab)}</td>${cells.map(([l,z,e])=>`<td>${lv(l,tr(z,e))}</td>`).join('')}</tr>`; });
+  h+='</tbody></table></div>';
+  h+=`<h3 class="sub2">${tr('IFF：哪些组合合法','IFF: which pairs are valid')}</h3><div class="card tw"><table class="ovt pm" style="min-width:640px"><thead><tr><th>${tr('第一个','First')}</th><th>${tr('第二个','Second')}</th><th>${tr('结论','Verdict')}</th></tr></thead><tbody>`;
+  IFF.forEach(([a,b,l,why])=>{ h+=`<tr><td class="m">${L2(a)}</td><td class="m">${L2(b)}</td><td>${lv(l,L2(why))}</td></tr>`; });
+  h+='</tbody></table></div><div class="rule" style="margin-top:14px">'+
+   tr('<div><b>A ⇒ B 读法</b>「A 有解 ⇒ B 有解」：用 A 的解构造 B 的解。B ⇒ A 反过来，通常就是 output transform 的正确性。</div>','<div><b>Reading A ⇒ B</b>"A has a solution ⇒ B has one": build B\'s solution from A\'s. B ⇒ A is the reverse and usually matches the output transformation.</div>')+
+   tr('<div><b>逆否</b>A ⇒ B 等价于 ¬B ⇒ ¬A。所以这两个放一起只算一个方向（#510）。</div>','<div><b>Contrapositives</b>A ⇒ B is equivalent to ¬B ⇒ ¬A, so the two together count as one direction (#510).</div>')+
+   tr('<div><b>判断无界</b>primal 可行 + dual 不可行 ⇒ primal 无界。只看 dual 不可行不够。</div>','<div><b>Checking unboundedness</b>Primal feasible + dual infeasible ⇒ primal unbounded. Dual infeasible alone is not enough.</div>')+
+   tr('<div><b>dual 的 dual = primal</b>所以表格关于对角线对称地读也成立。</div>','<div><b>The dual of the dual is the primal</b>So the table also reads correctly with the roles swapped.</div>')+
+   '</div>';
+  $('pre').innerHTML=h;
+}
+
+const STATIC=['ov','ops','pre'];
+function select(id, keep){
+  stop(); VIEW=id;
+  document.querySelectorAll('.nb').forEach(b=>b.classList.toggle('on',b.dataset.id===id));
+  try{ history.replaceState(null,'','#'+id); }catch(e){}
+  if(STATIC.includes(id)){ $('algo').hidden=true; STATIC.forEach(x=>$(x).hidden=x!==id); A=null; if(!keep) window.scrollTo({top:0}); return; }
+  $('algo').hidden=false; STATIC.forEach(x=>$(x).hidden=true);
+  A=ALGOS.find(a=>a.id===id); if(!A.steps) A.steps=A.sim(); STEPS=A.steps;
+  cur=keep?Math.min(cur,STEPS.length-1):0;
+  document.documentElement.style.setProperty('--ac',`var(${A.c})`);
+  $('a-abbr').textContent=A.abbr; $('a-name').textContent=A.name; $('a-rt').textContent=A.rt;
+  $('s-in').innerHTML=L2(A.in); $('s-out').innerHTML=L2(A.out); $('s-req').innerHTML=L2(A.req);
+  $('g-cap').textContent=L2(A.cap); $('tk').innerHTML=A.tk.map(t=>`<li>${L2(t)}</li>`).join('');
+  $('k-req').textContent=A.cat==='c0'?tr('返回 NO 当','Returns NO when'):tr('要求 / 注意','Requirements / notes');
+  $('legend').innerHTML=(LEGF()[A.id]||(A.cat==='c0'?PLEG():[])).map(([k,lab])=>{ if(k[0]==='-'){ const e=ES[k.slice(1)]; return `<span><b class="ln" style="border-top-color:${e.s};border-top-style:${e.d?'dashed':'solid'}"></b>${lab}</span>`; }
+    const c=CS[k]; return `<span><b class="sw" style="background:${c[0]};border-color:${c[1]}"></b>${lab}</span>`; }).join('');
+  render();
+}
+function draw(svg,p){
+  if(p.k==='cell'){ const c=CS[p.st]||CS.n; mk('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:4,fill:c[0],stroke:c[1],'stroke-width':1.6},svg);
+    if(p.v!==''){ const t=mk('text',{x:p.x+p.w/2,y:p.y+p.h/2+1,'text-anchor':'middle','dominant-baseline':'middle','font-size':p.fs||13,'font-weight':600,fill:c[2]},svg); t.textContent=p.v; } }
+  else if(p.k==='txt'){ if(p.s==='') return; const t=mk('text',{x:p.x,y:p.y,'text-anchor':p.a||'middle','dominant-baseline':'middle','font-size':p.fs||12,'font-weight':p.w||400,fill:COL[p.c]||p.c||COL.muted,class:'el'},svg); t.textContent=p.s; }
+  else if(p.k==='rect'){ mk('rect',{x:p.x,y:p.y,width:p.w,height:p.h,rx:p.r??6,fill:p.f||'none',stroke:COL[p.s]||p.s||COL.line,'stroke-width':p.sw||1.5,'stroke-dasharray':p.d||'none'},svg); }
+  else if(p.k==='line'){ mk('line',{x1:p.x1,y1:p.y1,x2:p.x2,y2:p.y2,stroke:COL[p.s]||p.s||COL.line,'stroke-width':p.w||1.4,'stroke-dasharray':p.d||'none','stroke-linecap':'round'},svg); }
+  else if(p.k==='poly'){ mk('polygon',{points:p.pts.map(q=>q.map(v=>v.toFixed(1)).join(',')).join(' '),fill:p.f||'none',stroke:p.s||'none','stroke-width':p.sw||1.5},svg); }
+  else if(p.k==='node'){ const c=CS[p.st]||CS.n, r=p.r||22; mk('circle',{cx:p.x,cy:p.y,r,fill:c[0],stroke:c[1],'stroke-width':2.2},svg);
+    if(p.lab){ const t=mk('text',{x:p.x,y:p.y+1,'text-anchor':'middle','dominant-baseline':'middle','font-size':p.lab.length>2?12:14,'font-weight':600,fill:c[2]},svg); t.textContent=p.lab; } }
+}
+function render(){
+  const s=STEPS[cur], svg=$('g'); svg.innerHTML='';
+  (s.S||[]).forEach(p=>draw(svg,p));
+  $('g-badge').textContent=`step ${cur}`;
+  $('s-lbl').textContent=`STEP ${cur} / ${STEPS.length-1}`; $('s-title').textContent=s.t; $('s-desc').textContent=s.d;
+  const ins=$('s-ins'); ins.hidden=!s.ins||s.it==='hide'; ins.className='ins '+(s.it||'info'); ins.textContent=s.ins||'';
+  $('panels').innerHTML=(s.P||[]).map(panel).join('');
+  $('b-prev').disabled=cur===0; $('b-next').disabled=cur===STEPS.length-1;
+  $('prog').style.width=(STEPS.length>1?cur/(STEPS.length-1)*100:0)+'%'; $('ctr').textContent=`${cur} / ${STEPS.length-1}`;
+}
+function panel(p){
+  const head=`<h3>${esc(p.title)}${p.sub?` <small>${esc(p.sub)}</small>`:''}</h3>`;
+  if(p.k==='chips') return `<div class="card pnl">${head}<div class="chips">${p.items.map(i=>`<span class="chip ${i.c||''}">${esc(i.x)}</span>`).join('')}</div></div>`;
+  if(p.k==='note') return `<div class="card pnl">${head}<div style="font-family:var(--f-mono);font-size:17px;color:var(--ac)">${esc(p.text)}</div></div>`;
+  if(p.k==='code') return `<div class="card pnl">${head}<pre class="rec">${esc(p.text)}</pre></div>`;
+  const hi=new Set(p.hi||[]), rh=new Set(p.rowhi||[]);
+  return `<div class="card pnl">${head}<div class="tw"><table class="dt"><thead><tr>${p.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>`+
+    p.rows.map((r,i)=>`<tr class="${rh.has(i)?'rh':''}">${r.map((c,j)=>`<td class="${hi.has(i+','+j)?'hi':''}">${esc(c)}</td>`).join('')}</tr>`).join('')+`</tbody></table></div></div>`;
+}
+function stop(){ if(timer){clearInterval(timer);timer=null;} $('b-play').textContent='▶ Play'; }
+function go(d){ if(!A) return; const n=cur+d; if(n<0||n>STEPS.length-1) return; cur=n; render(); }
+function setLang(l){
+  LANG=l; try{ localStorage.setItem('np-lang',l); }catch(e){}
+  ALGOS.forEach(a=>a.steps=null);
+  applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre(); select(VIEW,true);
+}
+$('lang').onclick=()=>setLang(LANG==='en'?'zh':'en');
+$('b-prev').onclick=()=>{stop();go(-1);}; $('b-next').onclick=()=>{stop();go(1);};
+$('b-play').onclick=()=>{ if(timer){stop();return;} if(cur===STEPS.length-1){cur=0;render();}
+  $('b-play').textContent='⏸ Pause'; timer=setInterval(()=>{ if(cur<STEPS.length-1){cur++;render();} else stop(); },2400); };
+document.addEventListener('keydown',e=>{ if(e.target.closest&&e.target.closest('input,textarea,button')&&e.key===' ') return;
+  if(e.key==='ArrowRight'){stop();go(1);} else if(e.key==='ArrowLeft'){stop();go(-1);}
+  else if(e.key===' '&&A){e.preventDefault();$('b-play').click();}
+  else if(e.key===']'||e.key==='['){ const ids=[...STATIC,...ALGOS.map(a=>a.id)]; const i=ids.indexOf(VIEW); const j=(i+(e.key===']'?1:-1)+ids.length)%ids.length; select(ids[j]); } });
+
+applyStatic(); buildNav(); buildOverview(); buildOps(); buildPre();
+const h0=(location.hash||'').slice(1);
+select([...STATIC,...ALGOS.map(a=>a.id)].includes(h0)?h0:'sat3');
+</script>
+
+</body></html>

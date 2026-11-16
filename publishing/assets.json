@@ -32,6 +32,10 @@
     {
       "path": "interactive/cs6515/dynamic-programming.html",
       "publish": true
+    },
+    {
+      "path": "interactive/cs6515/np-lp.html",
+      "publish": true
     }
   ],
   "ignored_files": [

@@ -13,7 +13,7 @@ draft: false
 <label for="cs6515-chinese" lang="zh-CN">中文</label>
 <div class="cs6515-locale-en" lang="en">
 <h1>CS6515 Algorithm Review</h1>
-<p>My Graduate Algorithms study notes connect algorithm preconditions, execution steps, and problem-solving techniques. The three interactive reviews below cover dynamic programming, divide and conquer, and graph algorithms. Each opens in its own full-page view, starts in English, and includes a Chinese language switch.</p>
+<p>My Graduate Algorithms study notes connect algorithm preconditions, execution steps, and problem-solving techniques. The four interactive reviews below cover dynamic programming, divide and conquer, graph algorithms, and NP/LP. Each opens in its own full-page view, starts in English, and includes a Chinese language switch.</p>
 <h2>Interactive reviews</h2>
 <div class="cs6515-cards">
 <a class="cs6515-card cs6515-dp" href="interactive/cs6515/dynamic-programming.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
@@ -37,6 +37,13 @@ draft: false
 <span class="cs6515-topics">Traversal, shortest paths, spanning trees, maximum flow</span>
 <span class="cs6515-open">Open the graph review</span>
 </a>
+<a class="cs6515-card cs6515-nplp" href="interactive/cs6515/np-lp.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 18h28v20H17zM75 18h28v20H75zM31 38v15h58V38M60 53v11"/><circle cx="60" cy="53" r="6" fill="var(--light)"/><path d="M49 10h22M60 10v8"/><path d="M80 57h27M80 62h18" stroke-width="3"/><path d="M13 57h27M13 62h18" stroke-width="3"/></svg>
+<strong>NP &amp; Linear Programming</strong>
+<span>Practice NP reductions, proof structure, LP duality, and approximation.</span>
+<span class="cs6515-topics">NP-completeness, reductions, simplex, duality, rounding</span>
+<span class="cs6515-open">Open the NP &amp; LP review</span>
+</a>
 </div>
 <aside class="cs6515-support" aria-label="Support these reviews">
 <p>If these reviews help you study, you can support future notes and interactive walkthroughs.</p>
@@ -58,7 +65,7 @@ draft: false
 </div>
 <div class="cs6515-locale-zh" lang="zh-CN">
 <h1>CS6515 算法复习</h1>
-<p>这里整理我的 Graduate Algorithms 学习资料，把算法的适用条件、执行过程和解题思路连接起来。下面三个互动页面分别覆盖动态规划、分治和图算法；每个页面会独立打开，默认显示英文，也可以切换为中文。</p>
+<p>这里整理我的 Graduate Algorithms 学习资料，把算法的适用条件、执行过程和解题思路连接起来。下面四个互动页面分别覆盖动态规划、分治、图算法，以及 NP/LP；每个页面会独立打开，默认显示英文，也可以切换为中文。</p>
 <h2>交互复习</h2>
 <div class="cs6515-cards">
 <a class="cs6515-card cs6515-dp" href="interactive/cs6515/dynamic-programming.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
@@ -81,6 +88,13 @@ draft: false
 <span>先辨认图的条件，再跟随搜索、松弛与增广。</span>
 <span class="cs6515-topics">遍历、最短路、生成树、最大流</span>
 <span class="cs6515-open">打开图算法互动复习</span>
+</a>
+<a class="cs6515-card cs6515-nplp" href="interactive/cs6515/np-lp.html" target="_blank" rel="noopener" data-router-ignore data-standalone>
+<svg viewBox="0 0 120 70" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M17 18h28v20H17zM75 18h28v20H75zM31 38v15h58V38M60 53v11"/><circle cx="60" cy="53" r="6" fill="var(--light)"/><path d="M49 10h22M60 10v8"/><path d="M80 57h27M80 62h18" stroke-width="3"/><path d="M13 57h27M13 62h18" stroke-width="3"/></svg>
+<strong>NP 与线性规划</strong>
+<span>练习 NP 归约、证明结构、LP 对偶与近似算法。</span>
+<span class="cs6515-topics">NP 完全性、归约、单纯形法、对偶、舍入</span>
+<span class="cs6515-open">打开 NP 与 LP 互动复习</span>
 </a>
 </div>
 <aside class="cs6515-support" aria-label="支持这些复习资料">

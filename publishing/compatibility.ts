@@ -10,7 +10,7 @@ import type {
 import type { FilePath } from "../quartz/util/path"
 import { slugifyFilePath } from "../quartz/util/path"
 
-const policyPath = path.resolve("publishing/assets.json")
+const policyPath = path.resolve(process.env.QUARTZ_PUBLISH_POLICY_PATH || "publishing/assets.json")
 const movedArticlesPath = path.resolve("publishing/moved-articles.json")
 
 export function v4Slug(file: string): string {

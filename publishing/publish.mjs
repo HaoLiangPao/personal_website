@@ -525,6 +525,7 @@ export function main(argv = process.argv.slice(2)) {
         [path.join(site, "quartz/bootstrap-cli.mjs"), "build", "-d", staged, "-o", output],
         {
           cwd: site,
+          env: { ...process.env, QUARTZ_PUBLISH_POLICY_PATH: policyPath },
           encoding: "utf8",
           maxBuffer: 16 * 1024 * 1024,
         },
